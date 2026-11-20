@@ -34,6 +34,13 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
   regata, calça ou bermuda, cores, tênis, cabelo, barba e pele. Os personagens antigos ficam só
   nos encontros. Já vem com animações prontas pra usar depois: dirigir, empurrar, carregar roda,
   consertar ajoelhado, sentar, falar no celular, braço cruzado, encostar.
+- TALA E RECUO SEPARADOS: na aba SUSPENSÃO agora tem tala e recuo da dianteira e da traseira
+  (recuo negativo = roda pra fora). Dá pra fazer traseira mais larga, frente embutida etc.
+- SOM BATENDO: com a música tocando, o cone dos alto-falantes (tampão e caixa) mexe no grave.
+- CARROS NOVOS ARRUMADOS: Cliô endireitado (o modelo vinha torto) e sem as capas pretas por cima
+  dos para-choques; rodas na medida do para-lama em todos (frente e traseira medidas separadas);
+  Rangido sem as rodas velhas sobrando; Monarca sem peças brancas; Lógico com interior certo;
+  tampão do som com textura nova (a antiga era foto de banco de imagem com marca d'água).
 
 Novidades (v42)
 - Carro novo: SaborSW (SUV 7 lugares, suspensão a ar), preto com roda 24 prata.
