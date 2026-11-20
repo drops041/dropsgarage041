@@ -126,6 +126,10 @@ func _ready() -> void:
 				if carros[i]["id"] == cid:
 					idx = i
 			personagem = str(salvo.get("personagem", personagem))
+			if not salvo.has("v44"):   # v44: a G5 Cross (o carro principal) entra selecionada uma vez
+				for i in carros.size():
+					if carros[i]["id"] == "saveirog5":
+						idx = i
 			if not salvo.has("v43"):
 				personagem = "protagonista"   # v43: protagonista novo (sem bug de animação) vira o padrão uma vez
 			visual = salvo.get("visual", {}) if salvo.get("visual", {}) is Dictionary else {}
@@ -268,7 +272,7 @@ func original() -> void:
 func salvar() -> void:
 	var f := FileAccess.open(ARQUIVO, FileAccess.WRITE)
 	if f:
-		f.store_string(JSON.stringify({"v31": true, "v43": true, "visual": visual, "idx": idx, "carro": carros[idx]["id"], "personagem": personagem, "configs": configs, "dinheiro": dinheiro, "recordes": recordes, "volume_musica": volume_musica, "faixa": faixa, "graficos": graficos, "tutorial": tutorial_feito, "dicas": dicas}))
+		f.store_string(JSON.stringify({"v31": true, "v43": true, "v44": true, "visual": visual, "idx": idx, "carro": carros[idx]["id"], "personagem": personagem, "configs": configs, "dinheiro": dinheiro, "recordes": recordes, "volume_musica": volume_musica, "faixa": faixa, "graficos": graficos, "tutorial": tutorial_feito, "dicas": dicas}))
 
 
 func ganhar(valor: int) -> void:

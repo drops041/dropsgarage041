@@ -1,5 +1,100 @@
 [
  {
+  "id": "saveirog5",
+  "nome": "G5 Cross",
+  "sub": "cabine estendida · Cross · a nave da casa",
+  "W": 1.765,
+  "axF": 1.413,
+  "axR": -1.413,
+  "wy": 0.349,
+  "ra": 0.349,
+  "bed": {
+   "y": 0.788,
+   "z": -1.53
+  },
+  "som": null,
+  "tampao": true,
+  "trio": {
+   "y": 0.788,
+   "z": -1.58,
+   "w": 1.353,
+   "d": 1.08
+  },
+  "picape": true,
+  "vmax": 50,
+  "acc": 8.5,
+  "tampa": {
+   "z0": -2.207,
+   "z1": -0.853,
+   "y": 1.038
+  },
+  "padrao": {
+   "cor": "#f4f4f1",
+   "acabamento": "perola",
+   "cor2": "#ff8fd0",
+   "roda": "m850",
+   "aro": 17,
+   "tala": 7,
+   "flanco": 4.5,
+   "cor_roda": "#c9ccd1",
+   "borda": "polida",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "DROPS041",
+   "tala_tras": 7,
+   "rebaixo": 12,
+   "rebaixo_tras": 12
+  },
+  "partes": {
+   "portas": {
+    "nome": "portas",
+    "p": [
+     [
+      "PFL",
+      [
+       -0.785,
+       0.723,
+       1.023
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PFR",
+      [
+       0.784,
+       0.723,
+       1.023
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ]
+    ]
+   }
+  },
+  "Wt": 1.761,
+  "arcos": {
+   "f": [
+    0.564,
+    0.872
+   ],
+   "t": [
+    0.564,
+    0.865
+   ]
+  },
+  "saia": 0.14
+ },
+ {
   "id": "golg5",
   "nome": "G5",
   "sub": "hatch 4 portas · suspensão a ar",
