@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://cfqyposrk18mb"
+path="res://.godot/imported/bmw_19.jpg-bafc51d2c6c03534481b6ff457765ff2.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "61b4ce2fd459b52a9d4a8c485457f59b"
+}
+
+[deps]
+
+source_file="res://modelos/carros/bmw_19.jpg"
+dest_files=["res://.godot/imported/bmw_19.jpg-bafc51d2c6c03534481b6ff457765ff2.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1

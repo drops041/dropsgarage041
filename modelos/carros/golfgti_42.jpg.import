@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://1usuv4v0j2en"
+path="res://.godot/imported/golfgti_42.jpg-041f4df0ef15a82db2ade23957c583c5.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "e40c2d1274c57951b0eeac25e8e14991"
+}
+
+[deps]
+
+source_file="res://modelos/carros/golfgti_42.jpg"
+dest_files=["res://.godot/imported/golfgti_42.jpg-041f4df0ef15a82db2ade23957c583c5.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1

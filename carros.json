@@ -1,0 +1,1662 @@
+[
+ {
+  "id": "golg5",
+  "nome": "G5",
+  "sub": "hatch 4 portas · suspensão a ar",
+  "W": 1.72,
+  "axF": 1.265,
+  "axR": -1.266,
+  "wy": 0.3,
+  "ra": 0.4,
+  "bed": null,
+  "som": {
+   "z": -1.45,
+   "y": 0.9
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 52,
+  "acc": 8.6,
+  "padrao": {
+   "cor": "#58625f",
+   "acabamento": "metal",
+   "cor2": "#8a5cd6",
+   "roda": "tsi",
+   "aro": 18,
+   "tala": 7,
+   "flanco": 9,
+   "cor_roda": "#a3a8ad",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "GOL5R18"
+  },
+  "arcos": {
+   "f": [
+    0.676,
+    0.884
+   ],
+   "t": [
+    0.651,
+    0.874
+   ]
+  },
+  "saia": 0.235
+ },
+ {
+  "id": "corsa",
+  "nome": "Donas",
+  "sub": "hatch 3 portas · suspensão a ar",
+  "W": 1.6,
+  "axF": 1.139,
+  "axR": -1.296,
+  "wy": 0.285,
+  "ra": 0.375,
+  "bed": null,
+  "som": {
+   "z": -1.42,
+   "y": 0.88
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 50,
+  "acc": 8.9,
+  "padrao": {
+   "cor": "#3b6470",
+   "acabamento": "metal",
+   "cor2": "#2be7ff",
+   "roda": "sdc4",
+   "aro": 17,
+   "tala": 8.5,
+   "flanco": 9.5,
+   "cor_roda": "#c9ccd1",
+   "borda": "polida",
+   "camber": 3,
+   "neon": "off",
+   "som": "off",
+   "placa": "CRS2K17"
+  },
+  "arcos": {
+   "f": [
+    0.641,
+    0.795
+   ],
+   "t": [
+    0.607,
+    0.795
+   ]
+  },
+  "saia": 0.263
+ },
+ {
+  "id": "saveiro",
+  "nome": "G6",
+  "sub": "picape Cross · suspensão a ar",
+  "W": 1.64,
+  "axF": 1.517,
+  "axR": -1.498,
+  "wy": 0.317,
+  "ra": 0.36,
+  "bed": {
+   "y": 0.84,
+   "z": -1.55
+  },
+  "som": null,
+  "tampao": true,
+  "trio": {
+   "y": 0.84,
+   "z": -1.6,
+   "w": 1.26,
+   "d": 1.08
+  },
+  "picape": true,
+  "vmax": 49,
+  "acc": 8.1,
+  "padrao": {
+   "cor": "#f4f1f2",
+   "acabamento": "perola",
+   "cor2": "#ff8fd0",
+   "roda": "m850",
+   "aro": 17,
+   "tala": 7,
+   "flanco": 9.5,
+   "cor_roda": "#c9ccd1",
+   "borda": "polida",
+   "camber": 1,
+   "neon": "rosa",
+   "som": "deitado",
+   "placa": "DRP2010"
+  },
+  "tampa": {
+   "z0": -2.22,
+   "z1": -1.02,
+   "y": 1.07
+  },
+  "arcos": {
+   "f": [
+    0.622,
+    0.884
+   ],
+   "t": [
+    0.655,
+    0.864
+   ]
+  },
+  "saia": 0.211
+ },
+ {
+  "id": "golg2",
+  "nome": "G2",
+  "sub": "bola · 3 portas · suspensão a ar",
+  "W": 1.56,
+  "axF": 1.55,
+  "axR": -0.91,
+  "wy": 0.28,
+  "ra": 0.4,
+  "bed": null,
+  "som": {
+   "z": -1.02,
+   "y": 0.88
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 51,
+  "acc": 8.7,
+  "padrao": {
+   "cor": "#c4c9cf",
+   "acabamento": "camaleao",
+   "cor2": "#6ea6ff",
+   "roda": "rod",
+   "aro": 15,
+   "tala": 7,
+   "flanco": 11,
+   "cor_roda": "#f2f2ef",
+   "borda": "cor",
+   "camber": 2,
+   "neon": "off",
+   "som": "off",
+   "placa": "GOL2B15"
+  },
+  "arcos": {
+   "f": [
+    0.58,
+    0.762
+   ],
+   "t": [
+    0.583,
+    0.767
+   ]
+  },
+  "saia": 0.157
+ },
+ {
+  "id": "fusca",
+  "nome": "Joaninha",
+  "sub": "clássico · suspensão a ar",
+  "W": 1.552,
+  "axF": 1.195,
+  "axR": -1.195,
+  "wy": 0.3,
+  "ra": 0.3,
+  "bed": null,
+  "som": {
+   "z": -0.7,
+   "y": 0.75
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 46,
+  "acc": 7.6,
+  "padrao": {
+   "cor": "#2f7f8c",
+   "acabamento": "brilho",
+   "cor2": "#6ea6ff",
+   "roda": "sfn",
+   "aro": 15,
+   "tala": 7,
+   "flanco": 9,
+   "cor_roda": "#c9ccd1",
+   "borda": "polida",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "FSC1300"
+  },
+  "arcos": {
+   "f": [
+    0.614,
+    0.762
+   ],
+   "t": [
+    0.575,
+    0.789
+   ]
+  },
+  "saia": 0.153
+ },
+ {
+  "id": "saveirog7",
+  "nome": "G7",
+  "sub": "cabine estendida · suspensão a ar",
+  "W": 1.71,
+  "axF": 1.395,
+  "axR": -1.395,
+  "wy": 0.31,
+  "ra": 0.37,
+  "bed": {
+   "y": 0.69,
+   "z": -1.4
+  },
+  "som": null,
+  "tampao": true,
+  "trio": {
+   "y": 0.69,
+   "z": -1.45,
+   "w": 1.3,
+   "d": 1.15
+  },
+  "picape": true,
+  "vmax": 50,
+  "acc": 8.4,
+  "padrao": {
+   "cor": "#b5121b",
+   "acabamento": "metal",
+   "cor2": "#ff7ad1",
+   "roda": "tsw5",
+   "aro": 18,
+   "tala": 8,
+   "flanco": 8,
+   "cor_roda": "#16171a",
+   "borda": "polida",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "SVR7G21"
+  },
+  "tampa": {
+   "z0": -2.16,
+   "z1": -0.98,
+   "y": 1.13
+  },
+  "arcos": {
+   "f": [
+    0.663,
+    0.9
+   ],
+   "t": [
+    0.68,
+    0.9
+   ]
+  },
+  "saia": 0.239
+ },
+ {
+  "id": "cerato",
+  "nome": "Cereno",
+  "sub": "sedã · suspensão a ar",
+  "W": 1.8,
+  "axF": 1.429,
+  "axR": -1.429,
+  "wy": 0.339,
+  "ra": 0.37,
+  "bed": null,
+  "som": {
+   "z": -1.9,
+   "y": 0.95
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 55,
+  "acc": 8.8,
+  "padrao": {
+   "cor": "#f2f2f4",
+   "acabamento": "perola",
+   "cor2": "#c9d6ff",
+   "roda": "audi",
+   "aro": 19,
+   "tala": 8.5,
+   "flanco": 8,
+   "cor_roda": "#1a1a1c",
+   "borda": "polida",
+   "camber": 2,
+   "neon": "azul",
+   "som": "off",
+   "placa": "CRT2016"
+  },
+  "arcos": {
+   "f": [
+    0.718,
+    0.952
+   ],
+   "t": [
+    0.718,
+    0.943
+   ]
+  },
+  "saia": 0.22
+ },
+ {
+  "id": "versa",
+  "nome": "Querotida",
+  "sub": "hatch 2011 · suspensão a ar",
+  "W": 1.72,
+  "axF": 1.275,
+  "axR": -1.275,
+  "wy": 0.289,
+  "ra": 0.34,
+  "bed": null,
+  "som": {
+   "z": -1.45,
+   "y": 0.85
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 52,
+  "acc": 8.7,
+  "padrao": {
+   "cor": "#2c3440",
+   "acabamento": "metal",
+   "cor2": "#7d8da6",
+   "roda": "gt3",
+   "aro": 17,
+   "tala": 7.5,
+   "flanco": 9,
+   "cor_roda": "#1a1a1c",
+   "borda": "polida",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "NSN2011"
+  },
+  "arcos": {
+   "f": [
+    0.613,
+    0.825
+   ],
+   "t": [
+    0.606,
+    0.827
+   ]
+  },
+  "saia": 0.152
+ },
+ {
+  "id": "bora",
+  "nome": "Vambora",
+  "sub": "sedã · suspensão a ar",
+  "W": 1.72,
+  "axF": 1.18,
+  "axR": -1.32,
+  "wy": 0.33,
+  "ra": 0.36,
+  "bed": null,
+  "som": {
+   "z": -1,
+   "y": 0.93
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 53,
+  "acc": 8.4,
+  "padrao": {
+   "cor": "#111214",
+   "acabamento": "brilho",
+   "cor2": "#6ea6ff",
+   "roda": "sdc1",
+   "aro": 18,
+   "tala": 8,
+   "flanco": 9,
+   "cor_roda": "#4a4d52",
+   "borda": "polida",
+   "camber": 2,
+   "neon": "off",
+   "som": "off",
+   "placa": "BRA2018"
+  },
+  "arcos": {
+   "f": [
+    0.668,
+    0.86
+   ],
+   "t": [
+    0.676,
+    0.859
+   ]
+  },
+  "saia": 0.196
+ },
+ {
+  "id": "bmw",
+  "nome": "B,emi",
+  "sub": "sedã esportivo · suspensão a ar",
+  "W": 1.99,
+  "axF": 1.501,
+  "axR": -1.501,
+  "wy": 0.357,
+  "ra": 0.375,
+  "bed": null,
+  "som": {
+   "z": -1.85,
+   "y": 0.95
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 57,
+  "acc": 9.5,
+  "padrao": {
+   "cor": "#1b2a48",
+   "acabamento": "metal",
+   "cor2": "#6ea6ff",
+   "roda": "m850",
+   "aro": 19,
+   "tala": 8.5,
+   "flanco": 8.5,
+   "cor_roda": "#4a4d52",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "BMW5M20"
+  },
+  "arcos": {
+   "f": [
+    0.725,
+    0.96
+   ],
+   "t": [
+    0.721,
+    0.937
+   ]
+  },
+  "saia": 0.192
+ },
+ {
+  "id": "hilux",
+  "nome": "Railucão",
+  "sub": "cabine dupla · suspensão a ar",
+  "W": 1.76,
+  "axF": 1.4,
+  "axR": -1.615,
+  "wy": 0.385,
+  "ra": 0.485,
+  "bed": {
+   "y": 0.79,
+   "z": -1.42
+  },
+  "som": null,
+  "tampao": true,
+  "trio": {
+   "y": 0.79,
+   "z": -1.5,
+   "w": 1.36,
+   "d": 1.2
+  },
+  "picape": true,
+  "vmax": 52,
+  "acc": 8.4,
+  "padrao": {
+   "cor": "#f1f0ec",
+   "acabamento": "brilho",
+   "cor2": "#6ea6ff",
+   "roda": "llanta",
+   "aro": 20,
+   "tala": 9,
+   "flanco": 11,
+   "cor_roda": "#16171a",
+   "borda": "cor",
+   "camber": 0,
+   "neon": "off",
+   "som": "off",
+   "placa": "HLX2021"
+  },
+  "tampa": {
+   "z0": -2.66,
+   "z1": -1.26,
+   "y": 1.25
+  },
+  "arcos": {
+   "f": [
+    0.87,
+    0.902
+   ],
+   "t": [
+    0.866,
+    0.901
+   ]
+  },
+  "saia": 0.363
+ },
+ {
+  "id": "golfgti",
+  "nome": "Golfo GTX",
+  "sub": "hatch 2025 · portas abrem",
+  "W": 1.754,
+  "axF": 1.315,
+  "axR": -1.315,
+  "wy": 0.328,
+  "ra": 0.328,
+  "bed": null,
+  "som": {
+   "z": -1.465,
+   "y": 0.878
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 60,
+  "acc": 10.0,
+  "padrao": {
+   "cor": "#d11515",
+   "acabamento": "metal",
+   "cor2": "#ff7ad1",
+   "roda": "jerez",
+   "aro": 19,
+   "tala": 7,
+   "flanco": 9,
+   "cor_roda": "#a3a8ad",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "GTI2025",
+   "rebaixo": 6
+  },
+  "arcos": {
+   "f": [
+    0.701,
+    0.887
+   ],
+   "t": [
+    0.704,
+    0.872
+   ]
+  },
+  "partes": {
+   "portas": {
+    "nome": "portas",
+    "p": [
+     [
+      "PFL",
+      [
+       -0.987,
+       0.839,
+       0.839
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRL",
+      [
+       -0.825,
+       0.852,
+       -0.239
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PFR",
+      [
+       0.987,
+       0.84,
+       0.839
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRR",
+      [
+       0.825,
+       0.852,
+       -0.239
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ]
+    ]
+   },
+   "tras": {
+    "nome": "porta-malas",
+    "p": [
+     [
+      "PTR",
+      [
+       0.0,
+       1.396,
+       -1.468
+      ],
+      [
+       0.55919,
+       0.0,
+       0.0,
+       0.82904
+      ]
+     ]
+    ]
+   }
+  },
+  "saia": 0.271
+ },
+ {
+  "id": "taigun",
+  "nome": "Taigá",
+  "sub": "SUV 2024 · suspensão a ar",
+  "W": 1.807,
+  "axF": 1.324,
+  "axR": -1.324,
+  "wy": 0.333,
+  "ra": 0.4,
+  "bed": null,
+  "som": {
+   "y": 1.0,
+   "z": -1.75
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 54,
+  "acc": 8.8,
+  "padrao": {
+   "cor": "#b9bdc2",
+   "acabamento": "metal",
+   "cor2": "#6ea6ff",
+   "roda": "m850",
+   "aro": 20,
+   "tala": 7,
+   "flanco": 9,
+   "cor_roda": "#a3a8ad",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "TGN2024",
+   "rebaixo": 6
+  },
+  "arcos": {
+   "f": [
+    0.715,
+    0.875
+   ],
+   "t": [
+    0.719,
+    0.868
+   ]
+  },
+  "saia": 0.305
+ },
+ {
+  "id": "jetta",
+  "nome": "Jeta GLX",
+  "sub": "sedã 2025 · suspensão a ar",
+  "W": 1.783,
+  "axF": 1.35,
+  "axR": -1.35,
+  "wy": 0.333,
+  "ra": 0.333,
+  "bed": null,
+  "som": {
+   "z": -1.5,
+   "y": 0.883
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 50,
+  "acc": 8.5,
+  "padrao": {
+   "cor": "#8d9399",
+   "acabamento": "metal",
+   "cor2": "#6ea6ff",
+   "roda": "jettagli",
+   "aro": 18,
+   "tala": 8,
+   "flanco": 9,
+   "cor_roda": "#4a4d52",
+   "borda": "polida",
+   "camber": 2,
+   "neon": "off",
+   "som": "off",
+   "placa": "GLI2025"
+  },
+  "arcos": {
+   "f": [
+    0.719,
+    0.893
+   ],
+   "t": [
+    0.717,
+    0.888
+   ]
+  },
+  "partes": {
+   "portas": {
+    "nome": "portas",
+    "p": [
+     [
+      "PFL",
+      [
+       -0.982,
+       0.843,
+       0.88
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRL",
+      [
+       -0.843,
+       0.854,
+       -0.236
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PFR",
+      [
+       0.982,
+       0.843,
+       0.88
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRR",
+      [
+       0.843,
+       0.854,
+       -0.236
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ]
+    ]
+   },
+   "tras": {
+    "nome": "porta-malas",
+    "p": [
+     [
+      "PTR",
+      [
+       0.0,
+       1.119,
+       -1.603
+      ],
+      [
+       0.55919,
+       0.0,
+       0.0,
+       0.82904
+      ]
+     ]
+    ]
+   }
+  },
+  "saia": 0.243
+ },
+ {
+  "id": "tiguan",
+  "nome": "Despacito",
+  "sub": "SUV 2025 · suspensão a ar",
+  "W": 1.779,
+  "axF": 1.352,
+  "axR": -1.352,
+  "wy": 0.349,
+  "ra": 0.349,
+  "bed": null,
+  "som": {
+   "z": -1.502,
+   "y": 0.899
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 50,
+  "acc": 8.5,
+  "padrao": {
+   "cor": "#c6c6c1",
+   "acabamento": "metal",
+   "cor2": "#6ea6ff",
+   "roda": "tiguan",
+   "aro": 19,
+   "tala": 7,
+   "flanco": 9,
+   "cor_roda": "#a3a8ad",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "TGN2025",
+   "rebaixo": 6
+  },
+  "arcos": {
+   "f": [
+    0.752,
+    0.9
+   ],
+   "t": [
+    0.767,
+    0.887
+   ]
+  },
+  "partes": {
+   "portas": {
+    "nome": "portas",
+    "p": [
+     [
+      "PFL",
+      [
+       -0.986,
+       0.885,
+       0.876
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRL",
+      [
+       -0.83,
+       0.894,
+       -0.148
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PFR",
+      [
+       0.986,
+       0.885,
+       0.876
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRR",
+      [
+       0.83,
+       0.894,
+       -0.148
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ]
+    ]
+   },
+   "tras": {
+    "nome": "porta-malas",
+    "p": [
+     [
+      "PTR",
+      [
+       0.0,
+       1.527,
+       -1.533
+      ],
+      [
+       0.55919,
+       0.0,
+       0.0,
+       0.82904
+      ]
+     ]
+    ]
+   }
+  },
+  "saia": 0.28
+ },
+ {
+  "id": "id4",
+  "nome": "iVolt 4",
+  "sub": "elétrico 2025 · suspensão a ar",
+  "W": 1.803,
+  "axF": 1.378,
+  "axR": -1.378,
+  "wy": 0.375,
+  "ra": 0.375,
+  "bed": null,
+  "som": {
+   "z": -1.528,
+   "y": 0.925
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 50,
+  "acc": 8.5,
+  "padrao": {
+   "cor": "#a6bbca",
+   "acabamento": "metal",
+   "cor2": "#6ea6ff",
+   "roda": "id4",
+   "aro": 20,
+   "tala": 7,
+   "flanco": 9,
+   "cor_roda": "#a3a8ad",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "ID42025",
+   "rebaixo": 6
+  },
+  "arcos": {
+   "f": [
+    0.823,
+    0.921
+   ],
+   "t": [
+    0.822,
+    0.908
+   ]
+  },
+  "partes": {
+   "portas": {
+    "nome": "portas",
+    "p": [
+     [
+      "PFL",
+      [
+       -0.996,
+       0.917,
+       0.86
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRL",
+      [
+       -0.852,
+       0.923,
+       -0.256
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PFR",
+      [
+       0.996,
+       0.917,
+       0.86
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRR",
+      [
+       0.852,
+       0.923,
+       -0.256
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ]
+    ]
+   },
+   "tras": {
+    "nome": "porta-malas",
+    "p": [
+     [
+      "PTR",
+      [
+       0.0,
+       1.564,
+       -1.46
+      ],
+      [
+       0.55919,
+       0.0,
+       0.0,
+       0.82904
+      ]
+     ]
+    ]
+   }
+  },
+  "saia": 0.287
+ },
+ {
+  "id": "saveirorobust",
+  "nome": "Robusta",
+  "sub": "cabine simples 2022 · suspensão a ar",
+  "W": 1.681,
+  "axF": 1.374,
+  "axR": -1.374,
+  "wy": 0.297,
+  "ra": 0.297,
+  "bed": {
+   "y": 0.821,
+   "z": -1.347
+  },
+  "som": null,
+  "tampao": true,
+  "trio": {
+   "y": 0.821,
+   "z": -1.397,
+   "w": 1.301,
+   "d": 1.08
+  },
+  "picape": true,
+  "vmax": 50,
+  "acc": 8.5,
+  "tampa": {
+   "z0": -2.21,
+   "z1": -0.484,
+   "y": 1.071
+  },
+  "padrao": {
+   "cor": "#da0000",
+   "acabamento": "metal",
+   "cor2": "#ff8fd0",
+   "roda": "aco15",
+   "aro": 15,
+   "tala": 7,
+   "flanco": 9.5,
+   "cor_roda": "#c9ccd1",
+   "borda": "polida",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "RBT2022"
+  },
+  "arcos": {
+   "f": [
+    0.653,
+    0.835
+   ],
+   "t": [
+    0.68,
+    0.86
+   ]
+  },
+  "partes": {
+   "portas": {
+    "nome": "portas",
+    "p": [
+     [
+      "PFL",
+      [
+       -0.884,
+       0.826,
+       0.936
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PFR",
+      [
+       0.884,
+       0.826,
+       0.936
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ]
+    ]
+   },
+   "tras": {
+    "nome": "tampa",
+    "p": [
+     [
+      "PTR",
+      [
+       0.0,
+       0.351,
+       -2.219
+      ],
+      [
+       -0.682,
+       -0.0,
+       -0.0,
+       0.73135
+      ]
+     ]
+    ]
+   }
+  },
+  "saia": 0.256
+ },
+ {
+  "id": "lexusnx",
+  "nome": "Lexo NX",
+  "sub": "SUV 2025 · suspensão a ar",
+  "W": 1.84,
+  "axF": 1.323,
+  "axR": -1.323,
+  "wy": 0.398,
+  "ra": 0.398,
+  "bed": null,
+  "som": {
+   "z": -1.473,
+   "y": 0.948
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 50,
+  "acc": 8.5,
+  "padrao": {
+   "cor": "#eeeeee",
+   "acabamento": "metal",
+   "cor2": "#6ea6ff",
+   "roda": "m850",
+   "aro": 20,
+   "tala": 7,
+   "flanco": 9,
+   "cor_roda": "#a3a8ad",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "LXS2025",
+   "rebaixo": 6
+  },
+  "arcos": {
+   "f": [
+    0.774,
+    0.922
+   ],
+   "t": [
+    0.774,
+    0.929
+   ]
+  },
+  "partes": {
+   "portas": {
+    "nome": "portas",
+    "p": [
+     [
+      "PFL",
+      [
+       -1.004,
+       0.87,
+       0.842
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRL",
+      [
+       -0.861,
+       0.877,
+       -0.198
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PFR",
+      [
+       1.004,
+       0.87,
+       0.842
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRR",
+      [
+       0.861,
+       0.877,
+       -0.199
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ]
+    ]
+   },
+   "tras": {
+    "nome": "porta-malas",
+    "p": [
+     [
+      "PTR",
+      [
+       0.0,
+       1.517,
+       -1.474
+      ],
+      [
+       0.55919,
+       0.0,
+       0.0,
+       0.82904
+      ]
+     ]
+    ]
+   }
+  },
+  "saia": 0.235
+ },
+ {
+  "id": "f150",
+  "nome": "Fortão 150",
+  "sub": "picape grande · suspensão a ar",
+  "W": 2.177,
+  "axF": 1.806,
+  "axR": -1.806,
+  "wy": 0.46,
+  "ra": 0.46,
+  "bed": {
+   "y": 1.407,
+   "z": -2.237
+  },
+  "som": null,
+  "tampao": true,
+  "trio": {
+   "y": 1.407,
+   "z": -2.287,
+   "w": 1.797,
+   "d": 1.08
+  },
+  "picape": true,
+  "vmax": 50,
+  "acc": 8.5,
+  "tampa": {
+   "z0": -3.046,
+   "z1": -1.429,
+   "y": 1.657
+  },
+  "padrao": {
+   "cor": "#717171",
+   "acabamento": "metal",
+   "cor2": "#6ea6ff",
+   "roda": "raptor",
+   "aro": 17,
+   "tala": 9,
+   "flanco": 11,
+   "cor_roda": "#16171a",
+   "borda": "cor",
+   "camber": 0,
+   "neon": "off",
+   "som": "off",
+   "placa": "RPT2024"
+  },
+  "arcos": {
+   "f": [
+    1.053,
+    1.05
+   ],
+   "t": [
+    1.051,
+    1.041
+   ]
+  },
+  "partes": {
+   "portas": {
+    "nome": "portas",
+    "p": [
+     [
+      "PFL",
+      [
+       -1.124,
+       1.186,
+       1.132
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRL",
+      [
+       -0.934,
+       1.188,
+       -0.049
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PFR",
+      [
+       1.124,
+       1.186,
+       1.137
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRR",
+      [
+       0.946,
+       1.188,
+       -0.045
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ]
+    ]
+   },
+   "tras": {
+    "nome": "tampa",
+    "p": [
+     [
+      "PTR",
+      [
+       0.0,
+       0.754,
+       -2.963
+      ],
+      [
+       -0.682,
+       -0.0,
+       -0.0,
+       0.73135
+      ]
+     ]
+    ]
+   },
+   "frente": {
+    "nome": "capô",
+    "p": [
+     [
+      "PCA",
+      [
+       0.0,
+       1.42,
+       1.392
+      ],
+      [
+       -0.43837,
+       -0.0,
+       -0.0,
+       0.89879
+      ]
+     ]
+    ]
+   }
+  },
+  "saia": 0.46
+ },
+ {
+  "id": "santacruz",
+  "nome": "Santa Clara",
+  "sub": "picape 2024 · suspensão a ar",
+  "W": 1.929,
+  "axF": 1.498,
+  "axR": -1.498,
+  "wy": 0.372,
+  "ra": 0.372,
+  "bed": {
+   "y": 1.031,
+   "z": -1.854
+  },
+  "som": null,
+  "tampao": true,
+  "trio": {
+   "y": 1.031,
+   "z": -1.904,
+   "w": 1.549,
+   "d": 1.08
+  },
+  "picape": true,
+  "vmax": 50,
+  "acc": 8.5,
+  "tampa": {
+   "z0": -2.484,
+   "z1": -1.224,
+   "y": 1.281
+  },
+  "padrao": {
+   "cor": "#7d9fb8",
+   "acabamento": "metal",
+   "cor2": "#ff8fd0",
+   "roda": "tiguan",
+   "aro": 20,
+   "tala": 7,
+   "flanco": 9.5,
+   "cor_roda": "#4a4d52",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "SCZ2024"
+  },
+  "partes": {
+   "portas": {
+    "nome": "portas",
+    "p": [
+     [
+      "PFL",
+      [
+       -0.982,
+       0.949,
+       0.976
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRL",
+      [
+       -0.872,
+       0.958,
+       -0.115
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PFR",
+      [
+       0.982,
+       0.949,
+       0.976
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRR",
+      [
+       0.874,
+       0.958,
+       -0.115
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ]
+    ]
+   }
+  },
+  "arcos": {
+   "f": [
+    0.846,
+    0.932
+   ],
+   "t": [
+    0.865,
+    0.933
+   ]
+  },
+  "saia": 0.236
+ },
+ {
+  "id": "fortuner",
+  "nome": "SaborSW",
+  "sub": "SUV 7 lugares · suspensão a ar",
+  "W": 1.849,
+  "axF": 1.372,
+  "axR": -1.372,
+  "wy": 0.38,
+  "ra": 0.377,
+  "bed": null,
+  "som": {
+   "z": -1.522,
+   "y": 0.93
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 50,
+  "acc": 8.5,
+  "padrao": {
+   "cor": "#111214",
+   "acabamento": "brilho",
+   "cor2": "#6ea6ff",
+   "roda": "tiguan",
+   "aro": 24,
+   "tala": 9.5,
+   "flanco": 10,
+   "cor_roda": "#c9ccd1",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "DRP4X4",
+   "rebaixo": 10
+  },
+  "saia": 0.209,
+  "arcos": {
+   "f": [
+    0.754,
+    0.927
+   ],
+   "t": [
+    0.75,
+    0.927
+   ]
+  }
+ }
+]

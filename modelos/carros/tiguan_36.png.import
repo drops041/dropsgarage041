@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://6fuqn8cfbykv"
+path="res://.godot/imported/tiguan_36.png-4fccc8e7802ddb99d27218ec10473d1b.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "52aeb5d049f2172ca7c746c82049c62b"
+}
+
+[deps]
+
+source_file="res://modelos/carros/tiguan_36.png"
+dest_files=["res://.godot/imported/tiguan_36.png-4fccc8e7802ddb99d27218ec10473d1b.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1

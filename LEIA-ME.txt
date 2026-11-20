@@ -1,0 +1,361 @@
+DROPS GARAGE RACHA — PROJETO GODOT 4
+====================================
+
+Como abrir
+1. Instale o Godot 4.3 (ou mais novo), a versão normal (não a .NET): godotengine.org
+2. Descompacte este zip numa pasta.
+3. No Godot, clique em "Importar", escolha o arquivo project.godot desta pasta.
+4. Na primeira vez ele demora uns minutos importando os modelos (é normal).
+5. Aperte F5 (ou o botão ▶) pra jogar.
+
+Garagem (tela inicial)
+- Arraste na tela pra girar o carro, pinça ou rodinha do mouse pra aproximar.
+- Abas: MEDIDAS (rebaixamento, aro, flanco, tala, cambagem), PINTURA (cor, acabamento, cor do reflexo), RODAS (20 modelos, cor, borda), NEON e SOM (paredão deitado, paredão em pé, tampão).
+- ‹ › troca de carro. ORIGINAL volta o carro de fábrica. SAIR PRO ROLÊ vai pra rua com o carro do jeito que você montou.
+- Tudo fica salvo sozinho.
+
+Novidades (v42)
+- Carro novo: SaborSW (SUV 7 lugares, suspensão a ar), preto com roda 24 prata.
+  - Logo da frente, letras de trás e emblemas tirados; grade com o miolo liso.
+  - Rebaixa até encostar a saia e aceita todas as rodas e opções dos outros carros.
+
+Novidades (v41)
+- Elevador GIRADO: o carro fica atravessado, com metade dentro da cabine branca (entra pela abertura grande).
+  - O botão amarelo fica na oficina, do lado da abertura; a parede das rodas fica livre.
+  - Com roda na mão, dentro da cabine o botão não vira "PINTAR" (só pinta de mão vazia).
+- SINUCA CONTRA A MÁQUINA (bola 8 de bar):
+  - quem encaçapa primeiro fica com o grupo daquela bola (lisas ou listradas);
+  - encaçapou bola sua, joga de novo; falta (branca na caçapa, não bater em nada ou bater primeiro na bola
+    do outro) passa a vez;
+  - ganha quem matar a 8 depois de limpar as suas; a 8 antes da hora perde;
+  - a máquina procura a caçapa mais fácil, mostra a mira girando e erra um pouquinho de vez em quando;
+  - o placar de vitórias x derrotas fica salvo.
+- Leitor de .blend agora abre arquivos do Blender 4.x (pra importar modelos novos).
+
+Novidades (v40)
+- LAJE em cima da casa da Drops (sobe pela escada de ferro do corredor: chegue perto e aperte SUBIR NA LAJE).
+  - Aberta, sem telhado nem parede, com guarda-corpo de ferro, varal de lâmpadas, sofá, caixinha de som,
+    caixa térmica e vasos.
+  - SINUCA JOGÁVEL (mini-game): chegue na mesa e aperte JOGAR SINUCA.
+    - Mira: arraste o dedo/mouse na mesa (a linha mostra pra onde a branca vai).
+    - Força: puxe a barra amarela da direita pra baixo e solte. No PC, espaço dá uma tacada média e ESC sai.
+    - Desafio: limpar a mesa (a 8 por último) com o menor número de tacadas; o recorde fica salvo.
+- Elevador mudou de lugar: encostado na cabine branca. O carro erguido não tampa mais a parede das rodas, e o
+  botão amarelo fica do lado das rodas. As rodas do lado da cabine se trocam pela porta da cabine.
+- Trânsito:
+  - todo carro da cidade tem motorista (mecânico, dançarino e as moças, sentados ao volante);
+  - carros cruzando ou vindo de frente não travam mais um ao outro (antes formava fila parada).
+- Fotos dos projetos:
+  - saem com a cor original (antes o filtro de cor e a névoa do jogo deixavam a foto esbranquiçada);
+  - no galpão viraram painéis gigantes (7,2 m), cada um entre dois pilares; no barracão ficaram maiores (4 m).
+
+Novidades (v39)
+- Paredes dos encontros (galpão e barracão) só com as fotos dos seus projetos: tirei os grafites de trás.
+  - As fotos aparecem com as cores delas (sem a luz do cenário lavando ou escurecendo), maiores e nítidas de longe.
+  - Cada foto aparece uma vez em cada encontro. O mural da Drops no fundo continua.
+- Caminhonete e SUV baixam bem mais: cada carro desce até a saia ficar a uns 5 cm do chão.
+  Railucão até 31 cm, Fortão 150 até 41 cm, Taigá 25, iVolt 24, Despacito 23 (os outros continuam em 18).
+  Vale na garagem, no botão ATERRAR e nos carros dos encontros.
+- Personagens:
+  - mão/pulso não entorta mais (Jack, Steve, Henry e as mulheres);
+  - correndo, o boneco não escorrega mais pra fora do lugar;
+  - andar e correr no ritmo certo: a perna acompanha o chão (antes andava acelerado e patinava correndo).
+
+Novidades (v38)
+- Personagens novos: Jack, Steve e Henry (dos .blend com esqueleto que você mandou).
+  - Dá pra jogar com eles: GARAGEM > aba do bonequinho ("Quem desce do carro").
+  - Eles também dançam no encontro do galpão e no barracão (a dança do dançarino foi adaptada pro corpo de cada um).
+  - Ferramenta: ferramentas/personagem_blend.py (lê o .blend direto, sem precisar do Blender).
+- Rodas até aro 28 (antes ia até 22). Nos encontros cada carro usa a maior que cabe no para-lama:
+  caminhonetes (Railucão, Fortão 150, Santa Clara) e SUVs vão de 28; o Lexo NX, que estava preso no 15
+  por um erro de medida, agora vai de 26.
+- Fotos dos seus projetos em quadros nas paredes dos encontros (galpão e barracão), cada foto uma vez só.
+- A TV da sala gamer agora mostra o Corsa na Drops com o "Keep the style".
+- Rua carregando mais rápido:
+  - ao sair da garagem só carrega na hora o pedaço do mapa onde você nasce (uns 3x mais rápido);
+  - o resto vem do mais perto pro mais longe, olhando pra onde o carro está indo;
+  - se um pedaço perto de você ainda está faltando, ele monta mais rápido.
+- Fita de neon do barracão subiu pra cima dos grafites (não passa mais na frente das fotos).
+
+Novidades (v37)
+- Concessionária nova DROPS CAR (feita no jogo, no lugar do modelo antigo bugado e cheio de logos):
+  - fachada de vidro com a faixa preta e o letreiro DROPS CAR aceso, mais o totem na frente;
+  - salão com 4 carros em exposição e balcão, e 2 carros no pátio. Dá pra entrar a pé pela porta do meio.
+- Emblemas das montadoras tirados dos carros (logo da grade, da tampa traseira e letreiros), com a
+  ferramenta ferramentas/tirar_emblemas.py. Alguns emblemas que vêm pintados na textura do modelo ainda
+  aparecem (frente do Golfo GTX, escrita nas placas, LEXUS na traseira do Lexo NX).
+- Carros do encontro e do barracão no chão: rebaixo máximo, pneu fininho e o maior aro que cabe no
+  para-lama de cada carro sem sair pra fora.
+- Elevador: sobe e desce só no BOTÃO AMARELO do lado dele.
+- As dicas da tela inicial saíram. Agora aparece uma dica só na primeira vez que chega na parede das
+  rodas e no elevador.
+- BMW agora se chama "B,emi".
+
+Novidades (v36)
+- Tela: o MAPA foi pro canto de cima à esquerda (com o nome da rua embaixo e o dinheiro do lado).
+  GARAGEM, CARRO e A PÉ foram pra direita, onde ficava o mapa.
+- Nomes inventados nos carros (pra não ter problema com as marcas):
+  G5, G2, G6, G7, Donas, Joaninha, Vambora, Cereno, Querotida, Railucão, B,emi, Despacito, Robusta,
+  Golfo GTX, Taigá, Jeta GLX, iVolt 4, Lexo NX, Fortão 150, Santa Clara.
+  As rodas também ganharam nomes inventados, e as marcas saíram da descrição dos carros.
+  Pra mudar um nome: carros.json, campo "nome".
+- LICENCAS.txt: lista de tudo que está no jogo, com a licença e o que ainda falta descobrir antes de publicar.
+
+Novidades (v35)
+- Piso da oficina consertado: o chão de grama do terreno ficava no mesmo nível do epóxi e aparecia por cima
+  (deixava o piso verde e escondia o elevador). Agora o chão do mapa some dentro da Drops e do barracão.
+- Elevador volta a aparecer inteiro (sapatas azuis, faixa amarela e a botoeira).
+- Barracão sem o letreiro na fachada.
+- Árvores no meio da rua: 478 árvores que caíam em cima da pista foram tiradas (mapa gerado de novo).
+
+Novidades (v34)
+- Evento dos carros novos mudou da garagem subterrânea (bugada) pro BARRACÃO no terreno vazio do lado direito
+  da Drops (de quem olha da rua). Marcado com "N" no mapa.
+  - Barracão fechado de bloco, telhado de zinco com tesouras e portão de enrolar aberto: dá pra entrar de carro.
+  - Piso de epóxi com vagas pintadas, luminárias de LED, neon nas laterais, grafites e o mural da Drops no fundo.
+  - Os 8 carros novos montados: rebaixados, com rodas boas (BBS, M850, Lambo, Revuelto, Work, Tusk, HRE)
+    e cambagem. Alguns ficam com as portas abertas. Também tem galera dançando e Mega Funk lá dentro.
+  - O mapa foi gerado de novo pra liberar o terreno.
+- Rodas "bambas": 18 aros vinham levemente tortos ou fora de centro e balançavam girando. Foram endireitados
+  com a ferramenta ferramentas/centrar_aros.py.
+
+Novidades (v33)
+- Rodas:
+  - BBS RS nova (no lugar da SFN que bugava), com a malha trançada de verdade e os parafusos na borda.
+  - Antera 109 (3 raios) nova na loja e na parede de rodas.
+  - Branco agora é BRANCO FOSCO (antes virava cromado).
+  - Todas as rodas com tinta de verdade: prata metálico, cores metálicas, preto e branco foscos.
+    Antes era tudo espelho e dependendo do lugar ficava escuro/estranho.
+  - Aros que vinham "furados" (faces viradas) agora aparecem inteiros; pneu mais escuro (borracha).
+- Sala gamer no fundo da oficina (o modelo que você mandou):
+  - TV com a tela do jogo, PC, cadeira gamer, sofá em L e quadros de grafite.
+  - Tem colisão nos móveis.
+  - O gaveteiro vermelho foi pra parede das rodas, com a caixa de som em cima.
+- (a garagem subterrânea da v33 foi trocada pelo barracão na v34)
+- Gráficos ALTO (padrão):
+  - 3D na resolução cheia também no celular (antes era 75%) e antisserrilhado 4x.
+  - Sombra dos carros e das pessoas; carros pesados com mais detalhe.
+  - Se pesar, dá pra voltar pro LEVE no botão "GRÁFICOS" dentro do painel da MÚSICA.
+- Som do elevador e da parafusadeira bem mais baixo e mais suave (antes era alto e áspero).
+- Ferramentas novas:
+  - blend_io.py / blend_para_glb.py: lê .blend sem precisar do Blender.
+  - importar_aro_obj.py, criar_sala_gamer.py.
+
+Novidades (v32)
+- Elevador: cada roda instalada fica salva na hora. Descer o elevador não volta mais a roda antiga
+  (dá até pra deixar jogo misturado, ex.: frente de um aro e trás de outro).
+- Encontro: todo mundo do mesmo tamanho (cada modelo vinha numa escala diferente; o Thuess tinha 3 m).
+- Dançarino agora aparece com roupa e rosto de verdade (a textura dele estava quebrada e ficava tudo marrom).
+- Mulheres dançando no galpão (3 visuais: rosa, branca/jeans, amarela), feitas a partir do mesmo dançarino.
+- Piso do galpão sólido (antes o carro e a pessoa afundavam 10 cm nele).
+- Paredes do galpão com grafite (SOCADO, CIC, NO CHÃO, CWB e carros rebaixados) e o fundo com a logo da Drops.
+- Movimento mais liso: lataria, rodas e câmera ficam "entre" os passos da física (some a tremedeira/travadinha
+  quando o FPS oscila). O mesmo pro personagem a pé.
+- Ferramentas novas: ferramentas/criar_dancarinas.py e ferramentas/grafite_galpao.py.
+
+Novidades (v31) — oficina caprichada + personagem novo
+- Oficina mais funda (só os fundos cresceram; frente e corredor iguais), cabine branca mantida.
+- Luzes do teto completas: X, triângulo, QUADRADO (lâmpadas tubulares) e BOLINHA (fita de LED).
+- Fundos com bancada/gaveteiro vermelho, pilhas de pneus, compressor, estante com latas e lixeira.
+- Caixa de som no alto da estante do fundo tocando Mega Funk baixinho (a música do jogo abaixa dentro da oficina).
+- Prateleira de rodas com fundo branco e aros cromados mais limpos.
+- Discos de freio tirados dos carros novos (eles brigavam com a roda e piscavam).
+- Câmera da garagem/oficina não gira mais sozinha: gira só arrastando o dedo/mouse.
+- Personagem novo "Você (dono da Drops)": 1,70 m, moicano, barba viking, camiseta preta DROPS,
+  jeans claro e tênis preto/branco. O mecânico antigo continua disponível na troca de personagem.
+
+Novidades (v30) — oficina "de verdade" (a pé, estilo RP)
+- O botão amarelo de AÇÃO (ou a tecla E no PC) muda conforme onde você está.
+- CABINE DE PINTURA: entra a pé na sala branca -> PINTAR -> abre o menu de cores (cor, acabamento e cor do reflexo,
+  igual o da garagem). O carro fica onde está e a câmera gira em volta dele. PRONTO (ou Esc) fecha.
+- ELEVADOR PANTOGRÁFICO no meio da oficina (faixa amarela no chão): estaciona o carro em cima, desce e aperta
+  SUBIR ELEVADOR. O carro sobe uns 85 cm com o barulho do motor; DESCER ELEVADOR desce.
+- PAREDE DAS RODAS: a parede preta da esquerda agora é só das rodas (tirei a pichação e o quadro), com todos os
+  26 jogos e o nome embaixo de cada um. Chega perto, PEGAR <roda> (o botão ▲▼ troca entre a de cima e a de baixo),
+  leva até o carro no elevador e aperta INSTALAR RODA em cada uma das 4 (parafusadeira + barrinha).
+  Com as 4 instaladas o jogo fica salvo no carro. Se descer o elevador no meio, voltam as rodas antigas.
+  Mudou de ideia: DEVOLVER RODA na parede.
+- O menu do botão GARAGEM continua como atalho (neon, som, kit, suspensão etc.).
+
+Novidades (v29)
+- Delegacia nova "É O FRANK" (o prédio de escritório que você mandou) no lugar da antiga: letreiro na fachada,
+  placa azul da Polícia Civil na grade, viatura e policiais no pátio. O lote ficou 40 m pro lado do ponto
+  original e o prédio em 85% do tamanho, pra caber sem invadir rua.
+- Encontro: saiu o hangar com o avião. Agora é um galpão aberto (pilares de aço, telhado de duas águas, piso de
+  concreto, luminárias e o letreiro ENCONTRO DROPS GARAGE) com os carros estacionados e a galera dançando
+  dentro: Thuess e o dançarino de break com a mochila (o personagem que você mandou).
+- Som do encontro: o Set Mega Funk toca dentro do galpão; chegando perto você escuta, e a música do jogo
+  abaixa sozinha quando você está lá.
+- Concessionária (o modelo cardealer que você mandou) numa avenida perto da Drops, marcada com "C" no mapa,
+  com um Golf GTI e um Jetta GLI no pátio.
+- Créditos: dançarino "HeChoseToBeHappy" — Nikita Teploukhov (skril4ek), Sketchfab Standard.
+  Concessionária e prédio de escritório: autor não informado nos arquivos (confirmar a licença antes de publicar).
+
+Novidades (v28)
+- Sem sombra do sol nenhuma (casas, árvores e carro). O carro continua com a sombra suave de contato embaixo.
+- Carros novos bem mais leves: as peças foram juntadas por material (a Santa Cruz caiu de 351 pra 92 peças) e,
+  na rua, os carros muito detalhados usam a versão simplificada que o Godot gera (de perto quase não muda;
+  na garagem continua com todos os detalhes). Com a Santa Cruz a cena caiu de ~1,1 milhão pra ~630 mil triângulos.
+- Antisserrilhado de volta pra 2x, árvores 3D até 70 m (depois a árvore leve) e nível de detalhe padrão do Godot.
+- Saveiro Robust (e Lexus): a pintura não pinta mais os apliques pretos, retrovisor, forros etc.
+- Peças que brilhavam sem ser farol (sombra do para-lama, couro claro, botões) pararam de acender;
+  lanternas vermelhas que acendiam branco agora acendem vermelho.
+- ferramentas/juntar_malhas.py: rode depois do importar_carro.py e do portas.py em carro novo pesado.
+
+Novidades (v27)
+- Carros novos, todos com PORTAS QUE ABREM (botões ABRIR PORTAS / ABRIR PORTA-MALAS na garagem e quando você
+  desce do carro): Jetta GLI 2025, Tiguan 2025, ID.4 Pro 2025, Saveiro Robust 2022, Lexus NX 350h, F-150 Raptor
+  (abre o capô também) e Hyundai Santa Cruz. O Golf GTI foi trocado pelo modelo novo (portas e porta-malas abrem).
+- Saveiro Quadrada removida.
+- Loja de rodas: 6 rodas novas tiradas dos carros novos (Golf GTI Jerez, Jetta GLI, Tiguan R-Line, ID.4,
+  Raptor Beadlock e Calota Saveiro) — servem em qualquer carro. Cada carro novo já vem com a roda dele.
+- Travadas: casas, árvores e postes não fazem mais sombra (só o carro e as pessoas, com sombra curta e nítida).
+  Os blocos da cidade agora são montados aos pouquinhos (no máximo 3,5 ms por quadro) em vez de tudo de uma vez.
+- Lombadas aparecem de novo (estavam desenhadas de cabeça pra baixo e sumiam).
+- Trânsito na Av. JK (rodovia/marginal) e nas avenidas grandes, mais rápido e na mão certa da pista dupla.
+- Árvores de longe com o mesmo verde das de perto; árvores 3D aparecem até 120 m.
+
+Créditos e licenças dos carros novos (Sketchfab) — precisam aparecer nos créditos do jogo:
+- Golf GTI 2025, Jetta GLI 2025, Tiguan 2025, ID.4 Pro 2025 e Hyundai Santa Cruz 2024: geyges (licença Sketchfab Standard)
+- Ford F-150 Raptor: Vehsource | VHS Mods (CC BY 4.0)
+- 2022 Saveiro 1.6 Robust e 2025 Lexus NX 350h: Ddiaz Design (CC BY-NC-SA 4.0 = NÃO COMERCIAL)
+  ATENÇÃO: esses dois não podem ir pra um jogo vendido nem usado pra divulgar a oficina na App Store sem
+  permissão do autor. Pra testar com os amigos tudo bem; antes de publicar, tire esses dois ou peça permissão.
+- Marcas e logotipos (VW, Ford, Lexus, Hyundai) são das montadoras; pra publicar na loja da Apple o ideal é
+  tirar os logos ou ter autorização.
+
+Novidades (v26)
+- Árvores 3D de verdade (pacote "Realistic Trees" que você mandou): 4 variações, cor puxada pro verde de
+  árvore de rua. De perto aparece o modelo 3D; a partir de ~95 m (55 m no celular) vira a árvore leve.
+- Cidade menos clara: exposição, sol, luz ambiente e brilho (glow) mais baixos; saturação normal.
+- Imagem mais nítida: as texturas do chão e das casas agora têm mipmaps (antes não tinham -> ficava
+  serrilhado/tremido e borrado de longe); chão comprimido na placa de vídeo (gasta ~4x menos memória).
+- PC: antisserrilhado 4x (MSAA), filtro anisotrópico, sombra até 150 m. No celular nada ficou mais pesado.
+- Não precisa baixar nada. Se no PC ainda achar a imagem baixa, confira só se o driver da placa de vídeo
+  está atualizado e se o jogo está em tela cheia na resolução nativa do monitor.
+
+Novidades (v25)
+- Logo da parede da oficina refeito a partir da foto do grafite de verdade (pistola de pintura + DROPS GARAGE
+  com a estrela amarela). Tirado o quadro branco que ficava na frente dele.
+- Oficina sem o armário preto do meio e sem o tambor (dá pra manobrar à vontade).
+- Celular do app DROPS AIR na lateral direita (no lugar do minimapa enquanto está aberto), sem a mão desenhada.
+- Personagem Soldado tirado da escolha (andar/correr não ficava bom). Os policiais continuam, só parados.
+- Luz ambiente neutra: asfalto e calçada não ficam mais azulados/roxos.
+
+Novidades (v24) — gráfico da cidade
+- Faixas da rua agora são de verdade (nítidas de perto): amarela tracejada no meio das ruas de bairro, faixas das
+  avenidas, zebras de pedestre, linha de retenção e "PARE" escrito no chão nos cruzamentos.
+- Placas: PARE nos cruzamentos (rua menor chegando na maior), LOMBADA antes das lombadas e velocidade (40/60) nas
+  avenidas. Nos cruzamentos o poste tem as placas azuis com o nome das ruas (padrão de Curitiba).
+- Chão com detalhe de perto: asfalto com brita, remendos e rachaduras; calçada de pedrinha (petit-pavé); grama.
+- Árvores novas: copa de folhas de verdade (não é mais bola lisa) e araucárias em "andares".
+- Botão da mola (canto esquerdo) ajusta a altura do carro na rua. A pé, o mesmo botão abre o app "DROPS AIR" no
+  celular na mão do personagem (precisa estar perto do carro).
+- Tirado o carro que ficava parado na oficina.
+
+Novidades (v23)
+- Menu da garagem novo, no estilo das garagens de jogo de rua (inspirado no Midnight Club 3, com a cara da Drops):
+  faixas quadriculadas, moldura arredondada com a aba "OFICINA DROPS", carrossel de categorias em arco no topo
+  (a escolhida fica no spot amarelo), lista de opções na esquerda e o carro na parte livre da direita.
+  Categorias: Carro, Suspensão, Pintura, Rodas, Body Kit, Neon, Som, A Pé, Música e Sair pro rolê.
+  Toque nos ícones do arco ou nas setas pra trocar (no PC: setas do teclado). "Esconder menu" deixa só o carro.
+
+Novidades (v22)
+- Fusca novo (modelo 1963 que você mandou): lataria inteira troca de cor. Esse modelo não tem portas/capô separados,
+  então os botões de abrir portas/capô/tampa do motor não aparecem nele.
+- Astra tirado do jogo. O carro escolhido agora fica salvo pelo nome (tirar ou pôr carro não troca o seu carro).
+- Saveiro Quadrada e qualquer carro de para-lama baixo: roda grande não atravessa mais a lataria. Na altura 0 o carro
+  sobe o mínimo pra roda caber; rebaixando, a roda entra no para-lama por dentro da borda (visual "tucked").
+- Tirada a fumaça das rodas.
+- Mais leve: o mapa monta no máximo um pedaço novo por quadro (menos engasgo andando), e no celular o 3D é desenhado
+  em 75% da resolução da tela (o menu continua nítido) com antisserrilhado mais barato.
+- Polícia: policiais (soldado) na delegacia (um parado, um andando na calçada e o da lombada), 2 no posto com uma viatura,
+  viaturas patrulhando no meio do trânsito (Gol branco com faixa azul, POLÍCIA na porta e giroflex piscando)
+  e 3 blitz pela CIC (cones, viatura e 2 policiais), marcadas com B vermelho no minimapa e no mapa.
+- Personagem a pé: botão "A PÉ: ..." na garagem troca quem desce do carro (Mecânico ou Soldado). As animações de andar,
+  correr e parado do mecânico são passadas pro esqueleto de qualquer personagem do Mixamo.
+  Pra pôr personagem novo: coloque o .glb em modelos/personagens/ e adicione uma linha em PERSONAGENS (scripts/pessoa.gd).
+- Descer do carro dentro da oficina: desce do lado que tem espaço (não atravessa mais a parede).
+
+Visual dos carros (v21)
+- PINTURA COM REFLEXO DE VERDADE: a lataria reflete as luzes do estúdio na garagem e o céu de fim de tarde
+  e as casas na rua. Metálico tem flocos que brilham de perto, pérola/camaleão mudam de cor de lado, verniz por cima.
+  Funciona no modo do celular/navegador e só nos carros (a cidade não fica brilhando).
+- Vidro escuro com reflexo forte de lado, cromados espelhados, aros com reflexo (borda polida espelhada).
+- Faróis e lanternas mantêm a textura original do modelo e acendem por cima.
+- Sombra de contato embaixo de todos os carros (assenta o carro no chão).
+- Garagem com luz de estúdio: softbox em cima e luzes de recorte dos lados marcando as linhas da lataria.
+- Aba KIT na garagem: lip dianteiro, saias laterais, aerofólio (de teto nos hatch/SUV, de tampa nos sedãs),
+  santo antônio e capota marítima (picapes) e rack de teto. Preto, da cor do carro, carbono ou cromado.
+  As peças medem a lataria de cada carro sozinhas, então funcionam até nos carros que você importar.
+  Pra trocar uma peça gerada por um modelo 3D de verdade: coloque o .glb em
+  modelos/acessorios/<id do carro>/<encaixe>_<opção>.glb (ex.: modelos/acessorios/saveiro/kit_santo_cromado.glb).
+- Lataria lisa já vem pronta nos arquivos (antes era feita na hora): o Godot agora gera os níveis de detalhe (LOD)
+  dos carros, que ficam bem mais leves de longe (trânsito e encontro).
+
+Importar um carro novo (.glb)
+- Precisa do Python 3 com numpy e pillow (pip install numpy pillow). Na pasta do projeto:
+    python3 ferramentas/importar_carro.py MODELO.glb --id saveirog5 --nome "Saveiro G5 Cross" --sub "VW · Cross · suspensão a ar" --picape
+- Ele acerta tamanho e direção, acha as rodas do modelo (some com elas e mede eixos/bitola/raio), separa lataria,
+  vidro, farol, lanterna, cromado, pneu e interior, alisa a lataria, diminui texturas gigantes (máx. 2048 px)
+  e já cadastra o carro no carros.json. Mostra uma imagem de conferência em ferramentas/conferencia/.
+- Se errar: --virar (carro de ré), --pintura NOME (qual material é a lataria), --comprimento 4.49 (escala).
+- Modelo com tudo grudado numa peça só: a cor só muda se a lataria tiver material separado; as rodas
+  originais somem pelo material de pneu/aro. Portas e capô que abrem precisam ser peças separadas no modelo.
+
+Na rua
+- MAPA NOVO: Cidade Industrial de Curitiba de verdade (ruas, nomes e traçado do OpenStreetMap), em estilo GTA.
+  Os morros e baixadas são os de verdade (curvas de nível de 1 em 1 m do IPPUC) e as casas ficam nos lotes do cadastro
+  da prefeitura (5.500 lotes reais, com muro nas divisas). Onde o cadastro não tem lote, as casas são geradas na frente das ruas.
+  O carro sai sozinho da garagem da Drops, na Rua Eng. Luiz Gastão Mendes Lima, 55 (fachada feita pela foto, o portão abre sozinho quando você chega perto).
+- DROPS POR DENTRO (feita pelas fotos): corredor de cimento com escada, oficina de piso epóxi com parede preta, logo DROPS GARAGE
+  no fundo, pichação na lateral, faixa mostarda, luzes tubulares em X e triângulo, e a sala branca de azulejo.
+  Dá pra entrar com o carro ou a pé e andar à vontade lá dentro. O menu do carro NÃO abre mais sozinho: só pelo botão GARAGEM.
+- CASAS DA REGIÃO (pelos prints da rua): sobrados com sacada e grade branca, laje com mureta de tijolo e caixa d'água,
+  portão de grade, lixeira de ferro na calçada, paredes laterais no cinza. As duas calçadas das ruas agora têm casa
+  (antes um lado de várias ruas ficava vazio): ~12.400 casas geradas além dos lotes do cadastro.
+- MINIMAPA no canto direito (gira com a câmera): D = Drops, E = Encontro (hangar), P = Posto, ★ = Delegacia, ! = objetivo do desafio.
+  Toque no minimapa pra abrir o MAPA GRANDE: arraste pra mover, pinça ou + − pra zoom, ◎ EU volta pra você.
+  Toque num lugar do mapa grande pra marcar o GPS (feixe rosa no lugar, distância no minimapa). LIMPAR GPS apaga.
+- Quando você entra numa rua aparece o nome dela embaixo do minimapa, e a velocidade em km/h fica em cima do DRIFT.
+- Postes e árvores agora batem (não dá mais pra atravessar).
+- VOLANTE: gire com o dedo; soltou, ele volta pro centro. ACELERA, FREIO (parado vira ré), DRIFT (freio de mão, solta fumaça).
+- AR SUSP.: abre a suspensão a ar (segura ▲ SOBE / ▼ DESCE, ATERRAR, ALTURA DE RUA). Mostra quantos cm do chão.
+- Lombadas amarelas (22 espalhadas, 3 na rua da Drops): carro baixo raspa e solta faísca. Passando de lado raspa menos.
+- Arraste na parte de cima da tela pra girar a câmera (ela fica onde você deixar). ◎ CÂMERA volta pra trás do carro.
+- CARRO troca de carro, ♫ MÚSICA liga a música, GARAGEM volta pra oficina (guarda a altura da suspensão).
+- A PÉ: desce do carro (só parado). Joystick na esquerda anda (empurra até o fim = corre). ENTRAR NO CARRO (chega perto), e no Fusca: ABRIR PORTAS / PORTA-MALAS / TAMPA DO MOTOR.
+- ENCONTRO NO PÁTIO: carros rebaixados com neon e som, e a galera dançando. Estacione numa vaga livre e pare: aparece a NOTA DO REBAIXADO (altura, rodas, som, neon, pintura), sua colocação e o prêmio.
+- DESAFIOS: Drift no Pátio (40 s), Tiro até o Pátio (contra o relógio) e Carro do cliente (busca e traz pra Drops). Seta amarela em cima do carro aponta o caminho. Recordes ficam salvos.
+- TRÂNSITO: carros andando nas ruas de verdade, na mão certa, entrando nas outras ruas e parando quando tem alguém na frente.
+- Dinheiro aparece embaixo dos botões de cima (prêmios vão somando).
+- FOTO: modo foto (arrasta pra girar em volta do carro ou do boneco, − e + afastam/aproximam, botão branco tira). A foto sai com a marca da Drops no canto e fica salva na pasta Imagens do computador (o caminho aparece na tela).
+- ♫ MÚSICA: "Drops Garage" tocando sem parar, também na garagem. Com som no carro ele pula no grave e o neon pisca na batida (os carros do encontro também).
+- Teclado: F desce/entra, W/A/S/D anda (Shift corre).
+- Teclado: W/S acelera/freia, A/D vira, Espaço drift, Q/E sobe/desce o ar, C troca de carro, V câmera.
+
+O que tem dentro
+- modelos/carros: os 13 carros do jogo (+ o trio da Saveiro)
+- modelos/rodas: as 21 rodas
+- mapa_cic: o mapa da CIC em 96 blocos de 300 m (carrega só o que está perto), a Drops Garage, ruas.json e o minimapa
+  mapa_cic/TesteMapa.tscn: passear pelo mapa com câmera livre (F6)
+- modelos/cenario: a oficina por dentro, o posto, o hangar do encontro, a delegacia e a viatura
+- modelos/personagens: o mecânico (andar, correr, parado...) e o Thuess dançando
+- audio/drops-garage.mp3
+- carros.json: medidas de cada carro (entre-eixos, rodas, aro...)
+- scripts/garagem.gd: a garagem com o menu
+- scripts/carro_visual.gd: monta o carro (pintura, rodas, neon, som)
+- scripts/dados.gd: lista de cores/rodas e o que fica salvo
+- scripts/main.gd: o rolê (carro com suspensão, câmera, botões; GARAGEM volta pra oficina)
+
+Exportar (APK / iPhone)
+- Em Projeto > Exportar, na aba Recursos, em "Filtros para exportar arquivos/pastas que não são recursos", coloque:  *.json
+  *.json, *.bin   (o jogo lê carros.json, mapa_cic/mapa_cic.json, mapa_cic/ruas.json e o terreno mapa_cic/terreno.bin).
+
+Pra gerar o APK (Android)
+Projeto > Exportar > Adicionar > Android (precisa baixar os modelos de exportação do Godot e o SDK do Android, o próprio Godot mostra o caminho).
+
+Entrar na oficina: na rua, entre de carro pela porta da Drops que volta pra garagem.
+
+Mapa: dados © colaboradores do OpenStreetMap (licença ODbL); lotes e curvas de nível: IPPUC / Prefeitura de Curitiba.
+Os dois precisam aparecer nos créditos do jogo.

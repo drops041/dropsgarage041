@@ -1,0 +1,8 @@
+# gerado pelo Godot ao abrir o projeto (não precisa subir)
+.godot/
+_tmp/
+__pycache__/
+*.pyc
+# builds exportados
+build/
+exportado/

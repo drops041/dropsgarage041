@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://dyk6egm0xwd3w"
+path="res://.godot/imported/bmw_29.png-08c342fc4e08715d223851e06a2e81ec.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "12eb836b67b3d2a8c90dad51243019c5"
+}
+
+[deps]
+
+source_file="res://modelos/carros/bmw_29.png"
+dest_files=["res://.godot/imported/bmw_29.png-08c342fc4e08715d223851e06a2e81ec.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1

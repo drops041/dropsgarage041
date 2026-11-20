@@ -1,0 +1,83 @@
+LICENÇAS DOS MODELOS, MÚSICAS E DADOS — Drops Garage Racha
+(o que precisa estar resolvido antes de publicar na App Store)
+
+Legenda:
+  OK           = pode usar em jogo publicado (dando o crédito quando pede)
+  NÃO PODE     = licença não comercial: tirar do jogo ou pedir autorização por escrito ao autor
+  PENDENTE     = não sei de onde veio: anote a fonte (site + autor + licença) na frente
+  ATENÇÃO      = pode usar, mas tem um cuidado
+
+Dica: no Sketchfab, a licença aparece embaixo do botão Download de cada modelo.
+  - CC0 ou CC BY: pode usar (CC BY pede crédito com o nome do autor).
+  - "Standard" (Sketchfab Standard / Free Standard): pode usar dentro do jogo, só não pode vender ou
+    distribuir o arquivo do modelo solto.
+  - Qualquer coisa com "NC" (NonCommercial): NÃO pode em jogo publicado na loja.
+  - "Editorial": NÃO pode em jogo.
+
+------------------------------------------------------------------ CARROS
+Golfo GTX (golfgti)       geyges / Sketchfab Standard                            OK (crédito)
+Jeta GLX (jetta)          geyges / Sketchfab Standard                            OK (crédito)
+Despacito (tiguan)          geyges / Sketchfab Standard                            OK (crédito)
+iVolt 4 (id4)             geyges / Sketchfab Standard                            OK (crédito)
+Santa Clara (santacruz)   geyges / Sketchfab Standard                            OK (crédito)
+Fortão 150 (f150)         Vehsource | VHS Mods / CC BY 4.0                       OK (crédito)
+Robusta                   Ddiaz Design / CC BY-NC-SA 4.0                         NÃO PODE
+Lexo NX (lexusnx)         Ddiaz Design / CC BY-NC-SA 4.0                         NÃO PODE
+G5 (golg5)                ?                                                      PENDENTE
+Donas (corsa)             ?                                                      PENDENTE
+G6 (saveiro)              ?                                                      PENDENTE
+G2 (golg2)                ?                                                      PENDENTE
+Joaninha (fusca)          ?                                                      PENDENTE
+G7 (saveirog7)            ?                                                      PENDENTE
+Cereno (cerato)           ?                                                      PENDENTE
+Querotida (versa)          ?                                                      PENDENTE
+Vambora (bora)            ?                                                      PENDENTE
+B,emi (bmw)               ?                                                      PENDENTE
+Railucão (hilux)          ?                                                      PENDENTE
+Taigá (taigun)            ?                                                      PENDENTE
+Viatura                   ?                                                      PENDENTE
+SaborSW (fortuner)        ? (Fortuner.fbx enviado, autor desconhecido)           PENDENTE
+
+ATENÇÃO (todos os carros): nomes trocados e emblemas 3D tirados. Ainda sobram alguns emblemas pintados na
+textura (frente do Golfo GTX, escrita nas placas, LEXUS na traseira do Lexo NX).
+
+------------------------------------------------------------------ RODAS
+Tramada RS (BBS-Rims.obj), Antares 109 (Antera_Type_109.obj)                    PENDENTE
+As outras 32 rodas (pacotes que você mandou)                                    PENDENTE
+ATENÇÃO: os nomes das rodas também foram trocados (BBS, HRE, Work, Savini... são marcas registradas).
+
+------------------------------------------------------------------ CENÁRIO
+Sala gamer (GAMINGROOMLOWPOLYLESTRIX.blend)                                     PENDENTE
+Delegacia "É o Frank" (officeobj.obj)                                           PENDENTE
+Concessionária: trocada pela DROPS CAR feita no projeto                          OK
+Árvores 3D ("Realistic Trees")                                                  PENDENTE
+Motoristas do trânsito (modelos/personagens/motoristas): os mesmos personagens do jogo (mecânico, dançarino,
+                           mulheres) só que sentados — valem as mesmas licenças deles.
+Mesa de sinuca, laje, sofá e enfeites da laje                                     OK (feitos pelo jogo)
+Fotos dos projetos (quadros dos encontros e TV da sala gamer)                    OK (fotos do dono da Drops)
+Grafites do galpão e do barracão, oficina da Drops, barracão, galpão,
+posto, lombadas, postes, casas                                                  OK (feitos aqui no projeto)
+
+------------------------------------------------------------------ PERSONAGENS
+Dançarino "HeChoseToBeHappy"   Nikita Teploukhov (skril4ek) / Sketchfab Standard  OK (crédito)
+Thuess (dançarino de origem das mulheres e do dançarino de boné)                   PENDENTE
+Mecânico (base do personagem "Você")                                               PENDENTE
+Jack, Steve, Henry (.blend "Rigged" que o dono mandou)                             PENDENTE — descobrir de onde
+                           vieram e a licença (pele/rosto do Character Creator e do Ready Player Me
+                           costumam ter regras próprias). Relógio do Steve ficou fora (150 mil polígonos).
+
+------------------------------------------------------------------ MÚSICA E SOM
+"Drops Garage" (trilha)    composição do dono da Drops                           OK
+"Mega Funk"                ?                                                     PENDENTE — ATENÇÃO: música com
+                           direito autoral não pode tocar no jogo sem licença. Se não for sua ou de
+                           alguém que autorizou por escrito, troque por uma música própria ou com licença livre.
+Sons do elevador, parafusadeira, motor: gerados no próprio jogo                  OK
+
+------------------------------------------------------------------ MAPA
+Ruas e prédios: © colaboradores do OpenStreetMap, licença ODbL                   OK (crédito obrigatório)
+Lotes e curvas de nível: IPPUC / Prefeitura de Curitiba                          OK (crédito)
+Imagens do Google (Street View/Maps): usadas só como referência, NÃO estão no jogo.
+
+------------------------------------------------------------------ CRÉDITOS QUE TÊM QUE APARECER NO JOGO
+geyges; Vehsource | VHS Mods; Nikita Teploukhov (skril4ek); © colaboradores do OpenStreetMap (ODbL);
+IPPUC / Prefeitura de Curitiba; e os autores dos itens PENDENTES, quando descobrir.

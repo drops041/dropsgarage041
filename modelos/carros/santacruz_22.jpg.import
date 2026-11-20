@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://cs6nju3c3e6nn"
+path="res://.godot/imported/santacruz_22.jpg-8929ccb9ab18880e5657bc13e5610831.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "992015497a21eecaa2a5222370deaf98"
+}
+
+[deps]
+
+source_file="res://modelos/carros/santacruz_22.jpg"
+dest_files=["res://.godot/imported/santacruz_22.jpg-8929ccb9ab18880e5657bc13e5610831.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1

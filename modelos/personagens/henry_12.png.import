@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://bi6lm3mcix6tb"
+path="res://.godot/imported/henry_12.png-c0ee86a5f2e4ac54b83d2fe7169fc4f2.ctex"
+metadata={
+"vram_texture": false
+}
+generator_parameters={
+"md5": "b1d757fbccfb564bc499df8014ddab40"
+}
+
+[deps]
+
+source_file="res://modelos/personagens/henry_12.png"
+dest_files=["res://.godot/imported/henry_12.png-c0ee86a5f2e4ac54b83d2fe7169fc4f2.ctex"]
+
+[params]
+
+compress/mode=0
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1
