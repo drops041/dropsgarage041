@@ -1,19 +1,25 @@
 extends Node3D
 class_name Desmontagem
-## (fase 2) Desmontar o carro na oficina: com o carro em cima do elevador (no chão), chegue perto de uma porta,
-## do capô ou do porta-malas e aperte TIRAR. A peça vai pro cavalete do lado; COLOCAR põe de volta.
+## (fase 2) Desmontar o carro na oficina, com as mãos: com o carro em cima do elevador (no chão), chegue perto
+## de uma porta, do capô ou da tampa e aperte TIRAR. O boneco solta a peça e fica segurando; leve até o cavalete
+## (na parede do fundo da cabine) e aperte GUARDAR. Pra pôr de volta: PEGAR no cavalete, levar até o carro, COLOCAR.
 ## O que foi tirado fica salvo no carro ("sem_pecas") e ele anda assim pela cidade.
 
 var m      # Main
 var of     # Oficina
 
-## cavalete no chão livre entre o elevador e o sofá (coordenadas da oficina)
-const CAVALETE := Vector3(1.2, 0.0, 22.6)
+## cavalete encostado na parede do fundo da cabine de pintura (coordenadas da oficina)
+const CAVALETE := Vector3(-3.4, 0.0, 22.85)
 const COMPRIMENTO := 2.5
 const ALTURA_BARRA := 1.05
 const DIST_PECA := 1.15          # quão perto da peça a pessoa precisa estar
-const T_VOO := 0.65              # segundos que a peça leva voando entre o carro e o cavalete
+const DIST_CAVALETE := 1.7       # quão perto do cavalete
+const T_VOO := 0.35              # segundos da peça indo da mão pro lugar (e vice-versa)
+const T_GESTO := 0.85            # o gesto de pegar/soltar
 
+var carregando := ""             # peça na mão ("" = nada)
+var _na_mao: Node3D              # cópia da peça que vai na mão
+var _mao: Node3D                 # nó que gira junto com o boneco
 var _alvo := ""                  # peça escolhida pro botão
 var _holders := {}               # id -> Node3D (cópia da peça encostada no cavalete)
 var _voando := []                # [{no, de, para, t, fim (Callable)}]
@@ -81,26 +87,58 @@ func _tubo(tam: Vector3) -> MeshInstance3D:
 
 
 # ======================================================================= botão
-## o que o botão de ação faz perto do carro ("" = nada)
+## o que o botão de ação faz ("" = nada)
 func acao(p: Vector3) -> String:
 	_alvo = ""
-	if not _pode():
+	if m.carro == null or m.visual == null or of.segurando != "" or (m.pessoa and m.pessoa.ocupado()):
 		return ""
 	var v: CarroVisual = m.visual
-	var melhor := DIST_PECA
-	for id in v.pecas:
-		if _voando_id(id):
-			continue
-		var c: Vector3 = v.centro_peca(id)
-		var d := Vector2(p.x - c.x, p.z - c.z).length()
-		if id == "PCA" or id == "PTR":
-			d -= 0.45    # capô e porta-malas são largos: dá pra pegar pela lateral do carro
-		if d < melhor:
-			melhor = d
-			_alvo = id
-	if _alvo == "":
+	var no_cavalete := _perto_cavalete(p)
+	if carregando != "":
+		_alvo = carregando
+		if no_cavalete:
+			return "GUARDAR " + v.nome_peca(carregando)
+		if _pode() and v.pecas.has(carregando) and _dist_peca(p, carregando) < DIST_PECA:
+			return "COLOCAR " + v.nome_peca(carregando)
 		return ""
-	return ("TIRAR " if v.tem_peca(_alvo) else "COLOCAR ") + v.nome_peca(_alvo)
+	# tirar do carro
+	if _pode():
+		var melhor := DIST_PECA
+		for id in v.pecas:
+			if not v.tem_peca(id) or _voando_id(id):
+				continue
+			var d := _dist_peca(p, id)
+			if d < melhor:
+				melhor = d
+				_alvo = id
+		if _alvo != "":
+			return "TIRAR " + v.nome_peca(_alvo)
+	# pegar do cavalete
+	if no_cavalete and not _holders.is_empty():
+		var melhor := INF
+		for id in _holders:
+			if _voando_id(id):
+				continue
+			var d := p.distance_to((_holders[id] as Node3D).global_position)
+			if d < melhor:
+				melhor = d
+				_alvo = id
+		if _alvo != "":
+			return "PEGAR " + v.nome_peca(_alvo)
+	return ""
+
+
+func _dist_peca(p: Vector3, id: String) -> float:
+	var c: Vector3 = (m.visual as CarroVisual).centro_peca(id)
+	var d := Vector2(p.x - c.x, p.z - c.z).length()
+	if id == "PCA" or id == "PTR":
+		d -= 0.45    # capô e tampa são largos: dá pra pegar pela lateral do carro
+	return d
+
+
+func _perto_cavalete(p: Vector3) -> bool:
+	var c := (get_parent() as Node3D).global_transform * CAVALETE
+	return Vector2(p.x - c.x, p.z - c.z).length() < DIST_CAVALETE
 
 
 func _pode() -> bool:
@@ -108,39 +146,134 @@ func _pode() -> bool:
 		and of.carro_no_elevador() and not of.carro_alto and of.subindo == 0 and of.segurando == ""
 
 
+## o boneco faz o gesto (pegar/soltar) olhando pro ponto e depois roda 'fim'
+func _gesto(olhar: Vector3, fim: Callable) -> void:
+	if m.pessoa and Pessoa.e_ual(m.pessoa.modelo):
+		m.pessoa.trabalhar(m.pessoa.global_position, olhar, "PickUp_Table", T_GESTO, fim)
+	else:
+		fim.call()
+
+
 func fazer(a: String) -> void:
 	if _alvo == "":
 		return
 	var v: CarroVisual = m.visual
 	var id := _alvo
-	if m.pessoa and Pessoa.e_ual(m.pessoa.modelo) and v.pecas.has(id):
-		m.pessoa.trabalhar(m.pessoa.global_position, v.centro_peca(id), "PickUp_Table", 0.85)   # o gesto de soltar/encaixar a peça
 	var sem: Array = (Dados.cfg().get("sem_pecas", []) as Array).duplicate()
-	if a.begins_with("TIRAR") and v.tem_peca(id):
+	if a.begins_with("TIRAR") and v.tem_peca(id) and carregando == "":
 		v.fechar_tudo()
-		sem.append(id)
-		Dados.mudar("sem_pecas", sem)
-		var h := _copia(v, id)
-		h.global_transform = (v.pecas[id] as Node3D).global_transform
-		v.mostrar_peca(id, false)
-		_holders[id] = h
-		_voar(h, h.global_transform, _lugar(h, sem.size() - 1), Callable())
-		_som()
-		_dica()
-		m._montar_partes_ui()
-	elif a.begins_with("COLOCAR") and not v.tem_peca(id):
-		sem.erase(id)
-		Dados.mudar("sem_pecas", sem)
-		var h: Node3D = _holders.get(id)
-		_holders.erase(id)
-		if h == null:
-			v.mostrar_peca(id, true)
-			m._montar_partes_ui()
+		carregando = id
+		_gesto(v.centro_peca(id), func():
+			if not sem.has(id):
+				sem.append(id)
+			Dados.mudar("sem_pecas", sem)
+			var h := _copia(v, id)
+			h.global_transform = (v.pecas[id] as Node3D).global_transform
+			v.mostrar_peca(id, false)
+			_segurar(h)
+			_som()
+			_dica()
+			m._montar_partes_ui())
+	elif a.begins_with("GUARDAR") and carregando != "":
+		var h := _na_mao
+		_gesto((get_parent() as Node3D).global_transform * CAVALETE, func():
+			_largar()
+			if h:
+				_holders[id] = h
+				_voar(h, h.global_transform, _lugar(h, _fila(id)), _reorganizar)
+			_som())
+	elif a.begins_with("PEGAR") and carregando == "" and _holders.has(id):
+		var h: Node3D = _holders[id]
+		carregando = id
+		_gesto(h.global_position, func():
+			_holders.erase(id)
+			_segurar(h)
+			_som())
+	elif a.begins_with("COLOCAR") and carregando == id and not v.tem_peca(id):
+		var h := _na_mao
+		_gesto(v.centro_peca(id), func():
+			_largar()
+			sem.erase(id)
+			Dados.mudar("sem_pecas", sem)
+			if h == null:
+				v.mostrar_peca(id, true)
+				m._montar_partes_ui()
+			else:
+				var alvo: Transform3D = (v.pecas[id] as Node3D).global_transform
+				_voar(h, h.global_transform, alvo, func(): v.mostrar_peca(id, true); h.queue_free(); m._montar_partes_ui())
+			_som()
+			_reorganizar())
+
+
+# ======================================================================= peça na mão
+## a peça vai pra frente do peito do boneco e gira junto com ele
+func _segurar(h: Node3D) -> void:
+	_na_mao = h
+	if m.pessoa == null:
+		return
+	if _mao == null or not is_instance_valid(_mao):
+		_mao = Node3D.new()
+		_mao.name = "MaoPeca"
+		m.pessoa.add_child(_mao)
+	var de := h.global_transform
+	h.reparent(_mao, false)
+	h.transform = _pose_mao(h)
+	var para := h.global_transform
+	# sai do lugar e vem pra mão (rapidinho)
+	h.reparent(self, false)
+	h.global_transform = de
+	_voar(h, de, para, func():
+		if is_instance_valid(h) and _na_mao == h and _mao:
+			h.reparent(_mao, false)
+			h.transform = _pose_mao(h))
+	m.pessoa.carregando = true
+
+
+func _largar() -> void:
+	if _na_mao and is_instance_valid(_na_mao):
+		var g := _na_mao.global_transform
+		_na_mao.reparent(self, false)
+		_na_mao.global_transform = g
+	_na_mao = null
+	carregando = ""
+	if m.pessoa:
+		m.pessoa.carregando = false
+
+
+## pose da peça na mão (no espaço do boneco: +z = pra frente, +y = pra cima)
+func _pose_mao(h: Node3D) -> Transform3D:
+	var bb: AABB = h.get_meta("caixa")
+	var rel: Basis = h.get_meta("rel")
+	var b: Basis
+	if h.get_meta("porta"):
+		# porta em pé na frente do corpo, comprida pros lados, lado de fora olhando pra frente
+		if float(h.get_meta("lado")) < 0.0:
+			b = Basis(Vector3(0, 0, -1), Vector3(0, 1, 0), Vector3(1, 0, 0))
 		else:
-			var alvo: Transform3D = (v.pecas[id] as Node3D).global_transform
-			_voar(h, h.global_transform, alvo, func(): v.mostrar_peca(id, true); h.queue_free(); m._montar_partes_ui())
-		_som()
-		_reorganizar()
+			b = Basis(Vector3(0, 0, 1), Vector3(0, 1, 0), Vector3(-1, 0, 0))
+	else:
+		# capô / tampa: em pé, largura pros lados
+		b = Basis(Vector3(1, 0, 0), Vector3(0, 0, -1), Vector3(0, 1, 0))
+	b = Basis(Vector3.RIGHT, deg_to_rad(-8.0)) * b * rel.inverse()
+	var centro := b * bb.get_center()
+	var alt := 0.0
+	for k in 8:
+		alt = maxf(alt, absf((b * bb.get_endpoint(k)).y - centro.y))
+	# o meio da peça na altura das mãos, um pouco pra frente; peça alta sobe pra não arrastar no chão
+	var pos := Vector3(0.0, maxf(0.95, alt + 0.12), 0.42) - centro
+	var k := 1.0 / maxf(m.pessoa.global_basis.get_scale().x, 0.001)
+	return Transform3D(b, pos * k)
+
+
+## entrou no carro, trocou de carro...: a peça da mão vai pro cavalete sozinha
+func guardar_ja() -> void:
+	if carregando == "" or _na_mao == null:
+		return
+	var id := carregando
+	var h := _na_mao
+	_largar()
+	_holders[id] = h
+	_reorganizar()
 
 
 func _som() -> void:
@@ -150,7 +283,7 @@ func _som() -> void:
 
 
 func _dica() -> void:
-	of._dica("pecas", "PEÇA NO CAVALETE: ela fica guardada aqui e o carro anda sem ela.\nPra pôr de volta, chegue perto do lugar dela no carro e aperte COLOCAR.")
+	of._dica("pecas", "PEÇA NA MÃO: leve até o cavalete (parede do fundo da cabine) e aperte GUARDAR.\nPra pôr de volta: PEGAR no cavalete, levar até o lugar dela no carro e COLOCAR.")
 
 
 # ======================================================================= cópia da peça e lugar no cavalete
@@ -203,6 +336,17 @@ func _lugar(h: Node3D, i: int) -> Transform3D:
 	return (get_parent() as Node3D).global_transform * t_local
 
 
+## posição da peça na fila do cavalete (na ordem em que foram tiradas, só as que estão lá)
+func _fila(id: String) -> int:
+	var i := 0
+	for x in Dados.cfg().get("sem_pecas", []):
+		if str(x) == id:
+			return i
+		if _holders.has(str(x)):
+			i += 1
+	return i
+
+
 func _reorganizar() -> void:
 	var sem: Array = Dados.cfg().get("sem_pecas", [])
 	var i := 0
@@ -210,7 +354,8 @@ func _reorganizar() -> void:
 		var h: Node3D = _holders.get(id)
 		if h and not _voando_no(h):
 			h.global_transform = _lugar(h, i)
-		i += 1
+		if h:
+			i += 1
 
 
 ## quando troca de carro (ou abre o jogo): o cavalete mostra as peças tiradas DESTE carro
@@ -218,6 +363,12 @@ func _sincronizar() -> void:
 	if m.visual == _visual_atual:
 		return
 	_visual_atual = m.visual
+	if _na_mao and is_instance_valid(_na_mao):
+		_na_mao.queue_free()
+	_na_mao = null
+	carregando = ""
+	if m.pessoa:
+		m.pessoa.carregando = false
 	for id in _holders:
 		(_holders[id] as Node3D).queue_free()
 	_holders.clear()
@@ -252,6 +403,10 @@ func _voando_id(id: String) -> bool:
 
 
 func _process(dt: float) -> void:
+	# a peça na mão gira junto com o boneco (o corpo dele é que vira, não o nó da pessoa)
+	if _mao and is_instance_valid(_mao) and m.pessoa and m.pessoa.modelo:
+		_mao.rotation.y = m.pessoa.modelo.rotation.y
+		_mao.position = m.pessoa.modelo.position - m.pessoa._base_modelo
 	_t_sinc -= dt
 	if _t_sinc <= 0.0:
 		_t_sinc = 0.5
@@ -262,7 +417,7 @@ func _process(dt: float) -> void:
 		var t: float = v["t"]
 		var e := t * t * (3.0 - 2.0 * t)
 		var tr: Transform3D = (v["de"] as Transform3D).interpolate_with(v["para"], e)
-		tr.origin.y += sin(t * PI) * 0.35        # sobe um pouco no meio do caminho
+		tr.origin.y += sin(t * PI) * 0.08        # sobe um tiquinho no meio do caminho
 		var no: Node3D = v["no"]
 		if is_instance_valid(no):
 			no.global_transform = tr

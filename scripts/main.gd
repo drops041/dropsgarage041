@@ -1020,6 +1020,8 @@ func _physics_process(dt: float) -> void:
 	var xf_agora := carro.global_transform
 	if not _tem_xf or xf_agora.origin.distance_to(_xf_cur.origin) > 6.0:   # teleporte: não "voa" até lá
 		_xf_cur = xf_agora
+		_t_batida = 1.0          # (e a parada do teleporte não conta como batida)
+		_vel_ant = carro.linear_velocity
 	_xf_ant = _xf_cur
 	_xf_cur = xf_agora
 	_tem_xf = true
@@ -1027,12 +1029,14 @@ func _physics_process(dt: float) -> void:
 	if _teste:
 		_roteiro_teste()
 	if (congelado or foto or mapa_aberto) and not pe:
+		_vel_ant = carro.linear_velocity
 		carro.engine_force = 0.0
 		carro.brake = 60.0
 		carro.steering = 0.0
 		_suspensao(dt)
 		return
 	if pe:
+		_vel_ant = carro.linear_velocity
 		carro.engine_force = 0.0
 		carro.brake = 40.0
 		carro.steering = 0.0
@@ -1041,6 +1045,7 @@ func _physics_process(dt: float) -> void:
 		_suspensao(dt)
 		_a_pe(dt)
 		return
+	_desgaste_rodando(dt)
 	var frente := carro.global_basis.z
 	var vel := carro.linear_velocity.dot(frente)
 	var acel := Input.get_action_strength("acelerar")
@@ -1141,6 +1146,63 @@ func _suspensao(dt: float) -> void:
 	visual.neon_chao.position.y = media - visual.raio() + 0.015
 	# elevador da oficina: a lataria e as rodas sobem (as rodas ficam um pouco penduradas, suspensão esticada)
 	visual.position.y = elev_y
+
+
+## (fase 2) desgaste de verdade: batida forte amassa (no lado que bateu), rodar suja, e carro sujo e amassado
+## enferruja devagar. Tudo sai na oficina (cabine: LAVAR / LIXAR / DESAMASSAR).
+var _vel_ant := Vector3.ZERO
+var _rodado := 0.0
+var _t_batida := 0.0
+
+func _desgaste_rodando(dt: float) -> void:
+	var v := carro.linear_velocity
+	var dv := _vel_ant - v
+	_vel_ant = v
+	_t_batida = maxf(0.0, _t_batida - dt)
+	var choque := dv.length()
+	if choque > 4.0 and _t_batida <= 0.0:
+		_t_batida = 0.6
+		var loc: Vector3 = carro.global_basis.inverse() * dv.normalized()   # pra onde a batida empurrou (no carro)
+		var peca := "carro"
+		if loc.z > 0.6:
+			peca = "PCA"    # bateu de frente (a velocidade pra frente sumiu)
+		elif loc.z < -0.6:
+			peca = "PTR"    # bateram atrás
+		else:
+			var lado := "L" if loc.x > 0.0 else "R"
+			peca = "PF" + lado
+		_amassar(peca, clampf((choque - 4.0) * 0.06, 0.04, 0.35))
+	_rodado += v.length() * dt
+	if _rodado > 500.0:   # a cada meio quilômetro
+		_rodado = 0.0
+		var dg: Dictionary = (Dados.cfg().get("desgaste", {}) as Dictionary).duplicate(true)
+		var c: Dictionary = dg.get("carro", {})
+		c["s"] = minf(0.85, float(c.get("s", 0.0)) + 0.012)
+		dg["carro"] = c
+		for id in dg:
+			var p: Dictionary = dg[id]
+			if float(p.get("a", 0.0)) > 0.2 and float(c["s"]) > 0.4:
+				p["f"] = minf(0.6, float(p.get("f", 0.0)) + 0.005)   # amassado + sujeira = ferrugem aparecendo
+		_salvar_desgaste(dg)
+
+
+func _amassar(peca: String, quanto: float) -> void:
+	var dg: Dictionary = (Dados.cfg().get("desgaste", {}) as Dictionary).duplicate(true)
+	if not visual.pecas.has(peca):
+		peca = "carro"
+	var p: Dictionary = dg.get(peca, visual.desgaste(peca) if peca != "carro" else {})
+	p["a"] = minf(1.0, float(p.get("a", 0.0)) + quanto)
+	dg[peca] = p
+	_salvar_desgaste(dg)
+	if quanto > 0.1:
+		toast("BATEU! " + ("AMASSOU O CARRO" if peca == "carro" else "AMASSOU: " + visual.nome_peca(peca)), 1.4)
+
+
+func _salvar_desgaste(dg: Dictionary) -> void:
+	Dados.mudar("desgaste", dg)
+	cfg = Dados.cfg()
+	visual.c["desgaste"] = dg
+	visual._aplicar_cores_pecas()
 
 
 ## pula no grave quando o som tá ligado e a música tocando
@@ -1542,6 +1604,8 @@ func entrar_carro() -> void:
 	if pessoa.global_position.distance_to(carro.global_position) > 4.0:
 		toast("CHEGA PERTO DO CARRO")
 		return
+	if oficina and oficina.desm:
+		oficina.desm.guardar_ja()   # peça na mão vai pro cavalete
 	pe = false
 	pessoa.dancar(false)
 	pessoa.visible = false
@@ -2244,6 +2308,93 @@ func _teste10() -> void:
 
 
 ## (v40) laje: sobe a escada, joga sinuca, desce
+func _teste14() -> void:
+	# (fase 2) desmontagem com as mãos: tira a porta, carrega, guarda no cavalete, pega de volta e põe
+	var ft := OS.get_environment("DROPS_FOTO")
+	var foto := func(n: String) -> void:
+		if ft != "":
+			get_viewport().get_texture().get_image().save_png(ft % n)
+	var cam := func(de: Vector3, para: Vector3) -> void:
+		if _cam_t == null:
+			_cam_t = Camera3D.new(); _cam_t.far = 300.0; _cam_t.fov = 70.0; add_child(_cam_t)
+		_cam_t.current = true
+		_cam_t.global_position = mapa.drops_ponto(de)
+		_cam_t.look_at(mapa.drops_ponto(para))
+	var ir := func(local: Vector3) -> void:
+		pessoa.global_position = mapa.drops_ponto(local) + Vector3.UP * 0.1
+	match _f:
+		5:
+			intro = 0.0
+			for i in Dados.carros.size():
+				if Dados.carros[i]["id"] == "saveirog5":
+					Dados.idx = i
+			Dados.mudar("sem_pecas", [])
+			_criar_carro(carro.global_position + Vector3.UP * 0.8, carro.rotation.y)
+		20:
+			var mid := (float(dados["axF"]) + float(dados["axR"])) / 2.0
+			var c := mapa.drops_ponto(Oficina.ELEV)
+			var ez: Vector3 = mapa.drops_xf.basis * Oficina.ELEV_EIXO
+			teletransportar(c - ez * mid, atan2(ez.x, ez.z))
+		70:
+			descer()
+		80:
+			cam.call(Vector3(3.5, 2.3, 13.0), Vector3(-2.5, 0.8, 19.0))
+		95:
+			foto.call("0_cabine")
+			var c: Vector3 = visual.centro_peca("PFL")
+			var lado: Vector3 = (c - carro.global_position)
+			lado.y = 0.0
+			pessoa.global_position = c + lado.normalized() * 0.6
+			pessoa.global_position.y = mapa.drops_ponto(Vector3.ZERO).y + 0.1
+		105:
+			print("t14 acao: ", oficina._acao)
+			oficina.interagir()
+		185:
+			cam.call(mapa.drops_local(pessoa.global_position) + Vector3(2.4, 1.7, -2.0), mapa.drops_local(pessoa.global_position) + Vector3(0, 1.0, 0))
+		150:
+			pessoa.desejo = Vector3(0, 0, 0)
+		200:
+			foto.call("1_segurando")
+			var h: Node3D = oficina.desm._na_mao
+			print("t14 carregando ", oficina.desm.carregando, " anim ", pessoa.atual, " sem ", Dados.cfg().get("sem_pecas"),
+				" peça ", (h.global_position - pessoa.global_position) if h else Vector3.INF, " pai ", h.get_parent().name if h else "-", " vis ", h.is_visible_in_tree() if h else false)
+			ir.call(Oficina.ELEV * 0.0 + Desmontagem.CAVALETE + Vector3(0.3, 0, -1.1))
+		215:
+			print("t14 acao cavalete: ", oficina._acao)
+			oficina.interagir()
+		240:
+			cam.call(Desmontagem.CAVALETE + Vector3(1.8, 1.7, -2.6), Desmontagem.CAVALETE + Vector3(0, 0.7, 0))
+		255:
+			foto.call("2_cavalete")
+			print("t14 holders ", oficina.desm._holders.keys(), " carregando '", oficina.desm.carregando, "'")
+		265:
+			print("t14 acao pegar: ", oficina._acao)
+			oficina.interagir()
+		320:
+			print("t14 carregando de novo ", oficina.desm.carregando)
+			var c: Vector3 = visual.centro_peca("PFL")
+			var lado: Vector3 = (c - carro.global_position)
+			lado.y = 0.0
+			pessoa.global_position = c + lado.normalized() * 0.6
+			pessoa.global_position.y = mapa.drops_ponto(Vector3.ZERO).y + 0.1
+		335:
+			print("t14 acao colocar: ", oficina._acao)
+			oficina.interagir()
+		400:
+			print("t14 fim: sem ", Dados.cfg().get("sem_pecas"), " porta ", visual.tem_peca("PFL"), " carregando '", oficina.desm.carregando, "'")
+			oficina._alvo_pintura = ""
+			oficina._mudar("cor", "#d12a6b")
+		560:
+			cam.call(mapa.drops_local(pessoa.global_position) + Vector3(2.0, 1.7, -2.2), mapa.drops_local(pessoa.global_position) + Vector3(0, 1.0, 0))
+		575:
+			foto.call("3_pintando")
+			cam.call(Vector3(2.5, 1.7, 12.6), Oficina.BOTOEIRA + Vector3(0, 1.2, 0))
+		590:
+			foto.call("4_botoeira")
+			Dados.mudar("cor", "#f4f4f1")
+			get_tree().quit()
+
+
 func _teste13() -> void:
 	# (fase 2) boneco trabalhando: G3 velha no elevador, lava a porta, desamassa o carro, pinta
 	var ft := OS.get_environment("DROPS_FOTO")
@@ -2709,6 +2860,22 @@ func _roteiro_teste() -> void:
 		return
 	if OS.get_environment("DROPS_TESTE") == "11":
 		_teste11()
+		return
+	if OS.get_environment("DROPS_TESTE") == "15":   # batida: frente, lado e traseira
+		if _f == 30:
+			intro = 0.0
+			Dados.mudar("desgaste", {})
+		if _f in [60, 90, 120] and not pe:
+			var dirs := {60: carro.global_basis.z, 90: carro.global_basis.x, 120: -carro.global_basis.z}
+			_vel_ant = carro.linear_velocity + dirs[_f] * 12.0
+		if _f in [62, 92, 122]:
+			print("t15 ", _f, " desgaste ", Dados.cfg().get("desgaste"))
+		if _f == 130:
+			Dados.mudar("desgaste", {})
+			get_tree().quit()
+		return
+	if OS.get_environment("DROPS_TESTE") == "14":
+		_teste14()
 		return
 	if OS.get_environment("DROPS_TESTE") == "13":
 		_teste13()

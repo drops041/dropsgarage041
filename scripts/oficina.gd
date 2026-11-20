@@ -11,14 +11,14 @@ const ELEV := Vector3(-2.55, 0.0, 18.0)         # centro do elevador. v41: GIRAD
                                                  # dentro da cabine branca, entrando pela abertura grande
 const ELEV_EIXO := Vector3(1, 0, 0)              # direção do comprimento do carro em cima do elevador
 const CAB_MIN := Vector2(-5.05, 13.7)            # cabine de pintura (sala branca): x, z
-const CAB_MAX := Vector2(-1.75, 23.3)
+const CAB_MAX := Vector2(-0.35, 23.3)            # (fase 2) cabine aumentada: a parede foi 1,4 m pra dentro da oficina
 const PAREDE_X := 4.58                           # parede preta da esquerda (a das rodas)
 const RACK_Z0 := 14.2
 const RACK_Z1 := 26.4                           # v31: oficina mais funda -> prateleira mais comprida
 const CAIXA_SOM := Vector3(4.28, 1.42, 27.3)     # (v33) em cima do gaveteiro vermelho, do lado da sala gamer
 const RACK_Y := [0.42, 1.04]
 const RAIO_RACK := 0.25
-const BOTOEIRA := Vector3(0.95, 0.0, 15.4)        # o pedestal com os botões do elevador (na oficina, do lado da abertura)
+const BOTOEIRA := Vector3(-0.13, 0.0, 14.35)      # (fase 2) botoeira do elevador na parede da cabine, do lado do vão (não fica mais no meio)
 const SUBIDA := 0.85                             # quanto o carro sobe
 const T_INSTALAR := 1.5
 
@@ -135,15 +135,16 @@ func _elevador() -> void:
 			for sinal in [-1.0, 1.0]:
 				var b := _caixa(e, Vector3(0.06, 0.07, 1.7), Vector3(x + sx * 0.2, 0.04, 0), aco)
 				bracos.append([b, x + sx * 0.2, sinal])
-	# comando (botoeira num pedestal) na frente do elevador, do lado da parede das rodas
+	# comando (botoeira) preso na parede da cabine, do lado do vão por onde o carro entra; botões virados pra oficina
 	var cmd := Node3D.new()
 	cmd.position = BOTOEIRA
-	cmd.rotation.y = PI / 2.0 + 0.5                  # botões virados pra quem vem da frente da oficina
+	cmd.rotation.y = PI / 2.0
 	raiz.add_child(cmd)
-	_caixa(cmd, Vector3(0.08, 1.1, 0.08), Vector3(0, 0.55, 0), aco)
-	_caixa(cmd, Vector3(0.24, 0.32, 0.14), Vector3(0, 1.2, 0), _mat(Color(1.0, 0.82, 0.05), 0.1, 0.5))
-	_caixa(cmd, Vector3(0.05, 0.05, 0.02), Vector3(0.0, 1.27, 0.075), _mat(Color(0.1, 0.9, 0.2), 0, 0.4, 1.5))
-	_caixa(cmd, Vector3(0.05, 0.05, 0.02), Vector3(0.0, 1.15, 0.075), _mat(Color(0.95, 0.1, 0.1), 0, 0.4, 1.5))
+	_caixa(cmd, Vector3(0.3, 0.42, 0.04), Vector3(0, 1.25, -0.05), aco)                      # chapa na parede
+	_caixa(cmd, Vector3(0.24, 0.32, 0.12), Vector3(0, 1.25, 0.03), _mat(Color(1.0, 0.82, 0.05), 0.1, 0.5))
+	_caixa(cmd, Vector3(0.05, 0.05, 0.02), Vector3(0.0, 1.32, 0.095), _mat(Color(0.1, 0.9, 0.2), 0, 0.4, 1.5))
+	_caixa(cmd, Vector3(0.05, 0.05, 0.02), Vector3(0.0, 1.2, 0.095), _mat(Color(0.95, 0.1, 0.1), 0, 0.4, 1.5))
+	_caixa(cmd, Vector3(0.025, 1.2, 0.025), Vector3(0.08, 0.6, -0.04), _mat(Color(0.08, 0.08, 0.08), 0.2, 0.6))   # conduíte até o chão
 	_posicionar_elevador()
 
 
@@ -548,10 +549,10 @@ func _escolher_acao() -> void:
 		if l.x > PAREDE_X - 1.4 and l.z > RACK_Z0 - 0.8 and l.z < RACK_Z1 + 0.8 and not no_botao:
 			_acao = "DEVOLVER RODA"
 			return
-	# 1b) (fase 2) perto de uma porta / capô / porta-malas do carro no elevador: tirar ou colocar
+	# 1b) (fase 2) perto de uma porta / capô / porta-malas do carro no elevador, ou do cavalete: tirar, guardar, pegar, colocar
 	if desm and segurando == "":
 		_acao = desm.acao(p)
-		if _acao != "":
+		if _acao != "" or desm.carregando != "":
 			return
 	# 2) cabine de pintura (com roda na mão não: o elevador agora fica dentro da cabine)
 	if na_cabine(p) and segurando == "":
@@ -646,7 +647,8 @@ func interagir() -> void:
 		return
 	if _acao in ["SUBIR NA LAJE", "DESCER DA LAJE", "JOGAR SINUCA"]:
 		laje.fazer(_acao)
-	elif _acao.begins_with("TIRAR ") or _acao.begins_with("COLOCAR "):
+	elif _acao.begins_with("TIRAR ") or _acao.begins_with("COLOCAR ") or _acao.begins_with("GUARDAR ") \
+			or (_acao.begins_with("PEGAR ") and desm and desm._alvo != "" and _alvo_rack < 0):
 		desm.fazer(_acao)
 	elif _acao == "PINTAR":
 		abrir_pintura()
@@ -676,6 +678,7 @@ func _pegar(k: int) -> void:
 		_mao.add_child(_na_mao)
 		_na_mao.position = Vector3(0, 1.0, 0.42)
 		_na_mao.rotation.y = -PI / 2.0     # face pra frente
+	m.pessoa.carregando = true
 	m.toast("PEGOU: " + str(aros_rack[k][2]).to_upper() + " — LEVA ATÉ O CARRO", 2.4)
 
 
@@ -690,6 +693,7 @@ func _soltar() -> void:
 		_mao = null
 	_na_mao = null
 	segurando = ""
+	m.pessoa.carregando = false
 
 
 func _instalar(dt: float) -> void:
@@ -740,6 +744,7 @@ func _instalar(dt: float) -> void:
 				_mao = null
 			_na_mao = null
 			segurando = ""
+			m.pessoa.carregando = false
 			instaladas = ["", "", "", ""]
 			m.toast("JOGO %s INSTALADO! PODE DESCER O ELEVADOR" % nome.to_upper(), 3.0)
 		else:
@@ -1117,7 +1122,7 @@ func _mudar(chave: String, valor) -> void:
 			_mudar(c2, v2)
 			_pintando_ja = false
 			m.toast("PINTADO!", 1.2)
-		m.pessoa.trabalhar(posto[0], posto[1], "Farm_Watering", 4.0, fim, prog, "pistola", cor_tinta)
+		m.pessoa.trabalhar(posto[0], posto[1], "Idle_Torch", 4.5, fim, prog, "pistola", cor_tinta)   # braço esticado com a pistola, varrendo
 		return
 	if chave.begins_with("peca:"):
 		# cor de uma peça só: guarda no dicionário de cores das peças ("" = volta pra cor do carro)

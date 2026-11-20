@@ -36,6 +36,7 @@ const CORES_ROUPA := [["Preto", "#18181b"], ["Branco", "#ececea"], ["Cinza", "#6
 const PELES := {"clara": Color(1.12, 1.06, 1.04), "media": Color(1, 1, 1), "morena": Color(0.8, 0.68, 0.6), "negra": Color(0.5, 0.4, 0.34)}
 
 var vel_anda := ANDA
+var carregando := false   # (fase 2) peça/roda na mão: anda devagar com os braços pra frente (sem correr)
 var passo_anda := PASSO_ANDA
 var passo_corre := PASSO_CORRE
 const DANCA := "res://modelos/personagens/dancarino.glb"
@@ -188,6 +189,24 @@ static func _animacoes_ual(mod: Node, esq: Skeleton3D) -> AnimationLibrary:
 	for apelido in UAL_NOMES:
 		if lib.has_animation(UAL_NOMES[apelido]):
 			lib.add_animation(apelido, lib.get_animation(UAL_NOMES[apelido]))
+	# parado segurando peça: pernas do "Idle", braços travados na pose do "Walk_Carry"
+	if lib.has_animation("Idle") and lib.has_animation("Walk_Carry"):
+		var wc := lib.get_animation("Walk_Carry")
+		var ci: Animation = lib.get_animation("Idle").duplicate(true)
+		for t in ci.get_track_count():
+			if ci.track_get_type(t) != Animation.TYPE_ROTATION_3D:
+				continue
+			var osso := String(ci.track_get_path(t)).get_slice(":", 1)
+			if not ["clavicle", "upperarm", "lowerarm", "hand", "thumb", "index", "middle", "ring", "pinky"].any(func(s): return osso.begins_with(s)):
+				continue
+			var tw := wc.find_track(ci.track_get_path(t), Animation.TYPE_ROTATION_3D)
+			if tw < 0:
+				continue
+			var q := wc.rotation_track_interpolate(tw, 0.3)
+			for k in range(ci.track_get_key_count(t) - 1, -1, -1):
+				ci.track_remove_key(t, k)
+			ci.rotation_track_insert_key(t, 0.0, q)
+		lib.add_animation("Carry_Idle", ci)
 	return lib
 
 
@@ -536,7 +555,11 @@ func _trabalho(dt: float) -> void:
 	desejo = Vector3.ZERO
 	var o: Vector3 = tb["olhar"] - global_position
 	if Vector2(o.x, o.z).length() > 0.05:
-		modelo.rotation.y = lerp_angle(modelo.rotation.y, atan2(o.x, o.z), 1.0 - exp(-dt * 10.0))
+		var yaw := atan2(o.x, o.z)
+		if str(tb["ferr"]) == "pistola":
+			# demão de tinta: o corpo varre de um lado pro outro, devagar (a pistola fica na mão esquerda, esticada)
+			yaw += sin(float(tb["t"]) * 2.4) * 0.38
+		modelo.rotation.y = lerp_angle(modelo.rotation.y, yaw, 1.0 - exp(-dt * 10.0))
 	_tocar(str(tb["anim"]))
 	if anim:
 		anim.speed_scale = 1.0
@@ -581,7 +604,7 @@ func _physics_process(dt: float) -> void:
 	_tem_p = true
 	if not _trab.is_empty():
 		_trabalho(dt)
-	var vel := (CORRE if correndo else vel_anda) * minf(1.0, desejo.length())
+	var vel := (CORRE if correndo and not carregando else vel_anda) * minf(1.0, desejo.length())
 	var alvo := desejo.normalized() * vel if desejo.length() > 0.05 else Vector3.ZERO
 	var k := 1.0 - exp(-dt * 10.0)
 	velocity.x = lerpf(velocity.x, alvo.x, k)
@@ -603,6 +626,14 @@ func _physics_process(dt: float) -> void:
 		modelo.rotation.y = lerp_angle(modelo.rotation.y, giro, 1.0 - exp(-dt * 12.0))
 	if not _trab.is_empty() and _trab["fase"] == "fazer":
 		pass   # a animação do trabalho manda
+	elif carregando and anim and anim.has_animation("drops/Walk_Carry"):
+		correndo = false
+		if plano > 0.15:
+			_tocar("Walk_Carry")
+			anim.speed_scale = clampf(plano / passo_anda, 0.6, 1.4)
+		else:
+			_tocar("Carry_Idle" if anim.has_animation("drops/Carry_Idle") else "Walk_Carry")
+			anim.speed_scale = 1.0
 	elif dancando:
 		_tocar("danca")
 	else:

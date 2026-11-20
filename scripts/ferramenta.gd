@@ -91,7 +91,7 @@ static func _particulas(pai: Node3D, tipo: String, cor: Color) -> CPUParticles3D
 
 
 ## em que mão cada ferramenta vai (depende da animação: no "Interact" e no "Idle_Torch" quem trabalha é a esquerda)
-const MAO := {"esponja": "l", "lixadeira": "l", "spotter": "l", "pistola": "r"}
+const MAO := {"esponja": "l", "lixadeira": "l", "spotter": "l", "pistola": "l"}
 
 ## cria a ferramenta (pai = BoneAttachment3D da mão). Mão esquerda = espelho da direita.
 static func criar(nome: String, cor := Color.WHITE, esquerda := false) -> Node3D:

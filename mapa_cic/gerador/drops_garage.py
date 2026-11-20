@@ -233,7 +233,7 @@ ZS = 6.0            # fundo do sobrado da frente (laje cobre o começo do corred
 ZO0, ZO1 = 13.5, 28.5   # oficina (v31: 5 m mais funda no fundo)
 ZC1 = 23.5              # fundo da cabine branca (atrás dela a oficina continua)
 XC0, XC1 = -4.6, 0.8    # corredor (entre o muro da esquerda e a casa da direita)
-XO1 = 1.6               # parede entre oficina e cabine
+XO1 = 0.2               # parede entre oficina e cabine (fase 2: recuada 1,4 m pra cabine caber o carro inteiro)
 CINZA_ESC = (92, 94, 98)
 PRETO = (24, 24, 27)
 # piso: corredor de concreto, oficina com epóxi cinza

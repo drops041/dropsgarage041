@@ -37,6 +37,15 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
 - TALA E RECUO SEPARADOS: na aba SUSPENSÃO agora tem tala e recuo da dianteira e da traseira
   (recuo negativo = roda pra fora). Dá pra fazer traseira mais larga, frente embutida etc.
 - SOM BATENDO: com a música tocando, o cone dos alto-falantes (tampão e caixa) mexe no grave.
+- DESMONTAGEM COM AS MÃOS: TIRAR faz o boneco soltar a peça e segurar; ele anda carregando (sem correr)
+  até o cavalete, que agora fica na parede do fundo da cabine, e GUARDAR. Pra pôr de volta: PEGAR no
+  cavalete, levar até o carro e COLOCAR. Com roda na mão ele também anda na pose de carregar.
+- CABINE MAIOR: a parede entre a oficina e a cabine foi 1,4 m pra dentro da oficina (o carro cabe inteiro).
+  A botoeira do elevador saiu do meio e foi pra parede, do lado do vão.
+- PINTURA: pistola com o braço esticado, varrendo de um lado pro outro.
+- DESGASTE EM TODOS OS CARROS: batida forte amassa (do lado que bateu), rodar suja, e carro sujo e
+  amassado vai enferrujando devagar. Tudo sai na cabine (LAVAR / LIXAR / DESAMASSAR).
+- Capô e tampa com a chapa dupla (abertos não somem mais vistos de baixo).
 - G5 CROSS (o carro principal): Saveiro G5 Cross cabine estendida, branca com pérola rosa, aro 17,
   socada. Primeira da lista e já vem selecionada uma vez. Portas abrem e saem na desmontagem
   (capô e tampa vieram grudados no modelo). Modelo de bimboit34 (Sketchfab, CC BY 4.0), sem logos.
