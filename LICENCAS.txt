@@ -84,6 +84,9 @@ Fotos dos projetos (quadros dos encontros e TV da sala gamer)                   
 Grafites do galpão e do barracão, oficina da Drops, barracão, galpão,
 posto, lombadas, postes, casas                                                  OK (feitos aqui no projeto)
 
+Estúdio da garagem (reflexo/luz): "Monochrome Studio 03" — Grzegorz Wronkowski / Poly Haven / CC0   OK
+                           (escurecido e com faixa de luz somada por ferramentas/estudio_de_hdri.py)
+
 ------------------------------------------------------------------ PERSONAGENS
 Protagonista ("Você"): Universal Base Characters [Standard]   Quaternius / CC0  OK (crédito por gentileza)
                            https://quaternius.com — roupas (camiseta, regata, calça, bermuda, tênis)
