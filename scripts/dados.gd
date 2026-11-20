@@ -21,7 +21,8 @@ const ARQUIVO := "user://garagem.json"
 
 var carros: Array = []
 var idx := 0                 # carro escolhido
-var personagem := "voce"   # quem anda a pé (tela de escolher personagem)
+var personagem := "protagonista"   # quem anda a pé
+var visual := {}   # (fase 2) roupa, cabelo e pele do protagonista (ver Pessoa.VISUAL_PADRAO)
 var configs := {}            # id do carro -> configuração
 var dinheiro := 1000000
 var recordes := {}
@@ -125,8 +126,9 @@ func _ready() -> void:
 				if carros[i]["id"] == cid:
 					idx = i
 			personagem = str(salvo.get("personagem", personagem))
-			if not salvo.has("v31"):
-				personagem = "voce"   # v31: personagem novo vira o padrão uma vez (dá pra trocar de volta)
+			if not salvo.has("v43"):
+				personagem = "protagonista"   # v43: protagonista novo (sem bug de animação) vira o padrão uma vez
+			visual = salvo.get("visual", {}) if salvo.get("visual", {}) is Dictionary else {}
 			dinheiro = maxi(1000000, int(salvo.get("dinheiro", 1000000)))
 			recordes = salvo.get("recordes", {})
 			volume_musica = clampf(float(salvo.get("volume_musica", 0.8)), 0.0, 1.0)
@@ -134,6 +136,8 @@ func _ready() -> void:
 			tutorial_feito = bool(salvo.get("tutorial", false))
 			dicas = salvo.get("dicas", {}) if salvo.get("dicas", {}) is Dictionary else {}
 			faixa = clampi(int(salvo.get("faixa", 0)), 0, MUSICAS.size() - 1)
+	if OS.has_environment("DROPS_VISUAL"):   # testes: visual do protagonista em JSON
+		visual = JSON.parse_string(OS.get_environment("DROPS_VISUAL"))
 	if OS.has_environment("DROPS_PERSONAGEM"):
 		personagem = OS.get_environment("DROPS_PERSONAGEM")
 	if OS.has_environment("DROPS_CARRO"):   # testes: abre direto num carro
@@ -259,7 +263,7 @@ func original() -> void:
 func salvar() -> void:
 	var f := FileAccess.open(ARQUIVO, FileAccess.WRITE)
 	if f:
-		f.store_string(JSON.stringify({"v31": true, "idx": idx, "carro": carros[idx]["id"], "personagem": personagem, "configs": configs, "dinheiro": dinheiro, "recordes": recordes, "volume_musica": volume_musica, "faixa": faixa, "graficos": graficos, "tutorial": tutorial_feito, "dicas": dicas}))
+		f.store_string(JSON.stringify({"v31": true, "v43": true, "visual": visual, "idx": idx, "carro": carros[idx]["id"], "personagem": personagem, "configs": configs, "dinheiro": dinheiro, "recordes": recordes, "volume_musica": volume_musica, "faixa": faixa, "graficos": graficos, "tutorial": tutorial_feito, "dicas": dicas}))
 
 
 func ganhar(valor: int) -> void:

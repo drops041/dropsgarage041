@@ -29,6 +29,11 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
 - DESGASTE (carro velho): a G3 vem de garagem — ferrugem, amassados e sujeira. Na cabine de pintura
   aparece "Serviço" com LAVAR, LIXAR (ferrugem) e DESAMASSAR, pro carro todo ou pra cada peça.
   Depois do serviço é só pintar.
+- PROTAGONISTA NOVO: quem desce do carro agora é um personagem só, com corpo e animações feitos
+  no mesmo esqueleto (nada de braço torto ou pé escorregando). Na garagem, aba VOCÊ: camiseta ou
+  regata, calça ou bermuda, cores, tênis, cabelo, barba e pele. Os personagens antigos ficam só
+  nos encontros. Já vem com animações prontas pra usar depois: dirigir, empurrar, carregar roda,
+  consertar ajoelhado, sentar, falar no celular, braço cruzado, encostar.
 
 Novidades (v42)
 - Carro novo: SaborSW (SUV 7 lugares, suspensão a ar), preto com roda 24 prata.

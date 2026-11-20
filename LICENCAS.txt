@@ -84,6 +84,10 @@ Grafites do galpão e do barracão, oficina da Drops, barracão, galpão,
 posto, lombadas, postes, casas                                                  OK (feitos aqui no projeto)
 
 ------------------------------------------------------------------ PERSONAGENS
+Protagonista ("Você"): Universal Base Characters [Standard]   Quaternius / CC0  OK (crédito por gentileza)
+                           https://quaternius.com — roupas (camiseta, regata, calça, bermuda, tênis)
+                           feitas no próprio projeto em cima do corpo (ferramentas/personagem_ual.py)
+Animações do protagonista: Universal Animation Library 1 e 2 [Standard]   Quaternius / CC0   OK
 Dançarino "HeChoseToBeHappy"   Nikita Teploukhov (skril4ek) / Sketchfab Standard  OK (crédito)
 Thuess (dançarino de origem das mulheres e do dançarino de boné)                   PENDENTE
 Mecânico (base do personagem "Você")                                               PENDENTE

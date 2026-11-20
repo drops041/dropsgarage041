@@ -39,6 +39,9 @@ func _ready() -> void:
 	if OS.has_environment("DROPS_CAM"):   # testes: "pitch,dist"
 		pitch = float(OS.get_environment("DROPS_CAM").get_slice(",", 0))
 		dist = float(OS.get_environment("DROPS_CAM").get_slice(",", 1))
+	if OS.has_environment("DROPS_ABA"):   # testes: abre numa aba (ex.: personagem)
+		aba = OS.get_environment("DROPS_ABA")
+		_montar_aba()
 	if OS.has_environment("DROPS_KIT"):   # testes: liga peças do kit (ex.: kit_lip=preto,kit_saias=cor)
 		for par in OS.get_environment("DROPS_KIT").split(","):
 			Dados.mudar(par.get_slice("=", 0), par.get_slice("=", 1))
@@ -225,13 +228,46 @@ func _mudar(chave: String, valor) -> void:
 			_som_ar.volume_db = -6.0
 			add_child(_som_ar)
 		_som_ar.play()   # chiado da suspensão a ar
+	if chave.begins_with("pessoa:"):
+		Dados.visual[chave.substr(7)] = valor
+		Dados.personagem = "protagonista"
+		Dados.salvar()
+		if boneco:
+			Pessoa.vestir(boneco, Dados.visual)
+		_montar_aba()
+		return
 	Dados.mudar(chave, valor)
 	visual.atualizar(Dados.cfg())
 	_montar_aba()
 
 
+## o protagonista em pé do lado do carro (só na aba do guarda-roupa)
+var boneco: Node3D
+func _boneco(mostrar: bool) -> void:
+	if boneco == null:
+		if not mostrar:
+			return
+		var f := Pessoa.ficha("protagonista")
+		boneco = Pessoa.criar(str(f["arq"]), float(f["altura"]))
+		var raiz := Node3D.new()
+		add_child(raiz)
+		raiz.add_child(boneco)
+		raiz.position = Vector3(1.5, 0.0, 1.55)
+		raiz.rotation.y = 0.35
+		Pessoa.vestir(boneco, Dados.visual)
+		var ap := boneco.find_child("AnimationPlayer", true, false) as AnimationPlayer
+		if ap and ap.has_animation("drops/Idle_FoldArms"):
+			ap.play("drops/Idle_FoldArms")
+	boneco.get_parent().visible = mostrar
+
+
 # ---------------------------------------------------------------- câmera
 func _process(dt: float) -> void:
+	if OS.has_environment("DROPS_ABA_FOTO"):   # testes: foto da aba aberta e sai
+		_t += dt
+		if _t > 4.0:
+			get_viewport().get_texture().get_image().save_png(OS.get_environment("DROPS_ABA_FOTO"))
+			get_tree().quit()
 	if _foto != "":
 		_t += dt
 		var roteiro := [["medidas", ""], ["pintura", "camaleao"], ["rodas", "work"], ["som", "deitado"], ["neon", "rosa"], ["carro", ""], ["kit", ""]]
@@ -335,7 +371,7 @@ func _botao(texto: String, marcado := false) -> Button:
 
 ## categorias do menu (carrossel em arco no topo, estilo garagem de jogo de rua)
 const CATS := [["carro", "CARRO"], ["medidas", "SUSPENSÃO"], ["pintura", "PINTURA"], ["rodas", "RODAS"], ["kit", "BODY KIT"],
-	["neon", "NEON"], ["som", "SOM"], ["personagem", "A PÉ"], ["musica", "MÚSICA"], ["role", "SAIR PRO ROLÊ"]]
+	["neon", "NEON"], ["som", "SOM"], ["personagem", "VOCÊ"], ["musica", "MÚSICA"], ["role", "SAIR PRO ROLÊ"]]
 const CIANO := Color("4fd8ff")
 var carrossel: Control
 var _desenho_carrossel: Control
@@ -683,6 +719,7 @@ func _montar_aba() -> void:
 		contador_l.text = "%d/%d" % [Dados.idx + 1, Dados.carros.size()]
 	for n in conteudo.get_children():
 		n.queue_free()
+	_boneco(aba == "personagem")
 	var c := Dados.cfg()
 	match aba:
 		"medidas":
@@ -754,15 +791,23 @@ func _montar_aba() -> void:
 				b.pressed.connect(_trocar_carro.bind(passo))
 				gc.add_child(b)
 		"personagem":
-			_titulo("Quem desce do carro")
-			for p in Pessoa.PERSONAGENS:
-				if not ResourceLoader.exists(p["arq"]):
-					continue
-				var b := _botao(str(p["nome"]), p["id"] == Dados.personagem)
-				b.custom_minimum_size = Vector2(0, 56)
-				var pid: String = p["id"]
-				b.pressed.connect(func(): Dados.personagem = pid; Dados.salvar(); _montar_aba())
-				conteudo.add_child(b)
+			# (fase 2) guarda-roupa do protagonista (os personagens antigos ficam só nos encontros)
+			var v := Pessoa.VISUAL_PADRAO.duplicate()
+			v.merge(Dados.visual, true)
+			_titulo("Parte de cima")
+			_opcoes([["camiseta", "CAMISETA"], ["regata", "REGATA"]], "pessoa:cima", str(v["cima"]), 2)
+			_cores(Pessoa.CORES_ROUPA, "pessoa:cor_cima", str(v["cor_cima"]))
+			_titulo("Parte de baixo")
+			_opcoes([["calca", "CALÇA"], ["bermuda", "BERMUDA"]], "pessoa:baixo", str(v["baixo"]), 2)
+			_cores(Pessoa.CORES_ROUPA, "pessoa:cor_baixo", str(v["cor_baixo"]))
+			_titulo("Tênis")
+			_cores(Pessoa.CORES_ROUPA, "pessoa:cor_tenis", str(v["cor_tenis"]))
+			_titulo("Cabelo")
+			_opcoes([["careca", "CARECA"], ["raspado", "RASPADO"], ["social", "SOCIAL"], ["comprido", "COMPRIDO"]], "pessoa:cabelo", str(v["cabelo"]), 2)
+			_opcoes([[true, "COM BARBA"], [false, "SEM BARBA"]], "pessoa:barba", str(v["barba"]), 2)
+			_opcoes([["preto", "PRETO"], ["castanho", "CASTANHO"], ["ruivo", "RUIVO"], ["loiro", "LOIRO"], ["grisalho", "GRISALHO"]], "pessoa:cor_cabelo", str(v["cor_cabelo"]), 3)
+			_titulo("Pele")
+			_opcoes([["clara", "CLARA"], ["media", "MÉDIA"], ["morena", "MORENA"], ["negra", "NEGRA"]], "pessoa:pele", str(v["pele"]), 2)
 		"musica":
 			_titulo("Trilha da garagem")
 			var pm := Dados.painel_musica()
@@ -859,7 +904,7 @@ func _opcoes(lista: Array, chave: String, atual: String, colunas: int) -> void:
 	g.add_theme_constant_override("v_separation", 8)
 	conteudo.add_child(g)
 	for o in lista:
-		var b := _botao(o[1], o[0] == atual)
+		var b := _botao(o[1], str(o[0]) == atual)
 		b.custom_minimum_size = Vector2(0, 54)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.pressed.connect(_mudar.bind(chave, o[0]))

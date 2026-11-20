@@ -9,6 +9,7 @@ const PASSO_CORRE := 3.3
 
 ## quem dá pra escolher pra andar a pé (modelo com esqueleto do Mixamo: ganha as animações do mecânico)
 const PERSONAGENS := [
+	{"id": "protagonista", "nome": "Você", "arq": "res://modelos/personagens/protagonista.glb", "altura": 1.76},
 	{"id": "voce", "nome": "Você (dono da Drops)", "arq": "res://modelos/personagens/voce.glb", "altura": 1.70},
 	{"id": "mecanico", "nome": "Mecânico", "arq": "res://modelos/personagens/mecanico.glb", "altura": 1.72},
 	{"id": "jack", "nome": "Jack", "arq": "res://modelos/personagens/jack.glb", "altura": 1.80},
@@ -16,6 +17,27 @@ const PERSONAGENS := [
 	{"id": "henry", "nome": "Henry", "arq": "res://modelos/personagens/henry.glb", "altura": 1.80},
 ]
 const BASE_ANIM := "res://modelos/personagens/mecanico.glb"
+## (fase 2) protagonista novo: corpo e animações do Quaternius no MESMO esqueleto -> nada de adaptar osso (sem braço torto)
+const UAL_ANIMS := "res://modelos/personagens/ual_anims.res"
+const UAL_NOMES := {"parado": "Idle", "anda": "Walk", "corre": "Jog_Fwd", "danca": "Dance"}
+const UAL_PASSO_ANDA := 1.03   # m/s em que o pé apoiado não patina (medido, boneco de 1,81 m)
+const UAL_PASSO_CORRE := 4.6
+const UAL_ALTURA := 1.81
+
+## guarda-roupa do protagonista (Dados.visual guarda o que o jogador escolheu)
+const VISUAL_PADRAO := {"cima": "camiseta", "cor_cima": "#18181b", "baixo": "calca", "cor_baixo": "#2b3a5c",
+	"cor_tenis": "#ececea", "cabelo": "social", "barba": true, "cor_cabelo": "castanho", "pele": "media"}
+const CABELOS := {"careca": "", "raspado": "cabelo_raspado", "social": "cabelo_social", "comprido": "cabelo_comprido"}
+const CORES_CABELO := {"preto": Color(0.12, 0.1, 0.09), "castanho": Color(0.42, 0.29, 0.2), "ruivo": Color(0.85, 0.42, 0.2),
+	"loiro": Color(1.25, 1.0, 0.62), "grisalho": Color(1.15, 1.15, 1.15)}
+const CORES_ROUPA := [["Preto", "#18181b"], ["Branco", "#ececea"], ["Cinza", "#6b6d72"], ["Amarelo Drops", "#ffd400"],
+	["Vermelho", "#b3202a"], ["Azul jeans", "#2b3a5c"], ["Jeans claro", "#6f8db3"], ["Verde", "#2f5d3a"], ["Bege", "#c8b48f"],
+	["Rosa", "#e86fb0"], ["Roxo", "#5b3b8c"], ["Laranja", "#e0701f"]]
+const PELES := {"clara": Color(1.12, 1.06, 1.04), "media": Color(1, 1, 1), "morena": Color(0.8, 0.68, 0.6), "negra": Color(0.5, 0.4, 0.34)}
+
+var vel_anda := ANDA
+var passo_anda := PASSO_ANDA
+var passo_corre := PASSO_CORRE
 const DANCA := "res://modelos/personagens/dancarino.glb"
 
 var modelo: Node3D
@@ -48,7 +70,14 @@ func _ready() -> void:
 	add_child(modelo)
 	_base_modelo = modelo.position
 	anim = modelo.find_child("AnimationPlayer", true, false) as AnimationPlayer
-	if anim:
+	if Pessoa.e_ual(modelo):
+		Pessoa.vestir(modelo, Dados.visual)
+		var k := float(ficha.get("altura", 1.76)) / UAL_ALTURA
+		passo_anda = UAL_PASSO_ANDA * k
+		passo_corre = UAL_PASSO_CORRE * k
+		vel_anda = 1.45   # passo normal de gente (a animação do kit é mais calma que a antiga)
+		_tocar("parado")
+	elif anim:
 		var esq := modelo.find_child("Skeleton3D", true, false) as Skeleton3D
 		if esq and not anim.has_animation("drops/danca"):
 			var arq := str(ficha["arq"])
@@ -70,7 +99,7 @@ func segurar_celular(sim: bool) -> void:
 			return
 		var osso := -1
 		for i in esq.get_bone_count():
-			if _chave_osso(esq.get_bone_name(i)) == _chave_osso("RightHand"):
+			if _chave_osso(esq.get_bone_name(i)) == _chave_osso("RightHand") or esq.get_bone_name(i) == "hand_r":
 				osso = i
 		if osso < 0:
 			return
@@ -133,10 +162,66 @@ static func criar(arq: String, altura := 1.75) -> Node3D:
 	if esq == null:
 		return mod
 	if not _cache_anims.has(arq):
-		_cache_anims[arq] = _animacoes_para(esq, ap)
+		_cache_anims[arq] = _animacoes_ual(mod, esq) if esq.find_bone("spine_01") >= 0 else _animacoes_para(esq, ap)
 	if not ap.has_animation_library("drops"):
 		ap.add_animation_library("drops", _cache_anims[arq])
 	return mod
+
+
+static func e_ual(mod: Node) -> bool:
+	var esq := mod.find_child("Skeleton3D", true, false) as Skeleton3D
+	return esq != null and esq.find_bone("spine_01") >= 0
+
+
+## animações do kit (já no mesmo esqueleto): só aponta as trilhas pro esqueleto deste boneco.
+## Ficam com o nome original (Driving, Push, Sitting_Idle...) e com os apelidos do jogo (parado, anda, corre, danca)
+static func _animacoes_ual(mod: Node, esq: Skeleton3D) -> AnimationLibrary:
+	var lib := AnimationLibrary.new()
+	var fonte: AnimationLibrary = load(UAL_ANIMS)
+	var caminho := String(mod.get_path_to(esq))
+	for n in fonte.get_animation_list():
+		var a: Animation = fonte.get_animation(n).duplicate(true)
+		for t in a.get_track_count():
+			var pth := String(a.track_get_path(t))
+			a.track_set_path(t, NodePath(caminho + pth.substr(pth.find(":"))))
+		lib.add_animation(n, a)
+	for apelido in UAL_NOMES:
+		if lib.has_animation(UAL_NOMES[apelido]):
+			lib.add_animation(apelido, lib.get_animation(UAL_NOMES[apelido]))
+	return lib
+
+
+## veste o protagonista: mostra a roupa escolhida, esconde a pele que ela cobre, pinta roupa, cabelo e pele
+const COBRE := {"camiseta": ["tronco", "ombro"], "regata": ["tronco"], "calca": ["quadril", "coxa", "joelho", "canela"],
+	"bermuda": ["quadril", "coxa", "joelho"], "tenis": ["pe", "tornozelo"], "sola": []}
+static func vestir(mod: Node, visual: Dictionary) -> void:
+	var v := VISUAL_PADRAO.duplicate()
+	v.merge(visual, true)
+	var usando := [str(v["cima"]), str(v["baixo"]), "tenis", "sola"]
+	var coberto := []
+	for r in usando:
+		coberto.append_array(COBRE.get(r, []))
+	var cabelo := str(CABELOS.get(str(v["cabelo"]), "cabelo_social"))
+	var cor_cab: Color = CORES_CABELO.get(str(v["cor_cabelo"]), CORES_CABELO["castanho"])
+	for mi: MeshInstance3D in mod.find_children("*", "MeshInstance3D", true, false):
+		var n := String(mi.name)
+		var cor := Color(-1, 0, 0)
+		if n.begins_with("roupa_"):
+			var r := n.substr(6)
+			mi.visible = r in usando
+			cor = Color(str(v["cor_cima"])) if r in ["camiseta", "regata"] else (Color(str(v["cor_baixo"])) if r in ["calca", "bermuda"] else (Color(str(v["cor_tenis"])) if r == "tenis" else cor))
+		elif n.begins_with("corpo_"):
+			mi.visible = not (n.substr(6) in coberto)
+			cor = PELES.get(str(v["pele"]), Color.WHITE)
+		elif n.begins_with("cabelo_") or n == "barba" or n == "sobrancelha":
+			mi.visible = n == cabelo or n == "sobrancelha" or (n == "barba" and bool(v["barba"]))
+			cor = cor_cab
+		if cor.r >= 0.0 and mi.visible and mi.mesh:
+			var m0 := mi.mesh.surface_get_material(0)
+			if m0 is StandardMaterial3D:
+				var m: StandardMaterial3D = m0.duplicate()
+				m.albedo_color = cor
+				mi.material_override = m
 
 
 ## personagem dançando (festinha/encontro): a dança do dançarino passada pro esqueleto dele, já tocando
@@ -421,7 +506,7 @@ func _physics_process(dt: float) -> void:
 	_p_ant = _p_cur
 	_p_cur = agora
 	_tem_p = true
-	var vel := (CORRE if correndo else ANDA) * minf(1.0, desejo.length())
+	var vel := (CORRE if correndo else vel_anda) * minf(1.0, desejo.length())
 	var alvo := desejo.normalized() * vel if desejo.length() > 0.05 else Vector3.ZERO
 	var k := 1.0 - exp(-dt * 10.0)
 	velocity.x = lerpf(velocity.x, alvo.x, k)
@@ -447,8 +532,8 @@ func _physics_process(dt: float) -> void:
 		_tocar("corre" if plano > 2.6 else ("anda" if plano > 0.3 else "parado"))
 		# ritmo da perna = velocidade de verdade (pé não patina nem fica frenético)
 		if anim and atual == "anda":
-			anim.speed_scale = clampf(plano / PASSO_ANDA, 0.6, 1.35)
+			anim.speed_scale = clampf(plano / passo_anda, 0.6, 1.5)
 		elif anim and atual == "corre":
-			anim.speed_scale = clampf(plano / PASSO_CORRE, 0.85, 1.4)
+			anim.speed_scale = clampf(plano / passo_corre, 0.85, 1.4)
 		elif anim:
 			anim.speed_scale = 1.0
