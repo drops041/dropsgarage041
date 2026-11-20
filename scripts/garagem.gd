@@ -728,9 +728,11 @@ func _montar_aba() -> void:
 			_linha("Rebaixo traseiro", "rebaixo_tras", 1.0, 0.0, rmax, c, "%d cm", "suspensão de trás (0 = original, até %d = aterrado)" % int(rmax))
 			_linha("Roda (aro)", "aro", 1.0, 14.0, 28.0, c, "%d\"", "aro 14 até 28")
 			_linha("Pneu (flanco)", "flanco", 0.5, 3.0, 9.0, c, "%.1f cm", "flanco baixo = pneu fininho")
-			_linha("Tala", "tala", 0.5, 6.0, 10.0, c, "%.1f\"", "largura da roda")
+			_linha("Tala dianteira", "tala", 0.5, 6.0, 10.0, c, "%.1f\"", "largura das rodas da frente")
+			_linha("Tala traseira", "tala_tras", 0.5, 6.0, 12.0, c, "%.1f\"", "largura das rodas de trás")
 			_linha("Cambagem", "camber", 1.0, 0.0, 8.0, c, "%d°", "roda inclinada pra dentro")
-			_linha("Recuo da roda", "recuo", 0.5, -3.0, 8.0, c, "%.1f cm", "+ = roda mais pra dentro do para-lama")
+			_linha("Recuo dianteiro", "recuo", 0.5, -6.0, 8.0, c, "%.1f cm", "rodas da frente: + = pra dentro, − = pra fora")
+			_linha("Recuo traseiro", "recuo_tras", 0.5, -6.0, 8.0, c, "%.1f cm", "rodas de trás: + = pra dentro, − = pra fora")
 		"pintura":
 			_titulo("Cor")
 			_cores(Dados.CORES, "cor", str(c["cor"]))

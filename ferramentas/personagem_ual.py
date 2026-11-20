@@ -125,12 +125,54 @@ class Saida:
         self.mats.append(m)
         return len(self.mats) - 1
 
+    @staticmethod
+    def tangentes(P, N, UV, idx):
+        """tangente de cada vértice, SEMPRE válida (UV sem área -> qualquer direção perpendicular à normal).
+        Sem isso algumas placas de vídeo geram NaN na roupa e a tela enche de quadrados pretos."""
+        N = N / np.maximum(np.linalg.norm(N, axis=1, keepdims=True), 1e-9)
+        T = np.zeros((len(P), 3))
+        Bt = np.zeros((len(P), 3))
+        p0, p1, p2 = P[idx[:, 0]], P[idx[:, 1]], P[idx[:, 2]]
+        u0, u1, u2 = UV[idx[:, 0]], UV[idx[:, 1]], UV[idx[:, 2]]
+        e1, e2 = p1 - p0, p2 - p0
+        d1, d2 = u1 - u0, u2 - u0
+        r = d1[:, 0] * d2[:, 1] - d2[:, 0] * d1[:, 1]
+        ok = np.abs(r) > 1e-12
+        r = np.where(ok, 1.0 / np.where(ok, r, 1.0), 0.0)
+        ft = (e1 * d2[:, 1:2] - e2 * d1[:, 1:2]) * r[:, None]
+        fb = (e2 * d1[:, 0:1] - e1 * d2[:, 0:1]) * r[:, None]
+        for c in range(3):
+            np.add.at(T, idx[:, c], ft)
+            np.add.at(Bt, idx[:, c], fb)
+        T = T - N * (T * N).sum(1, keepdims=True)
+        ln = np.linalg.norm(T, axis=1)
+        ruim = ~(ln > 1e-8) | ~np.isfinite(ln)
+        # reserva: perpendicular à normal (usa X; se a normal for quase X, usa Z)
+        ref = np.where(np.abs(N[:, 0:1]) < 0.9, np.array([[1.0, 0, 0]]), np.array([[0, 0, 1.0]]))
+        alt = ref - N * (ref * N).sum(1, keepdims=True)
+        T[ruim] = alt[ruim]
+        T /= np.maximum(np.linalg.norm(T, axis=1, keepdims=True), 1e-9)
+        w = np.where((np.cross(N, T) * Bt).sum(1) < 0.0, -1.0, 1.0)
+        return np.hstack([T, w[:, None]]).astype(np.float32)
+
     def malha(self, nome, P, N, UV, J, W, idx, mat):
         if len(idx) == 0:
             return
+        # tira o que não é usado (malhas do corpo dividido) e qualquer número inválido
+        usados = np.unique(idx)
+        novo = -np.ones(len(P), np.int64)
+        novo[usados] = np.arange(len(usados))
+        idx = novo[idx]
+        P, N, UV, J, W = P[usados], N[usados], UV[usados], J[usados], W[usados]
+        N = np.where(np.isfinite(N), N, 0.0)
+        ln = np.linalg.norm(N, axis=1)
+        N[ln < 1e-6] = [0.0, 1.0, 0.0]
+        W = np.where(np.isfinite(W), W, 0.0)
+        W[W.sum(1) < 1e-6, 0] = 1.0
         at = {
             'POSITION': self.acc_raw(P, 'VEC3', target=34962, minmax=True),
             'NORMAL': self.acc_raw(N / np.maximum(np.linalg.norm(N, axis=1, keepdims=True), 1e-9), 'VEC3', target=34962),
+            'TANGENT': self.acc_raw(self.tangentes(P.astype(np.float64), N.astype(np.float64), UV.astype(np.float64), idx), 'VEC4', target=34962),
             'TEXCOORD_0': self.acc_raw(UV, 'VEC2', target=34962),
             'JOINTS_0': self.acc_raw(J, 'VEC4', comp=5123, target=34962),
             'WEIGHTS_0': self.acc_raw(W / np.maximum(W.sum(1, keepdims=True), 1e-9), 'VEC4', target=34962),
@@ -310,7 +352,7 @@ def casca(P, N, UV, J, W, idx, sel, afasta, alisa, puxa_fora=1.0, chao=None, fol
         for k2, (pp, src) in enumerate(zip(q, [ia, ib, ib, ia])):
             extraP.append(pp)
             extraN.append(fnq)
-            extraUV.append(UVr[src])
+            extraUV.append(UVr[src] + (np.array([0.0, 0.003]) if k2 >= 2 else 0.0))
             extraJ.append(Jr[src])
             extraW.append(Wr[src])
         o = base + len(extraP) - 4

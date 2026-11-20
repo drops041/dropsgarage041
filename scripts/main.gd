@@ -1146,8 +1146,10 @@ func _suspensao(dt: float) -> void:
 ## pula no grave quando o som tá ligado e a música tocando
 func _quique() -> float:
 	if not musica.playing:
+		visual.bater(0.0)
 		return 0.0
 	var g := Dados.grave
+	visual.bater(g)   # cone dos alto-falantes batendo
 	var forca := 0.012 if str(cfg.get("som", "off")) == "off" else (0.045 if str(cfg.get("som", "")) == "deitado" else 0.032)
 	visual.neon_luz.light_energy = 1.6 + g * 3.0
 	return -g * g * forca

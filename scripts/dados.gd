@@ -240,6 +240,10 @@ func cfg(i: int = -1) -> Dictionary:
 		c["recuo"] = 0.0
 	if not c.has("rebaixo_tras"):
 		c["rebaixo_tras"] = c["rebaixo"]   # traseira acompanha a dianteira até você mexer nela
+	if not c.has("tala_tras"):
+		c["tala_tras"] = c["tala"]
+	if not c.has("recuo_tras"):
+		c["recuo_tras"] = c["recuo"]
 	return c
 
 
@@ -247,8 +251,9 @@ func mudar(chave: String, valor) -> void:
 	var id: String = carro()["id"]
 	if not configs.has(id):
 		configs[id] = {}
-	if chave == "rebaixo" and not configs[id].has("rebaixo_tras"):
-		configs[id]["rebaixo_tras"] = cfg()["rebaixo_tras"]   # mexer na dianteira não leva a traseira junto
+	for par in [["rebaixo", "rebaixo_tras"], ["tala", "tala_tras"], ["recuo", "recuo_tras"]]:
+		if chave == par[0] and not configs[id].has(par[1]):
+			configs[id][par[1]] = cfg()[par[1]]   # mexer na dianteira não leva a traseira junto
 	configs[id][chave] = valor
 	if chave == "roda":
 		configs[id].erase("rodas")   # escolheu o jogo inteiro (loja da garagem): some o "roda por roda" do elevador

@@ -754,7 +754,7 @@ func _trocar_roda(i: int, id: String) -> void:
 	var c2: Dictionary = c_antes.duplicate()
 	c2["roda"] = id
 	m.visual.c = c2
-	var nova: Node3D = m.visual.nova_roda(lado)
+	var nova: Node3D = m.visual.nova_roda(lado, -1, i < 2)
 	m.visual.c = c_antes
 	m.corpo_vis.add_child(nova)
 	nova.transform = velho.transform

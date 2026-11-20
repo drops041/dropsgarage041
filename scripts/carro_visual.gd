@@ -260,8 +260,47 @@ func aberto(k: String) -> bool:
 
 
 ## carro parado com som: pula no grave e o neon pisca
+## (fase 2) cone dos alto-falantes batendo no grave: [malha, posição parada, quanto anda no grave máximo]
+var _cones := []
+
+func _achar_cones() -> void:
+	_cones.clear()
+	if som_no == null:
+		return
+	for mi: MeshInstance3D in som_no.find_children("*", "MeshInstance3D", true, false):
+		var nome := String(mi.name).to_lower()
+		var mat := mi.get_active_material(0)
+		var mn := (mat.resource_name if mat else "").to_lower()
+		var tampao := nome.contains("flt_xtr") or mn.contains("flt_xtr")
+		if not (tampao or nome == "cone" or mn == "cone"):
+			continue
+		# o cone anda na direção mais fina da malha (a "frente" do alto-falante)
+		var ab := mi.get_aabb()
+		var eixo := Vector3.UP
+		if ab.size.x <= ab.size.y and ab.size.x <= ab.size.z:
+			eixo = Vector3.RIGHT
+		elif ab.size.z <= ab.size.y:
+			eixo = Vector3.BACK
+		var amp := 0.012 if tampao else 0.018   # metros de verdade no grave máximo
+		_cones.append([mi, mi.position, (mi.basis * eixo).normalized(), amp, Vector3.ZERO])
+
+
+func bater(g: float) -> void:
+	for cn in _cones:
+		var mi := cn[0] as Node3D
+		if not is_instance_valid(mi) or not mi.is_inside_tree():
+			continue
+		if cn[4] == Vector3.ZERO:
+			# o modelo vem em escala estranha (cm, esticado): converte o deslocamento pra metros de verdade
+			var dir: Vector3 = cn[2]
+			var em_metros := (mi.get_parent() as Node3D).global_basis * dir
+			cn[4] = dir * (float(cn[3]) / maxf(em_metros.length(), 1e-6))
+		mi.position = (cn[1] as Vector3) + (cn[4] as Vector3) * g
+
+
 func pulsar() -> void:
 	var g := Dados.grave
+	bater(g)
 	var s: String = c.get("som", "off")
 	var k := 0.012 if s == "off" else (0.045 if s == "deitado" else 0.032)
 	corpo.position.y = base_y - g * g * k
@@ -290,12 +329,17 @@ func raio_aro() -> float:
 func raio() -> float:
 	return raio_aro() + float(c["flanco"]) / 100.0
 
-func largura() -> float:
-	return float(c["tala"]) * 0.0254
+## tala e recuo separados: dianteira ("tala", "recuo") e traseira ("tala_tras", "recuo_tras")
+func tala(frente := true) -> float:
+	return float(c["tala"]) if frente else float(c.get("tala_tras", c["tala"]))
 
-func x_roda() -> float:
-	var poke: float = max(0.0, float(c["tala"]) - 7.0) * 0.0254 * 0.6
-	return float(d["W"]) / 2.0 - largura() / 2.0 - 0.02 + poke - float(c.get("recuo", 0.0)) / 100.0   # recuo: roda pra dentro do para-lama
+func largura(frente := true) -> float:
+	return tala(frente) * 0.0254
+
+func x_roda(frente := true) -> float:
+	var poke: float = max(0.0, tala(frente) - 7.0) * 0.0254 * 0.6
+	var recuo := float(c.get("recuo", 0.0)) if frente else float(c.get("recuo_tras", c.get("recuo", 0.0)))
+	return float(d["W"]) / 2.0 - largura(frente) / 2.0 - 0.02 + poke - recuo / 100.0   # recuo: roda pra dentro do para-lama
 
 
 ## (v37) maior aro que cabe no para-lama sem o carro precisar subir (com o flanco dado em cm), de 15 a 28
@@ -344,6 +388,7 @@ static func socar(dd: Dictionary, cc: Dictionary) -> Dictionary:
 	cc["rebaixo"] = rebaixo_max(dd)
 	cc["rebaixo_tras"] = rebaixo_max(dd)
 	cc["tala"] = 8.5 if int(cc["aro"]) >= 19 else 8.0
+	cc["tala_tras"] = cc["tala"]
 	return cc
 
 
@@ -409,14 +454,16 @@ func sobe_arco(frente: bool) -> float:
 ## posição da roda no eixo: se o carro está tão baixo que o pneu entra no para-lama, a roda fica por dentro
 ## da borda do para-lama (senão o pneu atravessa a lataria e aparece por fora)
 func x_roda_eixo(frente: bool, reb_cm := -999.0) -> float:
-	var x := x_roda()
+	var x := x_roda(frente)
+	if not frente and d.has("Wt"):   # carro com a traseira mais larga/estreita que a frente (bitola diferente)
+		x += (float(d["Wt"]) - float(d["W"])) / 2.0
 	var a = _arcos.get(str(d["id"]), {}).get(frente)
 	if a == null:
 		return x
 	var desloc := raio() - float(d["wy"]) - rebaixo_eixo(frente, reb_cm)     # quanto o corpo fica acima/abaixo do eixo
 	var topo_arco: float = float(a[0]) + desloc
 	if raio() * 2.0 > topo_arco - 0.015:
-		x = minf(x, float(a[1]) - largura() / 2.0 - 0.015)
+		x = minf(x, float(a[1]) - largura(frente) / 2.0 - 0.015)
 	return x
 
 
@@ -480,7 +527,9 @@ func id_roda(i: int = -1) -> String:
 	return str(c.get("roda", "work"))
 
 
-func nova_roda(lado: float, i: int = -1) -> Node3D:
+func nova_roda(lado: float, i: int = -1, frente := true) -> Node3D:
+	if i >= 0:
+		frente = i < 2
 	var r := Node3D.new()
 	var dentro := Node3D.new()       # cambagem
 	dentro.rotation.z = deg_to_rad(float(c.get("camber", 0))) * (1.0 if lado > 0 else -1.0)
@@ -489,12 +538,12 @@ func nova_roda(lado: float, i: int = -1) -> Node3D:
 	gira.name = "gira"
 	dentro.add_child(gira)
 	var pneu := MeshInstance3D.new()
-	pneu.mesh = _pneu(raio(), raio_aro(), largura() + 0.03)
+	pneu.mesh = _pneu(raio(), raio_aro(), largura(frente) + 0.03)
 	gira.add_child(pneu)
 	var arq := Dados.modelo("res://modelos/rodas/%s.glb" % id_roda(i))
 	if ResourceLoader.exists(arq):
 		var aro: Node3D = load(arq).instantiate()
-		aro.scale = Vector3(largura(), raio_aro(), raio_aro())
+		aro.scale = Vector3(largura(frente), raio_aro(), raio_aro())
 		if lado < 0:
 			aro.rotation.y = PI
 		_cor_aro(aro)
@@ -635,6 +684,7 @@ static func _brilho() -> Texture2D:
 
 # ---------------------------------------------------------------- som (caçamba / porta-malas)
 func _som() -> void:
+	_cones.clear()
 	if som_no:
 		som_no.queue_free()
 		som_no = null
@@ -691,6 +741,7 @@ func _som() -> void:
 			rot.position = Vector3(0, float(g["y"]), float(g["z"]))
 			rot.rotation.x = -0.3
 		som_no.add_child(rot)
+	_achar_cones()
 
 
 # ---------------------------------------------------------------- lataria lisinha
