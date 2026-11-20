@@ -68,6 +68,18 @@ func _sala() -> void:
 	env.adjustment_enabled = true
 	env.adjustment_contrast = 1.06
 	env.adjustment_saturation = 1.1
+	# (visual 2) estúdio: o HDR de softboxes reflete na lataria (verniz) — é ele que dá o brilho de showroom
+	if ResourceLoader.exists("res://imagens/estudio/estudio.hdr"):
+		var ps := PanoramaSkyMaterial.new()
+		ps.panorama = load("res://imagens/estudio/estudio.hdr")
+		var sk := Sky.new()
+		sk.sky_material = ps
+		sk.radiance_size = Sky.RADIANCE_SIZE_512
+		env.sky = sk
+		env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+		env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+		env.ambient_light_sky_contribution = 0.55   # parte da luz ambiente vem do estúdio (a lateral não fica cinza)
+		env.ambient_light_energy = 0.8
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
@@ -173,8 +185,8 @@ func _sala() -> void:
 	sonda.box_projection = true
 	sonda.update_mode = ReflectionProbe.UPDATE_ONCE
 	sonda.intensity = 1.0
-	if RenderingServer.get_rendering_device() != null:  # reflexo só no Forward+ (no modo compatível fica preto)
-		add_child(sonda)
+	if RenderingServer.get_rendering_device() != null and not ResourceLoader.exists("res://imagens/estudio/estudio.hdr"):
+		add_child(sonda)   # (visual 2) com o estúdio HDR quem reflete é ele (a sonda da sala deixava o reflexo escuro)
 	# luz amarela da marca batendo no fundo
 	var o := OmniLight3D.new()
 	o.position = Vector3(0, 3.4, -4.2)

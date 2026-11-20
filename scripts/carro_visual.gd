@@ -479,6 +479,7 @@ func atualizar(cfg: Dictionary) -> void:
 	mat_pintura.set_shader_parameter("aspereza", p[1])
 	mat_pintura.set_shader_parameter("verniz", p[2])
 	mat_pintura.set_shader_parameter("flip", p[3])
+	mat_pintura.set_shader_parameter("pbr", int(d.get("visual", 1)) >= 2)   # (visual 2) pintura PBR, por carro
 	_aplicar_cores_pecas()
 	# altura: o eixo do modelo encaixa no centro da roda e desce o quanto rebaixou
 	_arcos_medir()

@@ -15,6 +15,9 @@ uniform float ferrugem : hint_range(0.0, 1.0) = 0.0;
 uniform float sujeira : hint_range(0.0, 1.0) = 0.0;
 uniform float amassado : hint_range(0.0, 1.0) = 0.0;
 uniform vec3 semente = vec3(0.0);
+// (visual 2, padrão CSR) PBR de verdade: o motor faz o reflexo (céu HDR do estúdio / sonda da rua) com fresnel,
+// verniz por cima e oclusão. Ligado por carro (carros.json "visual": 2); os outros seguem no modo antigo.
+uniform bool pbr = false;
 
 varying vec3 p_local;
 
@@ -102,6 +105,28 @@ void fragment() {
 	}
 	vec3 suj_cor = vec3(0.30, 0.26, 0.20);
 	float lisa = (1.0 - m_fer) * (1.0 - m_suj);   // onde a tinta ainda está boa (brilho, verniz e reflexo)
+#if CURRENT_RENDERER != RENDERER_COMPATIBILITY
+	if (pbr) {
+		// tinta: base colorida (metálica de verdade) + verniz liso por cima. Sem brilho próprio (EMISSION):
+		// quem reflete é o ambiente, então embaixo do carro e nas frestas fica escuro como na vida real.
+		// flocos: cada pontinho é um "espelhinho" (mais metálico e mais liso) -> brilha quando pega luz
+		vec3 celf = floor(p_local * 1400.0);
+		float fl = h3(celf);
+		float brilho_floco = smoothstep(0.82, 1.0, fl) * perto * flocos * metal;
+		vec3 alb2 = base * (1.0 - metal * 0.2);
+		alb2 = mix(alb2, suj_cor, m_suj);
+		alb2 = mix(alb2, cor_fer, m_fer);
+		ALBEDO = alb2;
+		// cor clara (branco, prata pérola) é pouco metálica de verdade: o metal escurece a base e deixa cinza
+		float lum = dot(base, vec3(0.299, 0.587, 0.114));
+		METALLIC = clamp(metal * mix(0.85, 0.22, smoothstep(0.35, 0.85, lum)) + brilho_floco * 0.6, 0.0, 1.0) * lisa;
+		ROUGHNESS = mix(clamp(mix(0.42, 0.24, metal) + aspereza * 0.3 - brilho_floco * 0.25, 0.08, 1.0), 0.92, 1.0 - lisa);
+		SPECULAR = 0.5;
+		CLEARCOAT = verniz * lisa * (1.0 - sujeira * 0.6);
+		CLEARCOAT_ROUGHNESS = clamp(0.02 + aspereza * 0.15 + sujeira * 0.3, 0.0, 1.0);
+		EMISSION = vec3(0.0);
+	} else {
+#endif
 	// a luz da cena faz o difuso e o brilho das lâmpadas; o "metal" de verdade vem do reflexo (EMISSION)
 	vec3 alb = base * (1.0 - metal * 0.35);
 	alb = mix(alb, suj_cor, m_suj);
@@ -114,4 +139,7 @@ void fragment() {
 	vec3 cor_metal = amb_borrado * base * metal * (0.6 + floco * 1.2);
 	vec3 brilho_verniz = amb_nitido * f * verniz * (1.0 - sujeira * 0.7);
 	EMISSION = (cor_metal + brilho_verniz + amb_borrado * base * 0.05) * forca_reflexo * lisa;
+#if CURRENT_RENDERER != RENDERER_COMPATIBILITY
+	}
+#endif
 }
