@@ -167,7 +167,7 @@ def processar(cid, carro):
         if q is None or len(q) < 30:
             continue
         a, b = q.min(0), q.max(0)
-        if (b[0] - a[0]) > 0.55 * W and (a[2] + b[2]) / 2 > lo[2] + 0.55 * L and a[1] > lo[1] + 0.5:
+        if (b[0] - a[0]) > 0.55 * W and (a[2] + b[2]) / 2 > lo[2] + 0.55 * L and a[1] > lo[1] + 0.4:
             cs.append(i)
     cs = [i for i in cs if not ancestral_em(i, set(cs))]
     if cs:

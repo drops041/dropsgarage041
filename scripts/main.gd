@@ -1627,6 +1627,8 @@ func _montar_partes_ui() -> void:
 	for n in partes_box.get_children():
 		n.queue_free()
 	for k in visual.partes:
+		if visual.parte_fora(k):
+			continue   # (fase 2) peça tirada na oficina: não tem o que abrir
 		var b := Button.new()
 		b.text = "ABRIR " + str(visual.partes[k]["nome"]).to_upper()
 		b.focus_mode = Control.FOCUS_NONE
@@ -2239,6 +2241,81 @@ func _teste10() -> void:
 
 
 ## (v40) laje: sobe a escada, joga sinuca, desce
+func _teste12() -> void:
+	# (fase 2) desmontagem: Astral no elevador, tira porta e capô, olha o cavalete, põe a porta de volta
+	var ft := OS.get_environment("DROPS_FOTO")
+	var foto := func(n: String) -> void:
+		if ft != "":
+			get_viewport().get_texture().get_image().save_png(ft % n)
+	var perto := func(id: String) -> void:
+		var c: Vector3 = visual.centro_peca(id)
+		var lado: Vector3 = (c - carro.global_position)
+		lado.y = 0.0
+		pessoa.global_position = c + lado.normalized() * 0.55
+		pessoa.global_position.y = mapa.drops_ponto(Vector3.ZERO).y + 0.1
+	match _f:
+		5:
+			intro = 0.0
+			for i in Dados.carros.size():
+				if Dados.carros[i]["id"] == OS.get_environment("DROPS_T12_CARRO") if OS.has_environment("DROPS_T12_CARRO") else Dados.carros[i]["id"] == "astrag":
+					Dados.idx = i
+			Dados.mudar("sem_pecas", [])
+			_criar_carro(carro.global_position + Vector3.UP * 0.8, carro.rotation.y)
+		20:
+			var mid := (float(dados["axF"]) + float(dados["axR"])) / 2.0
+			var c := mapa.drops_ponto(Oficina.ELEV)
+			var ez: Vector3 = mapa.drops_xf.basis * Oficina.ELEV_EIXO
+			teletransportar(c - ez * mid, atan2(ez.x, ez.z))
+		70:
+			print("t12 carro ", dados["id"], " no elevador: ", oficina.carro_no_elevador(), " pecas ", visual.pecas.keys())
+			descer()
+		80:
+			perto.call("PFL")
+		90:
+			print("t12 acao porta: ", oficina._acao)
+			oficina.interagir()
+		100:
+			foto.call("1_tirando")
+		115:
+			var c: Vector3 = visual.centro_peca("PCA")
+			pessoa.global_position = c + carro.global_basis.x * 1.05
+			pessoa.global_position.y = mapa.drops_ponto(Vector3.ZERO).y + 0.1
+		125:
+			print("t12 acao capo: ", oficina._acao)
+			oficina.interagir()
+		160:
+			print("t12 sem_pecas: ", Dados.cfg().get("sem_pecas"))
+			for id in oficina.desm._holders:
+				var h: Node3D = oficina.desm._holders[id]
+				for mi in h.find_children("*", "MeshInstance3D", true, false):
+					var bb: AABB = (mi as MeshInstance3D).global_transform * (mi as MeshInstance3D).get_aabb()
+					print("t12   malha ", mi.name, " de ", mapa.drops_local(bb.position), " ate ", mapa.drops_local(bb.end), " vis ", (mi as MeshInstance3D).visible, " camadas ", (mi as MeshInstance3D).layers, " vr ", (mi as MeshInstance3D).visibility_range_end)
+				print("t12 holder ", id, " local=", mapa.drops_local(h.global_position), " vis=", h.is_visible_in_tree(), " filhos=", h.get_child_count(), " malhas=", h.find_children("*", "MeshInstance3D", true, false).size())
+			if _cam_t == null:
+				_cam_t = Camera3D.new(); _cam_t.far = 300.0; _cam_t.fov = 70.0; add_child(_cam_t)
+			_cam_t.current = true
+			_cam_t.global_position = mapa.drops_ponto(Vector3(3.6, 2.1, 19.3))
+			_cam_t.look_at(mapa.drops_ponto(Vector3(0.2, 0.6, 21.6)))
+		175:
+			foto.call("2_cavalete")
+			_cam_t.global_position = mapa.drops_ponto(Vector3(1.6, 1.9, 13.6))
+			_cam_t.look_at(mapa.drops_ponto(Vector3(-2.2, 0.8, 18.0)))
+		190:
+			foto.call("3_carro_sem")
+			_cam_t.current = false
+			perto.call("PFL")
+		200:
+			print("t12 acao volta: ", oficina._acao)
+			oficina.interagir()
+		240:
+			print("t12 sem_pecas depois: ", Dados.cfg().get("sem_pecas"), " porta visivel ", visual.tem_peca("PFL"))
+			_cam_t.current = true
+		255:
+			foto.call("4_cavalete_depois")
+			Dados.mudar("sem_pecas", [])
+			get_tree().quit()
+
+
 func _teste11() -> void:
 	var ft := OS.get_environment("DROPS_FOTO")
 	var foto := func(n: String) -> void:
@@ -2476,6 +2553,11 @@ func _teste5() -> void:
 			[mapa.drops_ponto(Vector3(-1.0, 1.6, 24.5)), mapa.drops_ponto(Vector3(3.5, 1.2, 27.5))],
 			[mapa.drops_ponto(Vector3(-4.5, 1.6, 24.0)), mapa.drops_ponto(Vector3(-1.0, 1.0, 28.0))],
 			[mapa.drops_ponto(Vector3(3.6, 2.3, 13.6)), mapa.drops_ponto(Vector3(-2.55, 0.4, 18.0))]]
+	if OS.has_environment("DROPS_OF_VISTAS"):   # "ax,ay,az,bx,by,bz;..." em coordenadas da Drops (pra testar a oficina)
+		vistas = []
+		for v in OS.get_environment("DROPS_OF_VISTAS").split(";"):
+			var n := v.split(",")
+			vistas.append([mapa.drops_ponto(Vector3(float(n[0]), float(n[1]), float(n[2]))), mapa.drops_ponto(Vector3(float(n[3]), float(n[4]), float(n[5])))])
 	if OS.has_environment("DROPS_GALPAO"):   # vistas do galpão do encontro
 		var gx := galpao_xf
 		vistas = [[gx * Vector3(6, 0, GALPAO_Z + 14), gx * Vector3(0, 0, 0)], [gx * Vector3(-15, 0, 6), gx * Vector3(-8, 0, 15)],
@@ -2494,7 +2576,7 @@ func _teste5() -> void:
 			var b: Vector3 = vistas[k][1]
 			if OS.has_environment("DROPS_VISTAS"):
 				a = mapa.no_chao(a, 1.6); b = mapa.no_chao(b, 1.2)
-			elif OS.has_environment("DROPS_OFICINA") or OS.has_environment("DROPS_CIMA") or OS.has_environment("DROPS_CONC"):
+			elif OS.has_environment("DROPS_OFICINA") or OS.has_environment("DROPS_CIMA") or OS.has_environment("DROPS_CONC") or OS.has_environment("DROPS_OF_VISTAS"):
 				pass
 			elif OS.has_environment("DROPS_POLICIA") or OS.has_environment("DROPS_GALPAO"):
 				a = mapa.no_chao(a, 2.4); b = mapa.no_chao(b, 0.9)
@@ -2550,6 +2632,9 @@ func _roteiro_teste() -> void:
 		return
 	if OS.get_environment("DROPS_TESTE") == "11":
 		_teste11()
+		return
+	if OS.get_environment("DROPS_TESTE") == "12":
+		_teste12()
 		return
 	if OS.get_environment("DROPS_TESTE") == "7":
 		_teste7()

@@ -47,6 +47,7 @@ var barra: ProgressBar
 # pintura
 var pintando := false
 var laje: Laje
+var desm: Desmontagem                            # (fase 2) tirar/colocar portas, capô e porta-malas
 var _cam_ang := 0.0
 var painel_pintura: PanelContainer
 var _conteudo: VBoxContainer
@@ -69,6 +70,11 @@ func _ready() -> void:
 	laje.m = m
 	laje.of = self
 	raiz.add_child(laje)
+	# (fase 2) desmontagem: cavalete de peças do lado do elevador
+	desm = Desmontagem.new()
+	desm.m = m
+	desm.of = self
+	raiz.add_child(desm)
 
 
 # ======================================================================= montagem
@@ -541,6 +547,11 @@ func _escolher_acao() -> void:
 		if l.x > PAREDE_X - 1.4 and l.z > RACK_Z0 - 0.8 and l.z < RACK_Z1 + 0.8 and not no_botao:
 			_acao = "DEVOLVER RODA"
 			return
+	# 1b) (fase 2) perto de uma porta / capô / porta-malas do carro no elevador: tirar ou colocar
+	if desm and segurando == "":
+		_acao = desm.acao(p)
+		if _acao != "":
+			return
 	# 2) cabine de pintura (com roda na mão não: o elevador agora fica dentro da cabine)
 	if na_cabine(p) and segurando == "":
 		_acao = "PINTAR"
@@ -634,6 +645,8 @@ func interagir() -> void:
 		return
 	if _acao in ["SUBIR NA LAJE", "DESCER DA LAJE", "JOGAR SINUCA"]:
 		laje.fazer(_acao)
+	elif _acao.begins_with("TIRAR ") or _acao.begins_with("COLOCAR "):
+		desm.fazer(_acao)
 	elif _acao == "PINTAR":
 		abrir_pintura()
 	elif _acao == "SUBIR ELEVADOR" or _acao == "DESCER ELEVADOR":

@@ -19,6 +19,8 @@ var frente_z := 2.0
 var tras_z := -2.0
 var base_y := 0.0
 var partes := {}                 # "portas"/"frente"/"tras" -> {nome, lista:[[pivo, giro_aberto]], t, quer}
+var pecas := {}                  # (fase 2) peça soltável: "PFL" -> pivô (porta, capô, porta-malas)
+var _caixa_peca := {}            # "PFL" -> AABB da peça no espaço do pivô (pra achar o meio dela)
 
 static var _pneus := {}          # malha do pneu guardada por medida
 static var detalhe_total := false  # garagem: carro com todos os detalhes; na rua o carro muito pesado usa a versão simplificada
@@ -130,7 +132,63 @@ func _montar_partes() -> void:
 				if str(f.name).begins_with(str(item[0]) + "__") and not str(f.get_parent().name).begins_with(str(item[0]) + "__"):
 					f.reparent(pivo, true)
 			lista.append([pivo, q])
+			pecas[str(item[0])] = pivo
 		partes[k] = {"nome": pp[k]["nome"], "lista": lista, "t": 0.0, "quer": 0.0}
+	# (fase 2) peças que o jogador tirou na oficina ficam fora (o carro anda sem elas)
+	for id in c.get("sem_pecas", []):
+		if pecas.has(str(id)):
+			(pecas[str(id)] as Node3D).visible = false
+
+
+# ---------------------------------------------------------------- (fase 2) tirar e colocar peças
+const NOMES_PECA := {"PFL": "PORTA ESQ. DA FRENTE", "PFR": "PORTA DIR. DA FRENTE", "PRL": "PORTA ESQ. DE TRÁS",
+	"PRR": "PORTA DIR. DE TRÁS", "PCA": "CAPÔ", "PTR": "PORTA-MALAS"}
+
+func nome_peca(id: String) -> String:
+	if id == "PTR" and bool(d.get("picape", false)):
+		return "TAMPA DA CAÇAMBA"
+	return NOMES_PECA.get(id, id)
+
+
+func tem_peca(id: String) -> bool:
+	return pecas.has(id) and (pecas[id] as Node3D).visible
+
+
+## todas as peças daquela parte ("portas", "frente", "tras") foram tiradas
+func parte_fora(k: String) -> bool:
+	if not partes.has(k):
+		return true
+	for item in partes[k]["lista"]:
+		if (item[0] as Node3D).visible:
+			return false
+	return true
+
+
+func mostrar_peca(id: String, sim: bool) -> void:
+	if pecas.has(id):
+		(pecas[id] as Node3D).visible = sim
+
+
+## caixa da peça no espaço do pivô (calculada uma vez)
+func caixa_peca(id: String) -> AABB:
+	if _caixa_peca.has(id):
+		return _caixa_peca[id]
+	var pv: Node3D = pecas[id]
+	var bb := AABB()
+	var primeiro := true
+	var inv := pv.global_transform.affine_inverse()
+	for mi in pv.find_children("*", "MeshInstance3D", true, false):
+		var b: AABB = (inv * (mi as MeshInstance3D).global_transform) * (mi as MeshInstance3D).get_aabb()
+		bb = b if primeiro else bb.merge(b)
+		primeiro = false
+	_caixa_peca[id] = bb
+	return bb
+
+
+## meio da peça no mundo (serve até com a peça escondida)
+func centro_peca(id: String) -> Vector3:
+	var pv: Node3D = pecas[id]
+	return pv.global_transform * caixa_peca(id).get_center()
 
 
 func abrir(k: String) -> void:

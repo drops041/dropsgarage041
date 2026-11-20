@@ -14,6 +14,16 @@ Garagem (tela inicial)
 - ‹ › troca de carro. ORIGINAL volta o carro de fábrica. SAIR PRO ROLÊ vai pra rua com o carro do jeito que você montou.
 - Tudo fica salvo sozinho.
 
+Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
+- Godot 4.7.2, com visual Forward+ no PC e Mobile no celular.
+- Carros novos: G3, Robusta (modelo novo, licença liberada), Fênix, Esse Dez, Astral, Rangido,
+  Monarca 68, Áudio 6 Perua, Sandeiro, Lógico e Cliô. Roda nova: Trampo VS.
+- DESMONTAGEM (teste com o Astral, funciona em todo carro que abre porta/capô/porta-malas):
+  - Ponha o carro no elevador (sem subir), desça e chegue perto de uma porta, do capô ou do
+    porta-malas: aparece TIRAR. A peça vai pro cavalete amarelo "PEÇAS" do lado do elevador.
+  - Chegue perto do lugar dela no carro e aperte COLOCAR pra pôr de volta.
+  - O carro anda pela cidade sem as peças que você tirou (fica salvo).
+
 Novidades (v42)
 - Carro novo: SaborSW (SUV 7 lugares, suspensão a ar), preto com roda 24 prata.
   - Logo da frente, letras de trás e emblemas tirados; grade com o miolo liso.
