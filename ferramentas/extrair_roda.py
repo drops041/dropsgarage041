@@ -33,7 +33,7 @@ def coletar(a):
             if mn != a.material:
                 continue
         else:
-            eh = re.search(r"(?<!t)rim|wheel|roda|llanta|felge", caminho) or re.search(r"(?<!t)rim|wheel", mn.lower())
+            eh = re.search(r"(?<![tp])rim(?!ary)|wheel|roda|llanta|felge", caminho) or re.search(r"(?<![tp])rim(?!ary)|wheel", mn.lower())
             if not eh or FORA.search(caminho) or FORA.search(mn.lower()) or mn in sem:
                 continue
             if re.search(r"tire|tyre", caminho):

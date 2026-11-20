@@ -1194,7 +1194,18 @@
      ]
     ]
    }
-  }
+  },
+  "arcos": {
+   "f": [
+    0.634,
+    0.832
+   ],
+   "t": [
+    0.661,
+    0.858
+   ]
+  },
+  "saia": 0.219
  },
  {
   "id": "lexusnx",
@@ -1691,6 +1702,444 @@
    "neon": "rosa",
    "som": "deitado",
    "placa": "SAVEIRO"
-  }
+  },
+  "arcos": {
+   "f": [
+    0.642,
+    0.809
+   ],
+   "t": [
+    0.63,
+    0.847
+   ]
+  },
+  "saia": 0.217
+ },
+ {
+  "id": "onix",
+  "nome": "Fênix",
+  "sub": "sedã · suspensão a ar",
+  "W": 1.785,
+  "axF": 1.29,
+  "axR": -1.29,
+  "wy": 0.315,
+  "ra": 0.315,
+  "bed": null,
+  "som": {
+   "z": -1.44,
+   "y": 0.865
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 50,
+  "acc": 8.5,
+  "padrao": {
+   "cor": "#d11515",
+   "acabamento": "metal",
+   "cor2": "#ff7ad1",
+   "roda": "jerez",
+   "aro": 19,
+   "tala": 7,
+   "flanco": 9,
+   "cor_roda": "#a3a8ad",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "ONIX000",
+   "rebaixo": 6
+  },
+  "arcos": {
+   "f": [
+    0.669,
+    0.869
+   ],
+   "t": [
+    0.667,
+    0.865
+   ]
+  },
+  "saia": 0.199
+ },
+ {
+  "id": "s10",
+  "nome": "Esse Dez",
+  "sub": "picape cabine simples · suspensão a ar",
+  "W": 1.68,
+  "axF": 1.57,
+  "axR": -1.28,
+  "wy": 0.36,
+  "ra": 0.36,
+  "bed": {
+   "y": 0.919,
+   "z": -1.387
+  },
+  "som": null,
+  "tampao": true,
+  "trio": {
+   "y": 0.919,
+   "z": -1.437,
+   "w": 1.757,
+   "d": 1.08
+  },
+  "picape": true,
+  "vmax": 50,
+  "acc": 8.5,
+  "tampa": {
+   "z0": -2.445,
+   "z1": -0.329,
+   "y": 1.169
+  },
+  "padrao": {
+   "cor": "#717171",
+   "acabamento": "metal",
+   "cor2": "#6ea6ff",
+   "roda": "raptor",
+   "aro": 17,
+   "tala": 9,
+   "flanco": 11,
+   "cor_roda": "#16171a",
+   "borda": "cor",
+   "camber": 0,
+   "neon": "off",
+   "som": "off",
+   "placa": "S100000"
+  },
+  "arcos": {
+   "f": [
+    0.827,
+    0.879
+   ],
+   "t": [
+    0.828,
+    0.898
+   ]
+  },
+  "saia": 0.356
+ },
+ {
+  "id": "ranger",
+  "nome": "Rangido",
+  "sub": "picape cabine dupla · suspensão a ar",
+  "W": 1.868,
+  "axF": 1.62,
+  "axR": -1.62,
+  "wy": 0.406,
+  "ra": 0.406,
+  "bed": {
+   "y": 1.069,
+   "z": -2.022
+  },
+  "som": null,
+  "tampao": true,
+  "trio": {
+   "y": 1.069,
+   "z": -2.072,
+   "w": 1.488,
+   "d": 1.08
+  },
+  "picape": true,
+  "vmax": 50,
+  "acc": 8.5,
+  "tampa": {
+   "z0": -2.866,
+   "z1": -1.178,
+   "y": 1.319
+  },
+  "padrao": {
+   "cor": "#717171",
+   "acabamento": "metal",
+   "cor2": "#6ea6ff",
+   "roda": "raptor",
+   "aro": 17,
+   "tala": 9,
+   "flanco": 11,
+   "cor_roda": "#16171a",
+   "borda": "cor",
+   "camber": 0,
+   "neon": "off",
+   "som": "off",
+   "placa": "RANGER0"
+  },
+  "partes": {
+   "portas": {
+    "nome": "portas",
+    "p": [
+     [
+      "PFL",
+      [
+       -1.048,
+       1.117,
+       0.9
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRL",
+      [
+       -0.896,
+       1.118,
+       -0.157
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PFR",
+      [
+       1.048,
+       1.117,
+       0.9
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRR",
+      [
+       0.896,
+       1.118,
+       -0.152
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ]
+    ]
+   },
+   "tras": {
+    "nome": "tampa",
+    "p": [
+     [
+      "PTR",
+      [
+       0.0,
+       0.682,
+       -2.66
+      ],
+      [
+       -0.682,
+       -0.0,
+       -0.0,
+       0.73135
+      ]
+     ]
+    ]
+   },
+   "frente": {
+    "nome": "capô",
+    "p": [
+     [
+      "PCA",
+      [
+       0.0,
+       1.317,
+       1.182
+      ],
+      [
+       -0.43837,
+       -0.0,
+       -0.0,
+       0.89879
+      ]
+     ]
+    ]
+   }
+  },
+  "arcos": {
+   "f": [
+    0.65,
+    0.928
+   ],
+   "t": [
+    0.65,
+    0.928
+   ]
+  },
+  "saia": 0.427
+ },
+ {
+  "id": "monaro",
+  "nome": "Monarca 68",
+  "sub": "cupê clássico · suspensão a ar",
+  "W": 1.793,
+  "axF": 1.416,
+  "axR": -1.416,
+  "wy": 0.318,
+  "ra": 0.318,
+  "bed": null,
+  "som": {
+   "z": -1.566,
+   "y": 0.868
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 50,
+  "acc": 8.5,
+  "padrao": {
+   "cor": "#d11515",
+   "acabamento": "metal",
+   "cor2": "#ff7ad1",
+   "roda": "jerez",
+   "aro": 19,
+   "tala": 7,
+   "flanco": 9,
+   "cor_roda": "#a3a8ad",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "MONARO0",
+   "rebaixo": 6
+  },
+  "arcos": {
+   "f": [
+    0.647,
+    0.911
+   ],
+   "t": [
+    0.675,
+    0.923
+   ]
+  },
+  "saia": 0.168
+ },
+ {
+  "id": "astrag",
+  "nome": "Astral",
+  "sub": "hatch anos 2000 · suspensão a ar",
+  "W": 1.713,
+  "axF": 1.307,
+  "axR": -1.307,
+  "wy": 0.312,
+  "ra": 0.311,
+  "bed": null,
+  "som": {
+   "z": -1.457,
+   "y": 0.862
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 50,
+  "acc": 8.5,
+  "padrao": {
+   "cor": "#d11515",
+   "acabamento": "metal",
+   "cor2": "#ff7ad1",
+   "roda": "jerez",
+   "aro": 19,
+   "tala": 7,
+   "flanco": 9,
+   "cor_roda": "#a3a8ad",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "ASTRAG0",
+   "rebaixo": 6
+  },
+  "partes": {
+   "portas": {
+    "nome": "portas",
+    "p": [
+     [
+      "PFL",
+      [
+       -0.794,
+       0.641,
+       0.846
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PFR",
+      [
+       0.794,
+       0.641,
+       0.845
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ]
+    ]
+   },
+   "tras": {
+    "nome": "porta-malas",
+    "p": [
+     [
+      "PTR",
+      [
+       0.0,
+       0.868,
+       -1.745
+      ],
+      [
+       0.55919,
+       0.0,
+       0.0,
+       0.82904
+      ]
+     ]
+    ]
+   },
+   "frente": {
+    "nome": "capô",
+    "p": [
+     [
+      "PCA",
+      [
+       0.0,
+       0.727,
+       0.989
+      ],
+      [
+       -0.43837,
+       -0.0,
+       -0.0,
+       0.89879
+      ]
+     ]
+    ]
+   }
+  },
+  "arcos": {
+   "f": [
+    0.503,
+    0.85
+   ],
+   "t": [
+    0.5,
+    0.852
+   ]
+  },
+  "saia": 0.016
  }
 ]

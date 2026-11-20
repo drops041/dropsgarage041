@@ -61,7 +61,7 @@ def etiqueta_nome(nome):
     if any(k in n for k in NAO_RODA):
         return None
     for tag, ks in CHAVES:
-        if any((re.search(r"(?<!t)rim", n) if k == "rim" else k in n) for k in ks):
+        if any((re.search(r"(?<![tp])rim(?!ary)", n) if k == "rim" else k in n) for k in ks):
             return tag
     return None
 
@@ -153,13 +153,12 @@ def reduzir_texturas(g: GLB, lado_max):
 # ------------------------------------------------------------------ rodas
 def achar_rodas(prims, mats_tag, C):
     """devolve (lista de 4 rodas [centro x,y,z, raio, largura], nós a esconder, como achou)"""
-    pts_roda = []
+    pts_mat, pts_nome, pts_forma = [], [], []
     nos_esconder = set()
     # 1) materiais de pneu/aro
     for p in prims:
         if p["mat"] is not None and mats_tag.get(p["mat"]) in ("PNEU", "ARO"):
-            pts_roda.append(p["pc"])
-    como = "material de pneu/aro" if pts_roda else ""
+            pts_mat.append(p["pc"])
     # 2) peças com nome de roda/pneu, ou com formato de roda (redonda, de pé, nos cantos de baixo)
     zmin, zmax = C["zmin"], C["zmax"]
     L = zmax - zmin
@@ -168,17 +167,27 @@ def achar_rodas(prims, mats_tag, C):
         lo, hi = pc.min(0), pc.max(0)
         tam = hi - lo
         cen = (lo + hi) / 2
-        nome = p["nome"].lower().split("/")[-1]
-        por_nome = (any(k in nome for k in ("wheel", "tire", "tyre", "pneu", "roda", "llanta")) or re.search(r"(?<!t)rim", nome)) and not any(k in nome for k in NAO_RODA)
+        nome = "/".join(p["nome"].lower().split("/")[-2:])   # a peça e o nó-pai (o nome bom costuma estar no pai)
+        por_nome = (any(k in nome for k in ("wheel", "tire", "tyre", "pneu", "roda", "llanta")) or re.search(r"(?<![tp])rim(?!ary)", nome)) and not any(k in nome for k in NAO_RODA)
         if any(k in nome for k in FREIO) and tam[1] < 0.9 and cen[1] < 0.7:
             nos_esconder.add(p["no"])   # disco/pinça de freio original: some junto (a roda do jogo pode ser menor)
             continue
         redonda = (0.35 * L * 0.12 < tam[1] < 0.95 and abs(tam[1] - tam[2]) < 0.25 * tam[1] and tam[0] < 0.5
                    and cen[1] < 0.6 and abs(cen[0]) > 0.3 and (cen[2] - zmin < 0.42 * L or zmax - cen[2] < 0.42 * L))
-        if (por_nome and tam[1] < 1.0 and cen[1] < 0.7) or (redonda and tam[1] > 0.3):
-            pts_roda.append(pc)
+        if por_nome and tam[1] < 1.0 and cen[1] < 0.7:
+            pts_nome.append(pc)
             nos_esconder.add(p["no"])
-            como = como or ("nome das peças" if por_nome else "formato das peças")
+        elif redonda and tam[1] > 0.3:
+            pts_forma.append((pc, p["no"]))
+    # quem decide a medida: peças com nome de roda (mais confiável) > material de pneu/aro > formato.
+    # (material engana: o Monaro tem "aro" no nome de todo material e borracha de vidro marcada como pneu)
+    if pts_nome:
+        pts_roda, como = pts_nome, "nome das peças"
+    elif pts_mat:
+        pts_roda, como = pts_mat, "material de pneu/aro"
+    else:
+        pts_roda, como = [q for q, _ in pts_forma], "formato das peças"
+        nos_esconder |= {n for _, n in pts_forma}
     if not pts_roda:
         return None, set(), "não achei"
     ychao = min(q[:, 1].min() for q in pts_roda)
