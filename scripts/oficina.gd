@@ -50,6 +50,7 @@ var laje: Laje
 var desm: Desmontagem                            # (fase 2) tirar/colocar portas, capô e porta-malas
 var _cam_ang := 0.0
 var painel_pintura: PanelContainer
+var _alvo_pintura := ""                          # (fase 2) "" = carro todo; "PFL", "PCA"... = só aquela peça
 var _conteudo: VBoxContainer
 
 
@@ -854,6 +855,50 @@ func _encher_painel() -> void:
 	for n in _conteudo.get_children():
 		n.queue_free()
 	var c := Dados.cfg()
+	# (fase 2) o que pintar: o carro todo ou uma peça só (porta de outra cor, capô...)
+	var v: CarroVisual = m.visual
+	var ids := []
+	for id in v.pecas:
+		if v.tem_peca(id):
+			ids.append(id)
+	if not ids.has(_alvo_pintura):
+		_alvo_pintura = ""
+	var cp: Dictionary = c.get("cores_pecas", {})
+	if not ids.is_empty():
+		_titulo("O que pintar")
+		var gp := GridContainer.new()
+		gp.columns = 2
+		gp.add_theme_constant_override("h_separation", 8)
+		gp.add_theme_constant_override("v_separation", 8)
+		_conteudo.add_child(gp)
+		for id in [""] + ids:
+			var b := Button.new()
+			b.text = "CARRO TODO" if id == "" else v.nome_peca(id)
+			b.focus_mode = Control.FOCUS_NONE
+			b.custom_minimum_size = Vector2(0, 46)
+			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			b.add_theme_font_size_override("font_size", 15)
+			var marcado: bool = id == _alvo_pintura
+			var s: StyleBoxFlat = m._estilo(AMARELO if marcado else Color(0.1, 0.1, 0.12, 0.9), AMARELO if marcado else Color(1, 1, 1, 0.25))
+			if id != "" and cp.has(id) and not marcado:
+				s.border_color = Color(str(cp[id]))   # peça com cor própria: borda da cor dela
+				s.set_border_width_all(3)
+			b.add_theme_stylebox_override("normal", s)
+			b.add_theme_stylebox_override("hover", s)
+			b.add_theme_color_override("font_color", Color.BLACK if marcado else Color.WHITE)
+			b.pressed.connect(func(): _alvo_pintura = id; _encher_painel())
+			gp.add_child(b)
+	if _alvo_pintura != "":
+		_titulo("Cor: " + v.nome_peca(_alvo_pintura).to_lower())
+		_cores(Dados.CORES, "peca:" + _alvo_pintura, str(cp.get(_alvo_pintura, c["cor"])))
+		var igual := Button.new()
+		igual.text = "IGUAL AO RESTO DO CARRO"
+		igual.focus_mode = Control.FOCUS_NONE
+		igual.custom_minimum_size = Vector2(0, 46)
+		igual.add_theme_font_size_override("font_size", 16)
+		igual.pressed.connect(_mudar.bind("peca:" + _alvo_pintura, ""))
+		_conteudo.add_child(igual)
+		return   # acabamento é do carro todo: aparece só no "CARRO TODO"
 	_titulo("Cor")
 	_cores(Dados.CORES, "cor", str(c["cor"]))
 	_titulo("Acabamento")
@@ -920,10 +965,21 @@ func _cores(lista: Array, chave: String, atual: String) -> void:
 
 
 func _mudar(chave: String, valor) -> void:
+	if chave.begins_with("peca:"):
+		# cor de uma peça só: guarda no dicionário de cores das peças ("" = volta pra cor do carro)
+		var id := chave.substr(5)
+		var cp: Dictionary = (Dados.cfg().get("cores_pecas", {}) as Dictionary).duplicate()
+		if str(valor) == "":
+			cp.erase(id)
+		else:
+			cp[id] = valor
+		chave = "cores_pecas"
+		valor = cp
 	Dados.mudar(chave, valor)
 	m.cfg = Dados.cfg()
 	m.visual.atualizar(m.cfg)
-	_encher_painel()
+	if painel_pintura and painel_pintura.visible:
+		_encher_painel()
 
 
 func _unhandled_input(e: InputEvent) -> void:

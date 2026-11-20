@@ -23,6 +23,9 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
     porta-malas: aparece TIRAR. A peça vai pro cavalete amarelo "PEÇAS" do lado do elevador.
   - Chegue perto do lugar dela no carro e aperte COLOCAR pra pôr de volta.
   - O carro anda pela cidade sem as peças que você tirou (fica salvo).
+- PINTURA POR PEÇA: na cabine de pintura, em "O que pintar", escolha CARRO TODO ou uma peça
+  (porta, capô, porta-malas) e a cor. "IGUAL AO RESTO DO CARRO" tira a cor própria da peça.
+  O acabamento (metal, pérola, fosco...) continua sendo do carro todo.
 
 Novidades (v42)
 - Carro novo: SaborSW (SUV 7 lugares, suspensão a ar), preto com roda 24 prata.

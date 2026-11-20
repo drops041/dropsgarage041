@@ -138,6 +138,7 @@ func _montar_partes() -> void:
 	for id in c.get("sem_pecas", []):
 		if pecas.has(str(id)):
 			(pecas[str(id)] as Node3D).visible = false
+	_aplicar_cores_pecas()
 
 
 # ---------------------------------------------------------------- (fase 2) tirar e colocar peças
@@ -152,6 +153,32 @@ func nome_peca(id: String) -> String:
 
 func tem_peca(id: String) -> bool:
 	return pecas.has(id) and (pecas[id] as Node3D).visible
+
+
+## (fase 2) pintura por peça: c["cores_pecas"] = {"PFL": "#d12a2a", ...}. A peça usa a mesma tinta do carro
+## (acabamento, verniz, reflexo) só com outra cor. Sem cor própria, volta pra tinta do carro.
+var _mats_peca := {}
+
+func _aplicar_cores_pecas() -> void:
+	if pecas.is_empty():
+		return
+	var cp: Dictionary = c.get("cores_pecas", {})
+	for id in pecas:
+		var mat: Material = mat_pintura
+		if cp.has(id):
+			var m2: ShaderMaterial = mat_pintura.duplicate()
+			var acab: String = c.get("acabamento", "metal")
+			m2.set_shader_parameter("cor", Color(str(cp[id])) if acab != "cromado" else Color(str(cp[id])).lerp(Color.WHITE, 0.6))
+			_mats_peca[id] = m2
+			mat = m2
+		else:
+			_mats_peca.erase(id)
+		for mi in (pecas[id] as Node3D).find_children("*", "MeshInstance3D", true, false):
+			var mm := mi as MeshInstance3D
+			for i in mm.get_surface_override_material_count():
+				var o := mm.get_surface_override_material(i)
+				if o == mat_pintura or (o is ShaderMaterial and (o as ShaderMaterial).shader == mat_pintura.shader):
+					mm.set_surface_override_material(i, mat)
 
 
 ## todas as peças daquela parte ("portas", "frente", "tras") foram tiradas
@@ -378,6 +405,7 @@ func atualizar(cfg: Dictionary) -> void:
 	mat_pintura.set_shader_parameter("aspereza", p[1])
 	mat_pintura.set_shader_parameter("verniz", p[2])
 	mat_pintura.set_shader_parameter("flip", p[3])
+	_aplicar_cores_pecas()
 	# altura: o eixo do modelo encaixa no centro da roda e desce o quanto rebaixou
 	_arcos_medir()
 	var rf := rebaixo_eixo(true)

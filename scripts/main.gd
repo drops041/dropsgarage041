@@ -2312,7 +2312,26 @@ func _teste12() -> void:
 			_cam_t.current = true
 		255:
 			foto.call("4_cavalete_depois")
+			oficina._mudar("peca:PFL", "#1fa34a")    # porta da frente esquerda verde
+			oficina._mudar("peca:PFR", "#f2c21b")    # e a direita amarela
+			_cam_t.global_position = mapa.drops_ponto(Vector3(1.8, 1.7, 21.8))
+			_cam_t.look_at(mapa.drops_ponto(Vector3(-2.4, 0.8, 18.4)))
+		270:
+			foto.call("5_portas_coloridas")
+			_cam_t.global_position = mapa.drops_ponto(Vector3(1.8, 1.7, 15.0))
+			_cam_t.look_at(mapa.drops_ponto(Vector3(-2.4, 0.8, 18.6)))
+		285:
+			foto.call("5b_outro_lado")
+			_cam_t.current = false
+			oficina.abrir_pintura()
+			oficina._alvo_pintura = "PFL"
+			oficina._encher_painel()
+		310:
+			foto.call("6_painel")
+			print("t12 cores: ", Dados.cfg().get("cores_pecas"))
+			oficina.fechar_pintura()
 			Dados.mudar("sem_pecas", [])
+			Dados.mudar("cores_pecas", {})
 			get_tree().quit()
 
 
