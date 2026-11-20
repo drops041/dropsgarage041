@@ -1653,8 +1653,9 @@ func _a_pe(_dt: float) -> void:
 	v = v.limit_length(1.0)
 	var frente := Vector3(sin(ape_yaw + PI), 0, cos(ape_yaw + PI))
 	var direita := Vector3(-frente.z, 0, frente.x)
-	pessoa.desejo = frente * -v.y + direita * v.x
-	pessoa.correndo = stick_v.length() > 0.92 or Input.is_physical_key_pressed(KEY_SHIFT)
+	if not pessoa.ocupado():   # trabalhando na oficina: o boneco anda sozinho até a peça
+		pessoa.desejo = frente * -v.y + direita * v.x
+		pessoa.correndo = stick_v.length() > 0.92 or Input.is_physical_key_pressed(KEY_SHIFT)
 	var perto := pessoa.global_position.distance_to(carro.global_position) < 4.0
 	(botoes["entrar"] as Button).modulate.a = 1.0 if perto else 0.45
 	partes_box.visible = perto and not visual.partes.is_empty()
@@ -2243,6 +2244,61 @@ func _teste10() -> void:
 
 
 ## (v40) laje: sobe a escada, joga sinuca, desce
+func _teste13() -> void:
+	# (fase 2) boneco trabalhando: G3 velha no elevador, lava a porta, desamassa o carro, pinta
+	var ft := OS.get_environment("DROPS_FOTO")
+	var foto := func(n: String) -> void:
+		if ft != "":
+			get_viewport().get_texture().get_image().save_png(ft % n)
+	match _f:
+		5:
+			intro = 0.0
+			for i in Dados.carros.size():
+				if Dados.carros[i]["id"] == "saveirog3":
+					Dados.idx = i
+			Dados.mudar("sem_pecas", [])
+			Dados.mudar("desgaste", {"carro": {"f": 0.65, "s": 0.45, "a": 0.5}})
+			_criar_carro(carro.global_position + Vector3.UP * 0.8, carro.rotation.y)
+		20:
+			var mid := (float(dados["axF"]) + float(dados["axR"])) / 2.0
+			var c := mapa.drops_ponto(Oficina.ELEV)
+			var ez: Vector3 = mapa.drops_xf.basis * Oficina.ELEV_EIXO
+			teletransportar(c - ez * mid, atan2(ez.x, ez.z))
+		70:
+			descer()
+		80:
+			pessoa.global_position = mapa.drops_ponto(Vector3(1.0, 0.1, 16.0))
+			if _cam_t == null:
+				_cam_t = Camera3D.new(); _cam_t.far = 300.0; _cam_t.fov = 65.0; add_child(_cam_t)
+			_cam_t.current = true
+			_cam_t.global_position = mapa.drops_ponto(Vector3(2.2, 2.0, 22.6))
+			_cam_t.look_at(mapa.drops_ponto(Vector3(-2.4, 0.7, 18.0)))
+		90:
+			oficina._fazer_servico("PFL", "s", "LAVAR")
+		330:
+			foto.call("1_lavando")
+			print("t13 anim ", pessoa.atual, " ferramenta ", pessoa._ferr != null)
+		640:
+			print("t13 desgaste depois de lavar: ", Dados.cfg().get("desgaste"), " ocupado ", pessoa.ocupado())
+			oficina._fazer_servico("carro", "a", "DESAMASSAR")
+		900:
+			foto.call("2_desamassando")
+			print("t13 anim ", pessoa.atual)
+		1200:
+			print("t13 desgaste depois: ", Dados.cfg().get("desgaste"), " ocupado ", pessoa.ocupado())
+			oficina._alvo_pintura = ""
+			oficina._mudar("cor", "#1f6fd1")
+		1380:
+			foto.call("3_pintando")
+			print("t13 anim ", pessoa.atual, " cor ainda ", Dados.cfg().get("cor"))
+		1600:
+			foto.call("4_pintado")
+			print("t13 cor depois ", Dados.cfg().get("cor"))
+			Dados.mudar("desgaste", {"carro": {"f": 0.65, "s": 0.45, "a": 0.5}})
+			Dados.mudar("cor", "#8d1d1d")
+			get_tree().quit()
+
+
 func _teste12() -> void:
 	# (fase 2) desmontagem: Astral no elevador, tira porta e capô, olha o cavalete, põe a porta de volta
 	var ft := OS.get_environment("DROPS_FOTO")
@@ -2653,6 +2709,9 @@ func _roteiro_teste() -> void:
 		return
 	if OS.get_environment("DROPS_TESTE") == "11":
 		_teste11()
+		return
+	if OS.get_environment("DROPS_TESTE") == "13":
+		_teste13()
 		return
 	if OS.get_environment("DROPS_TESTE") == "12":
 		_teste12()

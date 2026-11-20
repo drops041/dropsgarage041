@@ -37,6 +37,10 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
 - TALA E RECUO SEPARADOS: na aba SUSPENSÃO agora tem tala e recuo da dianteira e da traseira
   (recuo negativo = roda pra fora). Dá pra fazer traseira mais larga, frente embutida etc.
 - SOM BATENDO: com a música tocando, o cone dos alto-falantes (tampão e caixa) mexe no grave.
+- BONECO TRABALHANDO: na cabine, LAVAR/LIXAR/DESAMASSAR e PINTAR fazem o boneco ir até a peça e
+  trabalhar uns 5 s com a ferramenta na mão (esponja com espuma, lixadeira com pó, spotter soltando
+  faísca, pistola de pintura com a névoa da cor). O desgaste some aos poucos e a cor nova aparece no fim.
+  Os sons das ferramentas são provisórios (gerados no jogo).
 - CARROS NOVOS ARRUMADOS: Cliô endireitado (o modelo vinha torto) e sem as capas pretas por cima
   dos para-choques; rodas na medida do para-lama em todos (frente e traseira medidas separadas);
   Rangido sem as rodas velhas sobrando; Monarca sem peças brancas; Lógico com interior certo;

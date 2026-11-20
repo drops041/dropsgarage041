@@ -113,6 +113,8 @@ func fazer(a: String) -> void:
 		return
 	var v: CarroVisual = m.visual
 	var id := _alvo
+	if m.pessoa and Pessoa.e_ual(m.pessoa.modelo) and v.pecas.has(id):
+		m.pessoa.trabalhar(m.pessoa.global_position, v.centro_peca(id), "PickUp_Table", 0.85)   # o gesto de soltar/encaixar a peça
 	var sem: Array = (Dados.cfg().get("sem_pecas", []) as Array).duplicate()
 	if a.begins_with("TIRAR") and v.tem_peca(id):
 		v.fechar_tudo()

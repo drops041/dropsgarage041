@@ -480,6 +480,79 @@ func _tocar(qual: String) -> void:
 	anim.play(nome, 0.25)
 
 
+## (fase 2) trabalho na oficina: anda até 'ponto', vira pra 'olhar', faz a animação por 'dur' segundos.
+## 'progresso' recebe 0..1 enquanto trabalha; 'ao_fim' roda no final. Enquanto isso o controle fica travado.
+var _trab := {}
+
+func ocupado() -> bool:
+	return not _trab.is_empty()
+
+
+func trabalhar(ponto: Vector3, olhar: Vector3, animacao: String, dur: float, ao_fim: Callable = Callable(), progresso: Callable = Callable(), ferramenta := "", cor := Color.WHITE) -> void:
+	if not _trab.is_empty() and (_trab["fim"] as Callable).is_valid():
+		(_trab["fim"] as Callable).call()   # o anterior termina na hora
+	segurar("")
+	_trab = {"ponto": ponto, "olhar": olhar, "anim": animacao, "dur": dur, "t": 0.0, "andando": 0.0, "ferr": ferramenta, "cor": cor,
+		"fim": ao_fim, "prog": progresso, "fase": "ir" if Vector2(ponto.x - global_position.x, ponto.z - global_position.z).length() > 0.35 else "fazer"}
+	dancando = false
+
+
+## ferramenta na mão direita ("" = mão vazia)
+var _ferr: Node3D
+func segurar(nome: String, cor := Color.WHITE) -> void:
+	if _ferr:
+		_ferr.get_parent().queue_free()
+		_ferr = null
+	if nome == "" or modelo == null:
+		return
+	var esq := modelo.find_child("Skeleton3D", true, false) as Skeleton3D
+	var mao: String = Ferramenta.MAO.get(nome, "r")
+	if esq == null or esq.find_bone("hand_" + mao) < 0:
+		return
+	var ba := BoneAttachment3D.new()
+	ba.bone_name = "hand_" + mao
+	esq.add_child(ba)
+	_ferr = Ferramenta.criar(nome, cor, mao == "l")
+	ba.add_child(_ferr)
+
+
+func _trabalho(dt: float) -> void:
+	var tb := _trab
+	if tb["fase"] == "ir":
+		var d := Vector3(tb["ponto"].x - global_position.x, 0, tb["ponto"].z - global_position.z)
+		tb["andando"] += dt
+		if d.length() < 0.3 or tb["andando"] > 3.0:
+			if d.length() >= 0.3:   # travou em alguma coisa: chega de uma vez
+				global_position = Vector3(tb["ponto"].x, global_position.y, tb["ponto"].z)
+			tb["fase"] = "fazer"
+			desejo = Vector3.ZERO
+			if str(tb["ferr"]) != "":
+				segurar(str(tb["ferr"]), tb["cor"])
+				Ferramenta.soltar(_ferr, true)
+		else:
+			desejo = d.normalized()
+			correndo = false
+		return
+	desejo = Vector3.ZERO
+	var o: Vector3 = tb["olhar"] - global_position
+	if Vector2(o.x, o.z).length() > 0.05:
+		modelo.rotation.y = lerp_angle(modelo.rotation.y, atan2(o.x, o.z), 1.0 - exp(-dt * 10.0))
+	_tocar(str(tb["anim"]))
+	if anim:
+		anim.speed_scale = 1.0
+	tb["t"] += dt
+	var k := clampf(float(tb["t"]) / maxf(float(tb["dur"]), 0.01), 0.0, 1.0)
+	if (tb["prog"] as Callable).is_valid():
+		(tb["prog"] as Callable).call(k)
+	if k >= 1.0:
+		var fim: Callable = tb["fim"]
+		_trab = {}
+		segurar("")
+		_tocar("parado")
+		if fim.is_valid():
+			fim.call()
+
+
 func dancar(sim: bool) -> void:
 	dancando = sim
 	if sim:
@@ -506,6 +579,8 @@ func _physics_process(dt: float) -> void:
 	_p_ant = _p_cur
 	_p_cur = agora
 	_tem_p = true
+	if not _trab.is_empty():
+		_trabalho(dt)
 	var vel := (CORRE if correndo else vel_anda) * minf(1.0, desejo.length())
 	var alvo := desejo.normalized() * vel if desejo.length() > 0.05 else Vector3.ZERO
 	var k := 1.0 - exp(-dt * 10.0)
@@ -526,7 +601,9 @@ func _physics_process(dt: float) -> void:
 			dancando = false
 		var giro := atan2(velocity.x, velocity.z)
 		modelo.rotation.y = lerp_angle(modelo.rotation.y, giro, 1.0 - exp(-dt * 12.0))
-	if dancando:
+	if not _trab.is_empty() and _trab["fase"] == "fazer":
+		pass   # a animação do trabalho manda
+	elif dancando:
 		_tocar("danca")
 	else:
 		_tocar("corre" if plano > 2.6 else ("anda" if plano > 0.3 else "parado"))

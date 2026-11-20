@@ -967,9 +967,42 @@ func _servico(v: CarroVisual) -> void:
 		linha.add_child(b)
 
 
-func _fazer_servico(alvo: String, chave: String, nome: String) -> void:
+## onde o boneco fica pra mexer numa peça (ou no carro todo): do lado de fora, virado pra ela
+func _posto_de_trabalho(alvo: String) -> Array:
 	var v: CarroVisual = m.visual
-	var dg: Dictionary = (Dados.cfg().get("desgaste", {}) as Dictionary).duplicate(true)
+	var centro := _centro_carro()
+	var chao_y: float = m.pessoa.global_position.y
+	var olhar := centro
+	var ponto: Vector3
+	if alvo != "carro" and v.pecas.has(alvo):
+		olhar = v.centro_peca(alvo)
+		var dir := olhar - centro
+		dir.y = 0.0
+		if dir.length() < 0.05:
+			dir = m.carro.global_basis.z
+		ponto = olhar + dir.normalized() * 0.75
+	else:
+		# carro todo: o lado do carro mais perto de onde a pessoa está
+		var lado: Vector3 = m.carro.global_basis.x
+		if (m.pessoa.global_position - centro).dot(lado) < 0.0:
+			lado = -lado
+		ponto = centro + lado * (float(m.dados["W"]) / 2.0 + 0.6)
+	ponto.y = chao_y
+	return [ponto, olhar]
+
+
+var _pintando_ja := false
+
+## serviço: [animação, segundos, texto, ferramenta na mão]
+const ANIM_SERVICO := {"s": ["Interact", 5.0, "LAVANDO", "esponja"], "f": ["Interact", 5.0, "LIXANDO", "lixadeira"],
+	"a": ["Idle_Torch", 5.0, "PUXANDO O AMASSADO", "spotter"]}
+
+func _fazer_servico(alvo: String, chave: String, nome: String) -> void:
+	if m.pessoa and m.pessoa.ocupado():
+		return
+	var v: CarroVisual = m.visual
+	var antes: Dictionary = (Dados.cfg().get("desgaste", {}) as Dictionary).duplicate(true)
+	var dg: Dictionary = antes.duplicate(true)
 	if alvo == "carro":
 		# carro todo: zera aquilo no corpo e em todas as peças
 		for k in dg.keys():
@@ -980,11 +1013,52 @@ func _fazer_servico(alvo: String, chave: String, nome: String) -> void:
 		var atual := v.desgaste(alvo)
 		atual[chave] = 0.0
 		dg[alvo] = atual
-	if _som_chave:
-		_som_chave.global_position = _centro_carro()
-		_som_chave.play()
-	m.toast({"LAVAR": "LAVADO! ", "LIXAR": "FERRUGEM LIXADA! ", "DESAMASSAR": "DESAMASSADO! "}.get(nome, "") + "Agora é só pintar.", 1.6)
-	_mudar("desgaste", dg)
+	var fim := func():
+		if _som_chave:
+			_som_chave.global_position = _centro_carro()
+			_som_chave.play()
+		m.toast({"LAVAR": "LAVADO! ", "LIXAR": "FERRUGEM LIXADA! ", "DESAMASSAR": "DESAMASSADO! "}.get(nome, "") + "Agora é só pintar.", 1.6)
+		_mudar("desgaste", dg)
+	if m.pessoa == null or not Pessoa.e_ual(m.pessoa.modelo):
+		fim.call()
+		return
+	# o boneco vai até lá e trabalha; o desgaste some aos poucos enquanto ele faz o serviço
+	var an: Array = ANIM_SERVICO[chave]
+	var posto := _posto_de_trabalho(alvo)
+	var passo := [0]
+	var prog := func(k: float):
+		var n := int(k * 10.0)
+		if n == passo[0]:
+			return
+		passo[0] = n
+		var meio := _misturar_desgaste(antes, dg, k)
+		v.c["desgaste"] = meio
+		v._aplicar_cores_pecas()
+		m.toast("%s... %d%%" % [an[2], roundi(k * 100.0)], 0.6)
+	m.pessoa.trabalhar(posto[0], posto[1], str(an[0]), float(an[1]), fim, prog, str(an[3]))
+
+
+## desgaste no meio do serviço (k = 0 antes, 1 pronto)
+func _misturar_desgaste(a: Dictionary, b: Dictionary, k: float) -> Dictionary:
+	var out := {}
+	var v: CarroVisual = m.visual
+	var ids := ["carro"]
+	ids.append_array(v.pecas.keys())
+	for id in ids:
+		var va := _dg_de(a, str(id))
+		var vb := _dg_de(b, str(id))
+		out[id] = {"f": lerpf(va["f"], vb["f"], k), "s": lerpf(va["s"], vb["s"], k), "a": lerpf(va["a"], vb["a"], k)}
+	return out
+
+
+func _dg_de(dg: Dictionary, id: String) -> Dictionary:
+	var base: Dictionary = dg.get("carro", {})
+	var r := {"f": float(base.get("f", 0.0)), "s": float(base.get("s", 0.0)), "a": float(base.get("a", 0.0))}
+	if id != "carro" and dg.has(id):
+		for k in r:
+			if (dg[id] as Dictionary).has(k):
+				r[k] = float(dg[id][k])
+	return r
 
 
 func _cores(lista: Array, chave: String, atual: String) -> void:
@@ -1026,6 +1100,25 @@ func _cores(lista: Array, chave: String, atual: String) -> void:
 
 
 func _mudar(chave: String, valor) -> void:
+	# pintar de verdade: o boneco vai com a pistola e a cor nova só aparece no fim da demão
+	if (chave in ["cor", "cor2", "acabamento"] or chave.begins_with("peca:")) and m.pessoa and Pessoa.e_ual(m.pessoa.modelo) and not _pintando_ja:
+		if m.pessoa.ocupado():
+			return
+		var cor_tinta := Color(str(valor)) if str(valor).begins_with("#") else Color(str(Dados.cfg().get("cor", "#ffffff")))
+		var alvo := chave.substr(5) if chave.begins_with("peca:") else ("carro" if _alvo_pintura == "" else _alvo_pintura)
+		var posto := _posto_de_trabalho(alvo if m.visual.pecas.has(alvo) else "carro")
+		var c2 := chave
+		var v2 = valor
+		var prog := func(k: float):
+			var n := int(k * 10.0)
+			m.toast("PINTANDO... %d%%" % (n * 10), 0.6)
+		var fim := func():
+			_pintando_ja = true
+			_mudar(c2, v2)
+			_pintando_ja = false
+			m.toast("PINTADO!", 1.2)
+		m.pessoa.trabalhar(posto[0], posto[1], "Farm_Watering", 4.0, fim, prog, "pistola", cor_tinta)
+		return
 	if chave.begins_with("peca:"):
 		# cor de uma peça só: guarda no dicionário de cores das peças ("" = volta pra cor do carro)
 		var id := chave.substr(5)
@@ -1041,6 +1134,7 @@ func _mudar(chave: String, valor) -> void:
 	m.visual.atualizar(m.cfg)
 	if painel_pintura and painel_pintura.visible:
 		_encher_painel()
+
 
 
 func _unhandled_input(e: InputEvent) -> void:
