@@ -847,6 +847,12 @@ static func classe_material(mat: Material, nome_no := "") -> String:
 		"PNEU": return "pneu"
 		"ARO": return "aro"
 		"INTERIOR": return "interior"
+		# (visual 2) peças do farol/lanterna separadas pelo ferramentas/luzes.py
+		"MASCARA": return "mascara"
+		"REFLETOR": return "refletor_tras" if "lanterna" in nome else "refletor"
+		"LENTE": return "lente"
+		"PISCA": return "pisca"
+		"RE": return "re"
 	if etiqueta.begins_with("LUZ") or nome == "Gol_headlight":
 		return "farol"
 	var n := (nome + " " + nome_no).to_lower()
@@ -908,11 +914,60 @@ func _materiais(raiz: Node) -> void:
 			m.visible = false
 
 
+var _lanternas: Array[ShaderMaterial] = []   # (visual 2) lentes vermelhas: acendem mais no freio
+
+
+## (visual 2) luz de freio: as lanternas vermelhas acendem forte
+var _freando := false
+func frear(sim: bool) -> void:
+	if sim == _freando:
+		return
+	_freando = sim
+	for m in _lanternas:
+		m.set_shader_parameter("freio", 1.0 if sim else 0.0)
+
+
+func _lente_cor(cor: Color, luz: Color, aceso: float, claro := 0.0) -> ShaderMaterial:
+	var l := _shader("res://scripts/shaders/lanterna.gdshader")
+	l.set_shader_parameter("cor", cor)
+	l.set_shader_parameter("cor_luz", luz)
+	l.set_shader_parameter("aceso", aceso)
+	l.set_shader_parameter("claro", claro)
+	return l
+
+
 func _material_para(cls: String, orig: Material) -> Material:
 	var sm := orig as BaseMaterial3D
 	match cls:
+		"mascara":   # fundo do farol: preto brilhante (máscara negra)
+			var mk := StandardMaterial3D.new()
+			mk.albedo_color = Color(0.018, 0.018, 0.022)
+			mk.metallic = 0.8
+			mk.roughness = 0.24
+			return mk
+		"refletor", "refletor_tras":   # parábola cromada; a do farol fica um pouco acesa (luz de posição)
+			var rf := StandardMaterial3D.new()
+			rf.albedo_color = Color(0.93, 0.94, 0.96)
+			rf.metallic = 1.0
+			rf.roughness = 0.07
+			if cls == "refletor":
+				rf.emission_enabled = true
+				rf.emission = Color(1.0, 0.97, 0.92)
+				rf.emission_energy_multiplier = 0.18
+			return rf
+		"lente":
+			return _shader("res://scripts/shaders/lente.gdshader")
+		"pisca":
+			return _lente_cor(Color(1.0, 0.45, 0.02), Color(1.0, 0.5, 0.05), 0.04)
+		"re":
+			return _lente_cor(Color(0.9, 0.9, 0.92), Color(1.0, 1.0, 1.0), 0.0, 1.0)
+		"lanterna" when int(d.get("visual", 1)) >= 2:   # (só visual 2: os outros carros ficam como estavam)
+			var tl := _lente_cor(Color(0.75, 0.02, 0.03), Color(1.0, 0.06, 0.04), 0.35)
+			_lanternas.append(tl)
+			return tl
 		"vidro":
 			var v := _shader("res://scripts/shaders/vidro.gdshader")
+			v.set_shader_parameter("pbr", int(d.get("visual", 1)) >= 2)
 			if sm and sm.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED and sm.albedo_color.a < 0.95:
 				var c := sm.albedo_color
 				v.set_shader_parameter("tinta", Color(c.r, c.g, c.b) * 0.35)

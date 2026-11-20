@@ -1050,6 +1050,8 @@ func _physics_process(dt: float) -> void:
 	var vel := carro.linear_velocity.dot(frente)
 	var acel := Input.get_action_strength("acelerar")
 	var freio := Input.get_action_strength("frear")
+	if visual:
+		visual.frear(freio > 0.0)   # luz de freio
 	var forca := 3400.0 * float(dados.get("acc", 8.5)) / 8.5
 	var vmax := float(dados.get("vmax", 50)) * 0.9
 	carro.brake = 0.0

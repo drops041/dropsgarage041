@@ -36,6 +36,35 @@ def quat(eixo, graus):
     return [round(float(e[0] * s), 5), round(float(e[1] * s), 5), round(float(e[2] * s), 5), round(math.cos(a), 5)]
 
 
+def dobradica(q, lado):
+    """eixo da dobradiça: na pele de fora da porta, na beirada da frente (um pouco pra fora da lataria).
+    Assim a beirada da frente gira no lugar e o resto da porta vai pra trás/pra fora, sem entrar no paralama.
+    (antes ficava 6 cm pra dentro e 3 cm atrás da beirada: a quina da frente da porta entrava no paralama)
+    Só a parte de baixo da porta conta (o retrovisor e a moldura do vidro não empurram o eixo pra fora)."""
+    a, b = q.min(0), q.max(0)
+    baixo = q[(q[:, 1] < a[1] + 0.6 * (b[1] - a[1])) & (q[:, 2] > b[2] - 0.12)]
+    if len(baixo) < 10:
+        baixo = q[q[:, 2] > b[2] - 0.12]
+    ext = np.percentile(baixo[:, 0], 99.5) if lado > 0 else np.percentile(baixo[:, 0], 0.5)
+    return [round(float(ext + lado * 0.004), 3), round(float((a[1] + b[1]) / 2), 3), round(float(b[2] - 0.004), 3)]
+
+
+def so_dobradicas(cid, carro):
+    """recalcula só o eixo das portas de um carro já processado (nós PFL__/PFR__/PRL__/PRR__)"""
+    g = GLB(os.path.join(RAIZ, "modelos", "carros", cid + ".glb"))
+    pts = {}
+    for p in g.primitivas():
+        pref = p["nome"].split("/")[-1][:3]
+        if pref in ("PFL", "PFR", "PRL", "PRR") and "__vidro" not in p["nome"]:
+            pts.setdefault(pref, []).append(p["pw"][p["idx"]])
+    for item in carro.get("partes", {}).get("portas", {}).get("p", []):
+        if item[0] in pts:
+            q = np.concatenate(pts[item[0]])
+            antes = item[1]
+            item[1] = dobradica(q, 1 if item[0][2] == "R" else -1)
+            print(cid, item[0], antes, "->", item[1])
+
+
 def processar(cid, carro):
     arq = os.path.join(RAIZ, "modelos", "carros", cid + ".glb")
     g = GLB(arq)
@@ -114,8 +143,7 @@ def processar(cid, carro):
         for k, gr in enumerate(gs[:2]):
             q = np.concatenate([sub(i) for i in gr[2]])
             a, b = q.min(0), q.max(0)
-            ext = b[0] if lado > 0 else a[0]
-            piv = [round(float(ext - lado * 0.06), 3), round(float((a[1] + b[1]) / 2), 3), round(float(b[2] - 0.03), 3)]
+            piv = dobradica(q, lado)
             pref = "P%s%s" % ("F" if k == 0 else "R", "R" if lado > 0 else "L")
             for i in gr[2]:
                 nos[i]["name"] = pref + "__" + nos[i].get("name", "")
@@ -187,6 +215,12 @@ def processar(cid, carro):
 def main():
     cj = os.path.join(RAIZ, "carros.json")
     carros = json.load(open(cj, encoding="utf8"))
+    if sys.argv[1:2] == ["--dobradicas"]:   # só recalcula o eixo das portas (não mexe no modelo)
+        for c in carros:
+            if c["id"] in sys.argv[2:]:
+                so_dobradicas(c["id"], c)
+        json.dump(carros, open(cj, "w", encoding="utf8"), ensure_ascii=False, indent=1)
+        return
     for cid in sys.argv[1:]:
         c = next((x for x in carros if x["id"] == cid), None)
         if c is None:
