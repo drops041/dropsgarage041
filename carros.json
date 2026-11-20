@@ -1662,7 +1662,7 @@
  {
   "id": "saveirog3",
   "nome": "G3",
-  "sub": "cabine simples · anos 2000",
+  "sub": "cabine simples · anos 2000 · velha de garagem",
   "W": 1.761,
   "axF": 1.285,
   "axR": -1.285,
@@ -1689,19 +1689,27 @@
    "y": 0.954
   },
   "padrao": {
-   "cor": "#f4f1f2",
-   "acabamento": "perola",
+   "cor": "#8d1d1d",
+   "acabamento": "brilho",
    "cor2": "#ff8fd0",
-   "roda": "m850",
-   "aro": 17,
-   "tala": 7,
-   "flanco": 9.5,
+   "roda": "aco15",
+   "aro": 15,
+   "tala": 6,
+   "flanco": 7.0,
    "cor_roda": "#c9ccd1",
    "borda": "polida",
-   "camber": 1,
-   "neon": "rosa",
-   "som": "deitado",
-   "placa": "SAVEIRO"
+   "camber": 0,
+   "neon": "off",
+   "som": "off",
+   "placa": "AKD2003",
+   "desgaste": {
+    "carro": {
+     "f": 0.65,
+     "s": 0.45,
+     "a": 0.5
+    }
+   },
+   "rebaixo": 0.0
   },
   "arcos": {
    "f": [

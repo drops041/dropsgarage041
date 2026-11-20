@@ -159,16 +159,43 @@ func tem_peca(id: String) -> bool:
 ## (acabamento, verniz, reflexo) só com outra cor. Sem cor própria, volta pra tinta do carro.
 var _mats_peca := {}
 
+## desgaste de uma parte ("carro" ou id da peça): {"f": ferrugem, "s": sujeira, "a": amassado}, 0..1
+func desgaste(id: String) -> Dictionary:
+	var dg: Dictionary = c.get("desgaste", {})
+	var base: Dictionary = dg.get("carro", {})
+	var r := {"f": float(base.get("f", 0.0)), "s": float(base.get("s", 0.0)), "a": float(base.get("a", 0.0))}
+	if id != "carro" and dg.has(id):
+		var p: Dictionary = dg[id]
+		for k in r:
+			if p.has(k):
+				r[k] = float(p[k])
+	return r
+
+
+func _usar_desgaste(mat: ShaderMaterial, dg: Dictionary, semente: Vector3) -> void:
+	mat.set_shader_parameter("ferrugem", dg["f"])
+	mat.set_shader_parameter("sujeira", dg["s"])
+	mat.set_shader_parameter("amassado", dg["a"])
+	mat.set_shader_parameter("semente", semente)
+
+
 func _aplicar_cores_pecas() -> void:
+	_usar_desgaste(mat_pintura, desgaste("carro"), Vector3.ZERO)
 	if pecas.is_empty():
 		return
 	var cp: Dictionary = c.get("cores_pecas", {})
+	var dg_carro := desgaste("carro")
+	var k := 0
 	for id in pecas:
+		k += 1
 		var mat: Material = mat_pintura
-		if cp.has(id):
+		var dg := desgaste(id)
+		if cp.has(id) or dg != dg_carro:
 			var m2: ShaderMaterial = mat_pintura.duplicate()
 			var acab: String = c.get("acabamento", "metal")
-			m2.set_shader_parameter("cor", Color(str(cp[id])) if acab != "cromado" else Color(str(cp[id])).lerp(Color.WHITE, 0.6))
+			var cor_p := str(cp.get(id, c["cor"]))
+			m2.set_shader_parameter("cor", Color(cor_p) if acab != "cromado" else Color(cor_p).lerp(Color.WHITE, 0.6))
+			_usar_desgaste(m2, dg, Vector3(k * 7.3, k * 3.1, k * 5.7))
 			_mats_peca[id] = m2
 			mat = m2
 		else:

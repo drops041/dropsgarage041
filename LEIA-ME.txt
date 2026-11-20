@@ -26,6 +26,9 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
 - PINTURA POR PEÇA: na cabine de pintura, em "O que pintar", escolha CARRO TODO ou uma peça
   (porta, capô, porta-malas) e a cor. "IGUAL AO RESTO DO CARRO" tira a cor própria da peça.
   O acabamento (metal, pérola, fosco...) continua sendo do carro todo.
+- DESGASTE (carro velho): a G3 vem de garagem — ferrugem, amassados e sujeira. Na cabine de pintura
+  aparece "Serviço" com LAVAR, LIXAR (ferrugem) e DESAMASSAR, pro carro todo ou pra cada peça.
+  Depois do serviço é só pintar.
 
 Novidades (v42)
 - Carro novo: SaborSW (SUV 7 lugares, suspensão a ar), preto com roda 24 prata.

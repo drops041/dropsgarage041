@@ -888,6 +888,7 @@ func _encher_painel() -> void:
 			b.add_theme_color_override("font_color", Color.BLACK if marcado else Color.WHITE)
 			b.pressed.connect(func(): _alvo_pintura = id; _encher_painel())
 			gp.add_child(b)
+	_servico(v)
 	if _alvo_pintura != "":
 		_titulo("Cor: " + v.nome_peca(_alvo_pintura).to_lower())
 		_cores(Dados.CORES, "peca:" + _alvo_pintura, str(cp.get(_alvo_pintura, c["cor"])))
@@ -924,6 +925,66 @@ func _encher_painel() -> void:
 	if c.get("acabamento", "") in ["perola", "camaleao"]:
 		_titulo("Cor do reflexo")
 		_cores(Dados.CORES2, "cor2", str(c.get("cor2", "")))
+
+
+## (fase 2) serviço de funilaria antes da tinta: lavar, lixar a ferrugem, desamassar (do carro todo ou de uma peça)
+const SERVICOS := [["s", "Sujeira", "LAVAR"], ["f", "Ferrugem", "LIXAR"], ["a", "Amassado", "DESAMASSAR"]]
+
+func _servico(v: CarroVisual) -> void:
+	var alvo := "carro" if _alvo_pintura == "" else _alvo_pintura
+	var dg := v.desgaste(alvo)
+	if _alvo_pintura == "":
+		for id in v.pecas:   # no carro todo, conta o pior de todas as peças
+			var dp := v.desgaste(id)
+			for k in dg:
+				dg[k] = maxf(dg[k], dp[k])
+	if dg["f"] + dg["s"] + dg["a"] < 0.01:
+		return
+	_titulo("Serviço" + ("" if _alvo_pintura == "" else ": " + v.nome_peca(_alvo_pintura).to_lower()))
+	for sv in SERVICOS:
+		var val: float = dg[sv[0]]
+		if val < 0.01:
+			continue
+		var linha := HBoxContainer.new()
+		linha.add_theme_constant_override("separation", 10)
+		_conteudo.add_child(linha)
+		var lb := Label.new()
+		lb.text = "%s %d%%" % [sv[1], roundi(val * 100.0)]
+		lb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		lb.add_theme_font_size_override("font_size", 17)
+		lb.add_theme_color_override("font_color", Color(1, 0.55, 0.35) if val > 0.5 else Color(1, 0.85, 0.5))
+		linha.add_child(lb)
+		var b := Button.new()
+		b.text = sv[2]
+		b.focus_mode = Control.FOCUS_NONE
+		b.custom_minimum_size = Vector2(150, 44)
+		b.add_theme_font_size_override("font_size", 16)
+		var s: StyleBoxFlat = m._estilo(AMARELO, AMARELO)
+		b.add_theme_stylebox_override("normal", s)
+		b.add_theme_stylebox_override("hover", s)
+		b.add_theme_color_override("font_color", Color.BLACK)
+		b.pressed.connect(_fazer_servico.bind(alvo, str(sv[0]), str(sv[2])))
+		linha.add_child(b)
+
+
+func _fazer_servico(alvo: String, chave: String, nome: String) -> void:
+	var v: CarroVisual = m.visual
+	var dg: Dictionary = (Dados.cfg().get("desgaste", {}) as Dictionary).duplicate(true)
+	if alvo == "carro":
+		# carro todo: zera aquilo no corpo e em todas as peças
+		for k in dg.keys():
+			(dg[k] as Dictionary)[chave] = 0.0
+		if not dg.has("carro"):
+			dg["carro"] = {chave: 0.0}
+	else:
+		var atual := v.desgaste(alvo)
+		atual[chave] = 0.0
+		dg[alvo] = atual
+	if _som_chave:
+		_som_chave.global_position = _centro_carro()
+		_som_chave.play()
+	m.toast({"LAVAR": "LAVADO! ", "LIXAR": "FERRUGEM LIXADA! ", "DESAMASSAR": "DESAMASSADO! "}.get(nome, "") + "Agora é só pintar.", 1.6)
+	_mudar("desgaste", dg)
 
 
 func _cores(lista: Array, chave: String, atual: String) -> void:
