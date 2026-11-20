@@ -2140,6 +2140,276 @@
     0.852
    ]
   },
-  "saia": 0.016
+  "saia": 0.083
+ },
+ {
+  "id": "rs6",
+  "nome": "Áudio 6 Perua",
+  "sub": "perua esportiva · suspensão a ar",
+  "W": 1.955,
+  "axF": 1.463,
+  "axR": -1.463,
+  "wy": 0.363,
+  "ra": 0.363,
+  "bed": null,
+  "som": {
+   "z": -1.613,
+   "y": 0.913
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 50,
+  "acc": 8.5,
+  "padrao": {
+   "cor": "#d11515",
+   "acabamento": "metal",
+   "cor2": "#ff7ad1",
+   "roda": "jerez",
+   "aro": 19,
+   "tala": 7,
+   "flanco": 9,
+   "cor_roda": "#a3a8ad",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "RS60000",
+   "rebaixo": 6
+  },
+  "arcos": {
+   "f": [
+    0.743,
+    0.974
+   ],
+   "t": [
+    0.752,
+    0.969
+   ]
+  },
+  "saia": 0.165
+ },
+ {
+  "id": "sandero",
+  "nome": "Sandeiro",
+  "sub": "hatch · suspensão a ar",
+  "W": 1.663,
+  "axF": 1.293,
+  "axR": -1.293,
+  "wy": 0.31,
+  "ra": 0.31,
+  "bed": null,
+  "som": {
+   "z": -1.443,
+   "y": 0.86
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 50,
+  "acc": 8.5,
+  "padrao": {
+   "cor": "#d11515",
+   "acabamento": "metal",
+   "cor2": "#ff7ad1",
+   "roda": "jerez",
+   "aro": 19,
+   "tala": 7,
+   "flanco": 9,
+   "cor_roda": "#a3a8ad",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "SANDERO",
+   "rebaixo": 6
+  },
+  "arcos": {
+   "f": [
+    0.5,
+    0.82
+   ],
+   "t": [
+    0.5,
+    0.82
+   ]
+  },
+  "saia": 0.242
+ },
+ {
+  "id": "logan",
+  "nome": "Lógico",
+  "sub": "sedã · suspensão a ar",
+  "W": 1.7,
+  "axF": 1.377,
+  "axR": -1.377,
+  "wy": 0.367,
+  "ra": 0.367,
+  "bed": null,
+  "som": {
+   "z": -1.527,
+   "y": 0.917
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 50,
+  "acc": 8.5,
+  "padrao": {
+   "cor": "#d11515",
+   "acabamento": "metal",
+   "cor2": "#ff7ad1",
+   "roda": "jerez",
+   "aro": 19,
+   "tala": 7,
+   "flanco": 9,
+   "cor_roda": "#a3a8ad",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "LOGAN00",
+   "rebaixo": 6
+  },
+  "arcos": {
+   "f": [
+    0.666,
+    0.87
+   ],
+   "t": [
+    0.643,
+    0.872
+   ]
+  },
+  "saia": 0.234
+ },
+ {
+  "id": "clio",
+  "nome": "Cliô",
+  "sub": "hatch anos 2000 · suspensão a ar",
+  "W": 1.777,
+  "axF": 1.231,
+  "axR": -1.231,
+  "wy": 0.206,
+  "ra": 0.206,
+  "bed": null,
+  "som": {
+   "z": -1.381,
+   "y": 0.756
+  },
+  "tampao": false,
+  "trio": null,
+  "picape": false,
+  "vmax": 50,
+  "acc": 8.5,
+  "padrao": {
+   "cor": "#d11515",
+   "acabamento": "metal",
+   "cor2": "#ff7ad1",
+   "roda": "jerez",
+   "aro": 19,
+   "tala": 7,
+   "flanco": 9,
+   "cor_roda": "#a3a8ad",
+   "borda": "cor",
+   "camber": 1,
+   "neon": "off",
+   "som": "off",
+   "placa": "CLIO000",
+   "rebaixo": 6
+  },
+  "partes": {
+   "portas": {
+    "nome": "portas",
+    "p": [
+     [
+      "PFL",
+      [
+       -0.764,
+       0.654,
+       0.881
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRL",
+      [
+       -0.822,
+       0.662,
+       -0.152
+      ],
+      [
+       0.0,
+       0.51504,
+       0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PFR",
+      [
+       0.744,
+       0.654,
+       0.77
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ],
+     [
+      "PRR",
+      [
+       0.668,
+       0.662,
+       -0.265
+      ],
+      [
+       -0.0,
+       -0.51504,
+       -0.0,
+       0.85717
+      ]
+     ]
+    ]
+   },
+   "tras": {
+    "nome": "porta-malas",
+    "p": [
+     [
+      "PTR",
+      [
+       0.0,
+       1.108,
+       -1.182
+      ],
+      [
+       0.55919,
+       0.0,
+       0.0,
+       0.82904
+      ]
+     ]
+    ]
+   }
+  },
+  "arcos": {
+   "f": [
+    0.452,
+    0.835
+   ],
+   "t": [
+    0.437,
+    0.902
+   ]
+  },
+  "saia": 0.127
  }
 ]
