@@ -16,7 +16,7 @@ const RODAS := [["work", "Trampo E03"], ["tsw5", "5 Raios Turbo"], ["vgt", "Vis�
 	["hre522", "H-Raio 522"], ["tusk", "Presa"], ["dj76", "DJ 76"], ["sv67", "Savoia 67"],
 	["nc4", "Savoia NC4"], ["weds", "Kranz Bazar"], ["r557", "Rim 557"],
 	["jerez", "Jerez"], ["jettagli", "Jeta GLX"], ["tiguan", "Despacito R"], ["id4", "Volt Aero"],
-	["raptor", "Raptora Beadlock"], ["aco15", "Calota de Fábrica"], ["antera", "Antares 109"]]
+	["raptor", "Raptora Beadlock"], ["aco15", "Calota de Fábrica"], ["antera", "Antares 109"], ["vsxv", "Trampo VS"]]
 const ARQUIVO := "user://garagem.json"
 
 var carros: Array = []

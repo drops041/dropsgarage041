@@ -21,7 +21,9 @@ Despacito (tiguan)          geyges / Sketchfab Standard                         
 iVolt 4 (id4)             geyges / Sketchfab Standard                            OK (crédito)
 Santa Clara (santacruz)   geyges / Sketchfab Standard                            OK (crédito)
 Fortão 150 (f150)         Vehsource | VHS Mods / CC BY 4.0                       OK (crédito)
-Robusta                   Ddiaz Design / CC BY-NC-SA 4.0                         NÃO PODE
+Robusta (saveirorobust)   Davidson (sketchfab.com/Davidson741) / CC BY 4.0        OK (crédito)
+                          (trocada em 20/11: a anterior era Ddiaz Design CC BY-NC-SA, não podia)
+G3 (saveirog3)            Ramon.Dos.Santos (sketchfab.com/Ramon.Dos.Santos) / CC BY 4.0  OK (crédito)
 Lexo NX (lexusnx)         Ddiaz Design / CC BY-NC-SA 4.0                         NÃO PODE
 G5 (golg5)                ?                                                      PENDENTE
 Donas (corsa)             ?                                                      PENDENTE
@@ -44,7 +46,14 @@ textura (frente do Golfo GTX, escrita nas placas, LEXUS na traseira do Lexo NX).
 ------------------------------------------------------------------ RODAS
 Tramada RS (BBS-Rims.obj), Antares 109 (Antera_Type_109.obj)                    PENDENTE
 As outras 32 rodas (pacotes que você mandou)                                    PENDENTE
+Trampo VS (vsxv)          gunis.david (sketchfab.com/gunis.david) / CC BY 4.0   OK (crédito)
 ATENÇÃO: os nomes das rodas também foram trocados (BBS, HRE, Work, Savini... são marcas registradas).
+
+------------------------------------------------------------------ PEÇAS (Fase 2: trocar peças na oficina)
+Banco concha (modelos/pecas/banco_concha_a)  Kryox Shade / CC BY 4.0           OK (crédito)
+Alto-falante (modelos/pecas/alto_falante)    Speaker TH / CC BY 4.0            OK (crédito)
+Fontes dos links: sketchfab.com/3d-models/racing-car-seat-9efc26f9718f49539f31fc826e84741b
+                  sketchfab.com/3d-models/speaker-0cc5b5437ac741f5926ccf16060f2fb9
 
 ------------------------------------------------------------------ CENÁRIO
 Sala gamer (GAMINGROOMLOWPOLYLESTRIX.blend)                                     PENDENTE
