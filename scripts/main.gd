@@ -2452,6 +2452,141 @@ func _teste13() -> void:
 			get_tree().quit()
 
 
+func _teste16() -> void:
+	# desmontagem com as mãos, caminho completo: tira 2 peças, guarda no cavalete, recria o carro,
+	# pega do cavalete e coloca de volta. DROPS_T16_CARRO = id do carro (padrão f150)
+	var ft := OS.get_environment("DROPS_FOTO")
+	var foto := func(n: String) -> void:
+		if ft != "":
+			get_viewport().get_texture().get_image().save_png(ft % n)
+	var cid := OS.get_environment("DROPS_T16_CARRO") if OS.has_environment("DROPS_T16_CARRO") else "f150"
+	var ids: Array = (OS.get_environment("DROPS_T16_PECAS") if OS.has_environment("DROPS_T16_PECAS") else "PFL,PTR").split(",")
+	var perto := func(id: String) -> void:
+		var c: Vector3 = visual.centro_peca(id)
+		var lc: Vector3 = carro.global_transform.affine_inverse() * c
+		var off: Vector3
+		if id == "PCA" or id == "PTR":
+			off = carro.global_basis.z.normalized() * signf(lc.z) * 0.75
+		else:
+			off = carro.global_basis.x.normalized() * signf(lc.x) * 0.6
+		var k := 0.0
+		while k < 4.0 and oficina.desm._dist_peca(c + off.normalized() * k, id) < 0.65:
+			k += 0.05
+		pessoa.global_position = c + off.normalized() * k
+		pessoa.global_position.y = mapa.drops_ponto(Vector3.ZERO).y + 0.1
+	var no_cavalete := func() -> void:
+		pessoa.global_position = mapa.drops_ponto(Desmontagem.CAVALETE + Vector3(0.0, 0.1, -1.0))
+	var log := func(o: String) -> void:
+		print("t16 [", _f, "] ", o, " pos=", mapa.drops_local(pessoa.global_position), " | acao='", oficina._acao, "' na_mao='", oficina.desm.carregando, "' holders=", oficina.desm._holders.keys(), " sem=", Dados.cfg().get("sem_pecas"), " pecas_visiveis=", visual.pecas.keys().filter(func(k): return visual.tem_peca(k)))
+	var F := 60   # frames por passo (o gesto leva 0,85 s)
+	var passo := int(_f / F)
+	if _f % F != 0:
+		return
+	match passo:
+		1:
+			intro = 0.0
+			for i in Dados.carros.size():
+				if Dados.carros[i]["id"] == cid:
+					Dados.idx = i
+			Dados.mudar("sem_pecas", [])
+			_criar_carro(carro.global_position + Vector3.UP * 0.8, carro.rotation.y)
+		2:
+			var mid := (float(dados["axF"]) + float(dados["axR"])) / 2.0
+			var c := mapa.drops_ponto(Oficina.ELEV)
+			var ez: Vector3 = mapa.drops_xf.basis * Oficina.ELEV_EIXO
+			teletransportar(c - ez * mid, atan2(ez.x, ez.z))
+		3:
+			descer()
+		4:
+			log.call("desceu; no elevador=" + str(oficina.carro_no_elevador()))
+			perto.call(ids[0])
+		5:
+			log.call("perto da peca " + ids[0])
+			for k in visual.pecas:
+				print("t16   dist ", k, " = ", oficina.desm._dist_peca(pessoa.global_position, k), " centro=", mapa.drops_local(visual.centro_peca(k)), " caixa=", visual.caixa_peca(k))
+			print("t16   ocupado=", pessoa.ocupado(), " pode=", oficina.desm._pode())
+			_t16_agir()
+		6:
+			log.call("tirou " + ids[0])
+			no_cavalete.call()
+		7:
+			log.call("no cavalete")
+			_t16_agir()
+		8:
+			log.call("guardou")
+			perto.call(ids[1])
+		9:
+			log.call("perto da peca " + ids[1])
+			_t16_agir()
+		10:
+			log.call("tirou " + ids[1])
+			no_cavalete.call()
+		11:
+			_t16_agir()
+		12:
+			log.call("guardou 2")
+			if _cam_t == null:
+				_cam_t = Camera3D.new(); _cam_t.far = 300.0; _cam_t.fov = 70.0; add_child(_cam_t)
+			_cam_t.current = true
+			_cam_t.global_position = mapa.drops_ponto(Desmontagem.CAVALETE + Vector3(2.5, 1.8, -3.6))
+			_cam_t.look_at(mapa.drops_ponto(Desmontagem.CAVALETE + Vector3(0, 0.6, 0)))
+		13:
+			foto.call("1_cavalete")
+			_cam_t.current = false
+			# sai do carro e volta (recria o carro, como trocar de carro / voltar da garagem)
+			entrar_carro_ja()
+		14:
+			log.call("entrou no carro")
+			descer()
+		15:
+			log.call("desceu de novo")
+			no_cavalete.call()
+		16:
+			log.call("no cavalete depois de entrar/sair")
+			_t16_agir()
+		17:
+			log.call("pegou")
+			perto.call(oficina.desm.carregando if oficina.desm.carregando != "" else ids[0])
+		18:
+			log.call("perto do lugar")
+			_t16_agir()
+		19:
+			log.call("colocou")
+			no_cavalete.call()
+		20:
+			_t16_agir()
+		21:
+			log.call("pegou 2")
+			perto.call(oficina.desm.carregando if oficina.desm.carregando != "" else ids[1])
+		22:
+			log.call("perto do lugar 2")
+			_t16_agir()
+		23:
+			log.call("colocou 2")
+			_cam_t.current = true
+		24:
+			foto.call("2_cavalete_vazio")
+			# estado quebrado de propósito: salvo diz que falta a porta, mas o carro mostra; mão "fantasma"
+			Dados.mudar("sem_pecas", ["PFL", "PFL", "XYZ"])
+			visual.mostrar_peca("PFL", true)
+			oficina.desm.carregando = "PRR"
+			oficina.desm._na_mao = null
+			log.call("quebrado de proposito")
+		26:
+			log.call("depois de conferir")
+			Dados.mudar("sem_pecas", [])
+		28:
+			log.call("depois de limpar")
+			get_tree().quit()
+
+
+func _t16_agir() -> void:
+	if oficina._acao == "PINTAR" or oficina._acao == "":
+		print("t16   (nao apertou: acao='", oficina._acao, "')")
+		return
+	oficina.interagir()
+
+
 func _teste12() -> void:
 	# (fase 2) desmontagem: Astral no elevador, tira porta e capô, olha o cavalete, põe a porta de volta
 	var ft := OS.get_environment("DROPS_FOTO")
@@ -2881,6 +3016,9 @@ func _roteiro_teste() -> void:
 		return
 	if OS.get_environment("DROPS_TESTE") == "13":
 		_teste13()
+		return
+	if OS.get_environment("DROPS_TESTE") == "16":
+		_teste16()
 		return
 	if OS.get_environment("DROPS_TESTE") == "12":
 		_teste12()

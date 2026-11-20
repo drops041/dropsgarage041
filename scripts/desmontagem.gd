@@ -12,7 +12,7 @@ var of     # Oficina
 const CAVALETE := Vector3(-3.4, 0.0, 22.85)
 const COMPRIMENTO := 2.5
 const ALTURA_BARRA := 1.05
-const DIST_PECA := 1.15          # quão perto da peça a pessoa precisa estar
+const DIST_PECA := 0.95          # quão perto da BEIRADA da peça a pessoa precisa estar (antes era do meio: porta grande não dava)
 const DIST_CAVALETE := 1.7       # quão perto do cavalete
 const T_VOO := 0.35              # segundos da peça indo da mão pro lugar (e vice-versa)
 const T_GESTO := 0.85            # o gesto de pegar/soltar
@@ -128,12 +128,16 @@ func acao(p: Vector3) -> String:
 	return ""
 
 
+## distância (no chão) da pessoa até a beirada mais perto da peça. Antes era até o meio da peça:
+## em porta grande (Fortão, Rangido) o boneco esbarrava na lataria antes de chegar perto e o TIRAR nunca aparecia.
 func _dist_peca(p: Vector3, id: String) -> float:
-	var c: Vector3 = (m.visual as CarroVisual).centro_peca(id)
-	var d := Vector2(p.x - c.x, p.z - c.z).length()
-	if id == "PCA" or id == "PTR":
-		d -= 0.45    # capô e tampa são largos: dá pra pegar pela lateral do carro
-	return d
+	var v: CarroVisual = m.visual
+	var pv: Node3D = v.pecas[id]
+	var bb: AABB = v.caixa_peca(id)
+	var xf := pv.global_transform
+	var q := (xf.affine_inverse() * p).clamp(bb.position, bb.end)
+	var w := xf * q
+	return Vector2(p.x - w.x, p.z - w.z).length()
 
 
 func _perto_cavalete(p: Vector3) -> bool:
@@ -141,9 +145,14 @@ func _perto_cavalete(p: Vector3) -> bool:
 	return Vector2(p.x - c.x, p.z - c.z).length() < DIST_CAVALETE
 
 
+## dá pra mexer nas peças com o carro parado em qualquer lugar da oficina (antes só em cima do elevador:
+## quem tirava a porta e manobrava o carro não conseguia mais pôr de volta)
 func _pode() -> bool:
-	return m.carro != null and m.visual != null and not (m.visual as CarroVisual).pecas.is_empty() \
-		and of.carro_no_elevador() and not of.carro_alto and of.subindo == 0 and of.segurando == ""
+	if m.carro == null or m.visual == null or (m.visual as CarroVisual).pecas.is_empty() or of.segurando != "":
+		return false
+	if of.carro_no_elevador() and (of.carro_alto or of.subindo != 0):
+		return false
+	return of.dentro(m.carro.global_position)
 
 
 ## o boneco faz o gesto (pegar/soltar) olhando pro ponto e depois roda 'fim'
@@ -162,8 +171,10 @@ func fazer(a: String) -> void:
 	var sem: Array = (Dados.cfg().get("sem_pecas", []) as Array).duplicate()
 	if a.begins_with("TIRAR") and v.tem_peca(id) and carregando == "":
 		v.fechar_tudo()
-		carregando = id
 		_gesto(v.centro_peca(id), func():
+			if m.visual != v or not v.tem_peca(id) or carregando != "":
+				return   # trocou de carro no meio do gesto
+			carregando = id
 			if not sem.has(id):
 				sem.append(id)
 			Dados.mudar("sem_pecas", sem)
@@ -178,24 +189,28 @@ func fazer(a: String) -> void:
 		var h := _na_mao
 		_gesto((get_parent() as Node3D).global_transform * CAVALETE, func():
 			_largar()
-			if h:
+			if h and is_instance_valid(h):
 				_holders[id] = h
 				_voar(h, h.global_transform, _lugar(h, _fila(id)), _reorganizar)
 			_som())
 	elif a.begins_with("PEGAR") and carregando == "" and _holders.has(id):
 		var h: Node3D = _holders[id]
-		carregando = id
 		_gesto(h.global_position, func():
+			if not is_instance_valid(h) or _holders.get(id) != h or carregando != "":
+				return
+			carregando = id
 			_holders.erase(id)
 			_segurar(h)
 			_som())
 	elif a.begins_with("COLOCAR") and carregando == id and not v.tem_peca(id):
 		var h := _na_mao
 		_gesto(v.centro_peca(id), func():
+			if m.visual != v:
+				return
 			_largar()
 			sem.erase(id)
 			Dados.mudar("sem_pecas", sem)
-			if h == null:
+			if h == null or not is_instance_valid(h):
 				v.mostrar_peca(id, true)
 				m._montar_partes_ui()
 			else:
@@ -267,6 +282,9 @@ func _pose_mao(h: Node3D) -> Transform3D:
 
 ## entrou no carro, trocou de carro...: a peça da mão vai pro cavalete sozinha
 func guardar_ja() -> void:
+	if carregando != "" and (_na_mao == null or not is_instance_valid(_na_mao)):
+		_largar()   # estado quebrado: dizia que tinha peça na mão mas não tinha
+		return
 	if carregando == "" or _na_mao == null:
 		return
 	var id := carregando
@@ -386,6 +404,56 @@ func _sincronizar() -> void:
 		i += 1
 
 
+## (conserto) confere se o cavalete, a mão e o carro batem com o que está salvo, e arruma sozinho.
+## Antes dava pra ficar com peça "sobrando" no cavalete (ou peça fantasma na mão) sem PEGAR nem COLOCAR.
+func _conferir() -> void:
+	if m.visual == null or not _voando.is_empty():
+		return
+	if m.pessoa != null and m.pessoa.ocupado():
+		return
+	var v: CarroVisual = m.visual
+	# mão: diz que carrega mas não tem nada na mão
+	if carregando != "" and (_na_mao == null or not is_instance_valid(_na_mao)):
+		_largar()
+	var sem: Array = []
+	for x in Dados.cfg().get("sem_pecas", []):
+		if v.pecas.has(str(x)) and not sem.has(str(x)):
+			sem.append(str(x))   # tira repetida e peça que este carro nem tem
+	if sem != (Dados.cfg().get("sem_pecas", []) as Array):
+		Dados.mudar("sem_pecas", sem)
+	var mudou := false
+	var ui := false
+	for id in v.pecas:
+		if sem.has(id):
+			if v.tem_peca(id):
+				v.mostrar_peca(id, false)
+				ui = true
+			if not _holders.has(id) and carregando != id:
+				_holders[id] = _copia(v, id)
+				mudou = true
+		else:
+			if _holders.has(id):
+				(_holders[id] as Node3D).queue_free()
+				_holders.erase(id)
+				mudou = true
+			if carregando == id:
+				var h := _na_mao
+				_largar()
+				if h and is_instance_valid(h):
+					h.queue_free()
+			if not v.tem_peca(id):
+				v.mostrar_peca(id, true)
+				ui = true
+	for id in _holders.keys():
+		if not v.pecas.has(id):
+			(_holders[id] as Node3D).queue_free()
+			_holders.erase(id)
+	if mudou:
+		_reorganizar()
+	if ui:
+		m._montar_partes_ui()
+
+
 # ======================================================================= animação
 func _voar(no: Node3D, de: Transform3D, para: Transform3D, fim: Callable) -> void:
 	_voando.append({"no": no, "de": de, "para": para, "t": 0.0, "fim": fim})
@@ -411,6 +479,7 @@ func _process(dt: float) -> void:
 	if _t_sinc <= 0.0:
 		_t_sinc = 0.5
 		_sincronizar()
+		_conferir()
 	for k in range(_voando.size() - 1, -1, -1):
 		var v: Dictionary = _voando[k]
 		v["t"] = minf(1.0, float(v["t"]) + dt / T_VOO)
