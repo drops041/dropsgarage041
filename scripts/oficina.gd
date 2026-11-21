@@ -319,9 +319,9 @@ func _caixa_som() -> void:
 	som.stream = load("res://audio/mega_funk.mp3")
 	if som.stream is AudioStreamMP3:
 		(som.stream as AudioStreamMP3).loop = true
-	som.volume_db = -9.0
-	som.unit_size = 5.0
-	som.max_distance = 40.0
+	som.volume_db = -27.0      # (21/11) bem baixinho, de fundo (antes -9 dB)
+	som.unit_size = 3.0
+	som.max_distance = 25.0
 	som.position = Vector3(0, 0.35, 0.2)
 	som.autoplay = true
 	cx.add_child(som)
