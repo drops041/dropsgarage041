@@ -30,6 +30,11 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
   Helper: scripts/texturas.gd (Texturas.material("nome", metros)). HDRIs em imagens/hdri/ (oficina.hdr = reflexo
   da garagem; estacionamento.hdr guardado pro próximo passo). Abertura com showroom novo (piso encerado com
   reflexo, LEDs no teto e nas paredes, refletor no carro).
+- AEROFÓLIO DE VOLTA (aba AEROFÓLIO na garagem), agora com modelos 3D de verdade (as 4 asas do Lancer Evo VI:
+  GT alto, GT, Evo de arco e Lip/rabeta) e cor (da cor do carro, preto ou carbono). Sedã: em cima da tampa do
+  porta-malas (abre junto com ela). Hatch: no fim do teto. A largura acompanha a lataria de cada carro.
+  Arquivo: modelos/acessorios/aerofolios_lancer.glb. Os outros itens do body kit continuam desligados
+  (Acessorios.ATIVOS). No modo história a aba fica só pra olhar (vai ser comprado na oficina).
 - HILUX NOVA (Toyota Hilux Revo 2021): importada com importar_carro.py + portas.py + juntar_malhas.py +
   simplificar_glb.py (1,15 mi -> 630 mil triângulos). Abre a tampa da caçamba; as portas do modelo não vêm
   separadas (só os adesivos), então elas não abrem.

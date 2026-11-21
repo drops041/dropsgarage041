@@ -384,7 +384,7 @@ func _botao(texto: String, marcado := false) -> Button:
 
 ## categorias do menu (carrossel em arco no topo, estilo garagem de jogo de rua)
 const CATS := [["carro", "CARRO"], ["medidas", "SUSPENSÃO"], ["pintura", "PINTURA"], ["rodas", "RODAS"],
-	["neon", "NEON"], ["som", "SOM"], ["personagem", "VOCÊ"], ["musica", "MÚSICA"], ["role", "SAIR PRO ROLÊ"]]
+	["neon", "NEON"], ["som", "SOM"], ["kit", "AEROFÓLIO"], ["personagem", "VOCÊ"], ["musica", "MÚSICA"], ["role", "SAIR PRO ROLÊ"]]
 const CIANO := Color("4fd8ff")
 var carrossel: Control
 var _desenho_carrossel: Control
@@ -782,7 +782,7 @@ func _montar_aba() -> void:
 		n.queue_free()
 	_boneco(aba == "personagem")
 	var c := Dados.cfg()
-	if Dados.modo == "historia" and aba in ["medidas", "pintura", "rodas", "neon", "som"]:
+	if Dados.modo == "historia" and aba in ["medidas", "pintura", "rodas", "neon", "som", "kit"]:
 		# (modo história) mexer no carro é na oficina, pagando as peças: aqui só olha
 		_titulo("Modo história")
 		var av := Label.new()
@@ -842,7 +842,7 @@ func _montar_aba() -> void:
 		"kit":
 			for e in Acessorios.encaixes_do(Dados.carro()):
 				_titulo(e[1])
-				_opcoes(e[2], e[0], str(c.get(e[0], "off")), mini(4, (e[2] as Array).size()))
+				_opcoes(e[2], e[0], str(c.get(e[0], "cor" if str(e[0]).ends_with("_cor") else "off")), mini(4, (e[2] as Array).size()))
 		"som":
 			_titulo("Equipamento de som")
 			_opcoes(Dados.opcoes_som(Dados.carro()), "som", str(c.get("som", "off")), 1)

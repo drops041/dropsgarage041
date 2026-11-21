@@ -1,7 +1,13 @@
 class_name Acessorios
 extends RefCounted
-## (20/11) DESLIGADO a pedido: o body kit estava feio. Fica sem até achar peças novas (aí é só pôr true).
-const LIGADO := false
+## (20/11) o body kit gerado estava feio: ficou só o AEROFÓLIO, agora com modelos 3D de verdade
+## (modelos/acessorios/aerofolios_lancer.glb: 4 asas do Lancer Evo VI, Sketchfab). Os outros encaixes
+## continuam aqui no código; pra voltar com eles é só pôr a chave em ATIVOS.
+const LIGADO := true
+const ATIVOS := ["kit_aerofolio", "kit_aerofolio_cor"]
+const ARQ_ASAS := "res://modelos/acessorios/aerofolios_lancer.glb"
+## opção -> [nó no modelo, largura em relação à tampa, recuo da traseira (m)]
+const ASAS := {"gt": ["Wing1", 0.98, 0.24], "gt2": ["Wing2", 0.98, 0.22], "evo": ["Wing3", 0.96, 0.2], "lip": ["Wing4", 1.0, 0.13]}
 ## Body kit e acessórios do carro, por ENCAIXE (slot). Cada encaixe tem opções; "off" = sem peça.
 ##
 ## Como cada peça é montada (na ordem):
@@ -15,18 +21,22 @@ const LIGADO := false
 const ENCAIXES := [
 	["kit_lip", "Lip dianteiro", [["off", "Sem"], ["preto", "Preto"], ["cor", "Da cor"], ["carbono", "Carbono"]], null],
 	["kit_saias", "Saias laterais", [["off", "Sem"], ["cor", "Da cor"], ["preto", "Preto"], ["carbono", "Carbono"]], null],
-	["kit_aerofolio", "Aerofólio", [["off", "Sem"], ["cor", "Da cor"], ["preto", "Preto"], ["carbono", "Carbono"]], false],
+	["kit_aerofolio", "Aerofólio", [["off", "Sem"], ["gt", "GT alto"], ["gt2", "GT"], ["evo", "Evo (arco)"], ["lip", "Lip (rabeta)"]], false],
+	["kit_aerofolio_cor", "Cor do aerofólio", [["cor", "Da cor"], ["preto", "Preto"], ["carbono", "Carbono"]], false],
 	["kit_santo", "Santo antônio", [["off", "Sem"], ["cromado", "Cromado"], ["preto", "Preto"]], true],
 	["kit_capota", "Capota marítima (sem som na caçamba)", [["off", "Sem"], ["on", "Preta"]], true],
 	["kit_rack", "Rack de teto", [["off", "Sem"], ["preto", "Preto"], ["cromado", "Cromado"]], null],
 ]
 
 static var _forma := {}   # medidas da lataria por carro (calculadas uma vez)
+static var _asas := {}    # nó do modelo -> [malha, transformação dentro do arquivo]
 
 
 static func encaixes_do(d: Dictionary) -> Array:
 	var out := []
 	for e in ENCAIXES:
+		if not ATIVOS.has(e[0]):
+			continue
 		if e[3] == null or bool(e[3]) == bool(d.get("picape", false)):
 			out.append(e)
 	return out
@@ -37,9 +47,13 @@ static func montar(cv: CarroVisual) -> void:
 	var velho := cv.corpo.get_node_or_null("kit")
 	if velho:
 		velho.free()
+	for p in cv.pecas.values():
+		var asa_velha = (p as Node).get_node_or_null("kit_asa")
+		if asa_velha:
+			asa_velha.free()
 	var algum := false
 	for e in encaixes_do(cv.d):
-		if str(cv.c.get(e[0], "off")) != "off":
+		if str(cv.c.get(e[0], "off")) != "off" and not str(e[0]).ends_with("_cor"):
 			algum = true
 	if not algum:
 		return
@@ -49,7 +63,7 @@ static func montar(cv: CarroVisual) -> void:
 	var f := forma(cv)
 	for e in encaixes_do(cv.d):
 		var op := str(cv.c.get(e[0], "off"))
-		if op == "off":
+		if op == "off" or str(e[0]).ends_with("_cor"):
 			continue
 		var peca := _peca(cv, f, e[0], op)
 		if peca == null:
@@ -190,6 +204,8 @@ static func _peca(cv: CarroVisual, f: Dictionary, chave: String, op: String) -> 
 			raiz.add_child(n)
 			raiz.position = _ponto(cv, f, chave)
 			return raiz
+	if chave == "kit_aerofolio":
+		return _aerofolio(cv, f, op)
 	var mat := _mat(cv, op)
 	var W := float(cv.d["W"])
 	var r := Node3D.new()
@@ -420,3 +436,76 @@ static func _asa(largura: float, c: float, e: float) -> ArrayMesh:
 				st.add_vertex(q[k])
 	st.generate_normals()
 	return st.commit()
+
+
+# ---------------------------------------------------------------- aerofólio (modelo 3D)
+## pega a asa do arquivo (uma vez) e devolve [malha, transformação]
+static func _asa_do_arquivo(no: String) -> Array:
+	if _asas.has(no):
+		return _asas[no]
+	var out := []
+	if ResourceLoader.exists(ARQ_ASAS):
+		var cena: Node3D = load(ARQ_ASAS).instantiate()
+		var alvo := cena.find_child(no, true, false)
+		if alvo:
+			for mi in alvo.find_children("*", "MeshInstance3D", true, false):
+				out = [(mi as MeshInstance3D).mesh, _ate(mi, cena)]
+				break
+			if out.is_empty() and alvo is MeshInstance3D:
+				out = [(alvo as MeshInstance3D).mesh, _ate(alvo, cena)]
+		cena.free()
+	_asas[no] = out
+	return out
+
+
+## asa de verdade em cima da tampa (sedã) ou no fim do teto (hatch), na largura da lataria
+static func _aerofolio(cv: CarroVisual, f: Dictionary, op: String) -> Node3D:
+	if not ASAS.has(op):
+		return null   # opção antiga (ex.: "cor") de antes dos modelos novos
+	var cfg: Array = ASAS[op]
+	var dado := _asa_do_arquivo(str(cfg[0]))
+	if dado.is_empty():
+		return null
+	var malha: Mesh = dado[0]
+	var xf: Transform3D = dado[1]
+	var caixa: AABB = xf * malha.get_aabb()
+	# no arquivo a traseira do Lancer fica pro +Z; no jogo a traseira é -Z: gira 180° e centraliza
+	var meio := caixa.get_center()
+	var base := Transform3D(Basis(), -Vector3(meio.x, caixa.position.y, meio.z)) * xf
+	var W := float(cv.d["W"])
+	var sedan := bool(f["sedan"])
+	var z: float
+	var y: float
+	if sedan:
+		z = cv.tras_z + float(cfg[2])
+		y = altura(f, z)
+	else:
+		# hatch/SUV: em cima do fim do teto, passando um pouco por cima do vidro de trás
+		z = float(f["fim_teto"]) - 0.1
+		y = altura(f, z + 0.06)
+	var mw := meia_largura(f, z, y - 0.05)
+	var larg: float = clampf((mw * 2.0 - 0.08) * float(cfg[1]), 0.9, W - 0.15)
+	var esc := larg / maxf(caixa.size.x, 0.01)
+	var fundo := caixa.size.z * esc
+	if not sedan:
+		z += fundo * 0.5   # a beirada de trás da asa fica no fim do teto; o resto em cima do teto
+		y = maxf(y, altura(f, z))
+	var mi := MeshInstance3D.new()
+	mi.name = "asa"
+	mi.mesh = malha
+	mi.transform = Transform3D(Basis(Vector3.UP, PI).scaled(Vector3.ONE * esc), Vector3(0, y - 0.01, z)) * base
+	var cor := str(cv.c.get("kit_aerofolio_cor", "cor"))
+	mi.material_override = _mat(cv, cor)
+	if OS.has_environment("DROPS_KIT"):
+		print("aerofolio ", cv.d["id"], " sedan=", sedan, " z=", z, " y=", y, " larg=", larg, " fundo=", fundo, " tras_z=", cv.tras_z, " fim_teto=", f["fim_teto"])
+	# sedã com porta-malas que abre: a asa vai junto com a tampa
+	var pivo = cv.pecas.get("PTR") if sedan else null
+	if pivo is Node3D:
+		mi.name = "kit_asa"
+		mi.transform = _ate(pivo, cv.corpo).affine_inverse() * mi.transform
+		(pivo as Node3D).add_child(mi)
+		return null
+	var r := Node3D.new()
+	r.name = "kit_aerofolio"
+	r.add_child(mi)
+	return r
