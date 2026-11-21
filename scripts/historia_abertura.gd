@@ -131,45 +131,139 @@ func _sala() -> void:
 	CarroVisual.usar_reflexo("res://imagens/reflexo/estudio.png", 1.0)
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color("0a0a0c")
+	env.background_color = Color("060608")
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color("6c707c")
-	env.ambient_light_energy = 0.6
-	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	env.ambient_light_color = Color("5c606c")
+	env.ambient_light_energy = 0.45
+	# estúdio HDR: dá o brilho de showroom na lataria e uma luz ambiente mais rica
+	if ResourceLoader.exists("res://imagens/estudio/estudio.hdr"):
+		var ps := PanoramaSkyMaterial.new()
+		ps.panorama = load("res://imagens/estudio/estudio.hdr")
+		var sk := Sky.new()
+		sk.sky_material = ps
+		sk.radiance_size = Sky.RADIANCE_SIZE_512
+		env.sky = sk
+		env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+		env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+		env.ambient_light_sky_contribution = 0.5
+		env.ambient_light_energy = 0.5
+	env.tonemap_mode = Environment.TONE_MAPPER_ACES
+	env.tonemap_exposure = 1.2
 	env.glow_enabled = true
-	env.glow_intensity = 0.25
+	env.glow_intensity = 0.55
+	env.glow_bloom = 0.04
+	env.glow_hdr_threshold = 1.1
+	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
 	env.ssao_enabled = true
+	env.ssao_radius = 1.2
+	env.ssao_intensity = 2.2
+	env.ssr_enabled = true              # o chão encerado reflete o carro, as luzes e a logo
+	env.ssr_max_steps = 48
+	env.ssr_fade_in = 0.15
+	env.ssr_fade_out = 2.0
+	env.adjustment_enabled = true
+	env.adjustment_contrast = 1.08
+	env.adjustment_saturation = 1.15
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
-	# chão de loja (claro e brilhante) e a parede preta do fundo, onde vai a logo
-	var chao := _mat(Color("d9d9d6"), 0.18, 0.0)
+	# chão de concreto polido (cinza escuro, encerado, com manchas de cimento)
+	var chao := StandardMaterial3D.new()
+	chao.albedo_texture = _ruido_tex(Color("3c3d41"), Color("55565b"), 0.035, 7)
+	chao.roughness_texture = _ruido_tex(Color(0.12, 0.12, 0.12), Color(0.38, 0.38, 0.38), 0.05, 11)
+	chao.roughness = 1.0
+	chao.uv1_scale = Vector3(4, 4, 4)
+	chao.uv1_triplanar = true
+	chao.uv1_world_triplanar = true
 	_caixa(Vector3(16, 0.1, 14), Vector3(0, -0.05, 2.0), chao)
-	_caixa(Vector3(16, 6, 0.2), Vector3(0, 3, PAREDE_Z - 0.1), _mat(Color("141416"), 0.9))
-	_caixa(Vector3(0.2, 6, 14), Vector3(-8, 3, 2), _mat(Color("e9e9e6"), 0.85))
-	_caixa(Vector3(0.2, 6, 14), Vector3(8, 3, 2), _mat(Color("e9e9e6"), 0.85))
-	# faixa amarela no rodapé
+	# parede do fundo: cimento queimado escuro (onde vai a logo)
+	var fundo := StandardMaterial3D.new()
+	fundo.albedo_texture = _ruido_tex(Color("19191c"), Color("222226"), 0.02, 3)
+	fundo.roughness = 0.88
+	fundo.uv1_triplanar = true
+	fundo.uv1_world_triplanar = true
+	fundo.uv1_scale = Vector3(0.25, 0.25, 0.25)
+	_caixa(Vector3(16, 6, 0.2), Vector3(0, 3, PAREDE_Z - 0.1), fundo)
+	var lado := _mat(Color("2a2b30"), 0.75)
+	_caixa(Vector3(0.2, 6, 14), Vector3(-8, 3, 2), lado)
+	_caixa(Vector3(0.2, 6, 14), Vector3(8, 3, 2), lado)
+	_caixa(Vector3(16, 0.2, 14), Vector3(0, 6.1, 2), _mat(Color("101013"), 0.9))
+	# faixa amarela no rodapé (acesa de leve)
 	var am := _mat(AMARELO, 0.5)
+	am.emission_enabled = true
+	am.emission = AMARELO
+	am.emission_energy_multiplier = 0.25
 	_caixa(Vector3(16, 0.25, 0.05), Vector3(0, 0.125, PAREDE_Z + 0.02), am)
-	# luzes: refletor na parede (a logo), luz do salão e um contra-luz
+	# fitas de LED: no teto em cima do carro e em pé nas paredes (brilham e refletem na lataria e no chão)
+	var led := StandardMaterial3D.new()
+	led.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	led.albedo_color = Color(1, 1, 1)
+	led.emission_enabled = true
+	led.emission = Color(1.0, 0.98, 0.94)
+	led.emission_energy_multiplier = 1.8
+	for x in [1.2, 2.6, 4.0]:
+		_caixa(Vector3(0.12, 0.04, 5.0), Vector3(x, 5.95, 1.2), led)
+	for z in [-1.0, 2.0, 5.0]:
+		_caixa(Vector3(0.05, 4.2, 0.12), Vector3(7.88, 2.6, z), led)
+		_caixa(Vector3(0.05, 4.2, 0.12), Vector3(-7.88, 2.6, z), led)
+	# luzes: refletor na logo, "softbox" em cima do carro, luz de preenchimento e contra-luz
 	var sp := SpotLight3D.new()
 	sp.position = Vector3(0, 5.2, 0.8)
 	sp.look_at_from_position(sp.position, Vector3(0, 2.3, PAREDE_Z), Vector3.UP)
 	sp.spot_range = 12.0
-	sp.spot_angle = 42.0
-	sp.light_energy = 2.6
+	sp.spot_angle = 40.0
+	sp.spot_attenuation = 0.6
+	sp.light_energy = 2.3
 	sp.shadow_enabled = true
+	sp.shadow_blur = 1.5
 	add_child(sp)
+	var topo := SpotLight3D.new()
+	topo.position = Vector3(2.6, 5.8, 1.2)
+	topo.look_at_from_position(topo.position, Vector3(2.6, 0, 0.9), Vector3.FORWARD)
+	topo.spot_range = 9.0
+	topo.spot_angle = 38.0
+	topo.light_energy = 5.0
+	topo.light_size = 0.6
+	topo.light_specular = 0.35
+	topo.shadow_enabled = true
+	topo.shadow_blur = 2.0
+	add_child(topo)
 	var sol := DirectionalLight3D.new()
 	sol.rotation_degrees = Vector3(-50, 30, 0)
-	sol.light_energy = 0.7
+	sol.light_energy = 0.35
 	sol.shadow_enabled = true
 	add_child(sol)
 	var o := OmniLight3D.new()
-	o.position = Vector3(2.5, 3.0, 4.0)
-	o.omni_range = 10.0
-	o.light_energy = 1.2
+	o.position = Vector3(1.5, 2.6, 6.0)
+	o.omni_range = 11.0
+	o.omni_attenuation = 1.4
+	o.light_energy = 0.9
 	add_child(o)
+	var contra := OmniLight3D.new()     # contra-luz fria atrás do carro: recorta a silhueta
+	contra.position = Vector3(5.5, 1.6, -1.6)
+	contra.omni_range = 6.0
+	contra.light_color = Color("a9c4ff")
+	contra.light_energy = 1.6
+	add_child(contra)
+
+
+## textura de ruído (manchas) entre duas cores, que repete sem emenda
+func _ruido_tex(c1: Color, c2: Color, freq: float, semente: int) -> NoiseTexture2D:
+	var n := FastNoiseLite.new()
+	n.seed = semente
+	n.frequency = freq
+	n.fractal_octaves = 5
+	var g := Gradient.new()
+	g.set_color(0, c1)
+	g.set_color(1, c2)
+	var tx := NoiseTexture2D.new()
+	tx.width = 512
+	tx.height = 512
+	tx.seamless = true
+	tx.noise = n
+	tx.color_ramp = g
+	tx.generate_mipmaps = true
+	return tx
 
 
 ## a logo da Drops na parede: aparece aos poucos, seguindo o jato da pistola
