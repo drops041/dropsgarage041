@@ -39,6 +39,8 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
     arrancada de 500 m seguindo a avenida (a rua fica sem trânsito na hora). Ganhou: prêmio + 50 XP.
     Perdeu: TENTAR DE NOVO quantas vezes quiser. 1ª fácil (R$ 1 mil), 2ª precisa do estágio 1 (R$ 2 mil),
     3ª do estágio 2 (R$ 4 mil), 4ª do estágio 3 (R$ 8 mil). Tempos medidos no teste 18.
+- NOVO JOGO (garagem, no modo história): começa a história do zero (aperta 2 vezes pra confirmar).
+  Apaga só o progresso da história; o modo livre continua igual.
 - FICHA DO SERVIÇO escondida: setinha "▶ SERVIÇO 2/4" na lateral esquerda abre e fecha.
 - PINTURA no modo história: cobra UMA vez só, quando o carro sai da oficina (dá pra testar as cores à vontade).
 - AMASSADO: lombada e meio-fio não amassam mais; só batida forte (~27 km/h pra cima), e carro sem peças

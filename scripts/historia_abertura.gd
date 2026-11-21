@@ -53,6 +53,9 @@ func _ready() -> void:
 	_camera(0.0)
 	if not OS.has_environment("DROPS_TESTE"):
 		Dados.tocar_musica(true)
+	if OS.has_environment("DROPS_TESTE_NOVO"):
+		print("novo: abertura aberta, dinheiro=", Dados.dinheiro, " garagem=", Dados.historia.get("garagem"), " etapa=", Dados.historia.get("etapa"))
+		get_tree().quit()
 
 
 # ---------------------------------------------------------------- cenário

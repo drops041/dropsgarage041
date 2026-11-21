@@ -534,6 +534,27 @@ func _ui() -> void:
 	modo_b.custom_minimum_size = Vector2(0, 50)
 	modo_b.pressed.connect(_trocar_modo)
 	baixo.add_child(modo_b)
+	if Dados.modo == "historia":
+		# NOVO JOGO: começa a história do zero (aperta 2 vezes pra confirmar; o modo livre não muda)
+		var novo := _botao("NOVO JOGO")
+		novo.add_theme_font_size_override("font_size", 15)
+		novo.custom_minimum_size = Vector2(0, 50)
+		novo.pressed.connect(func():
+			if novo.text == "NOVO JOGO":
+				novo.text = "APAGA TUDO? APERTA DE NOVO"
+				get_tree().create_timer(3.0).timeout.connect(func():
+					if is_instance_valid(novo):
+						novo.text = "NOVO JOGO")
+				return
+			Dados.zerar_historia()
+			get_tree().change_scene_to_file("res://cenas/historia_abertura.tscn"))
+		baixo.add_child(novo)
+		if OS.has_environment("DROPS_TESTE_NOVO"):   # teste: aperta NOVO JOGO 2 vezes
+			get_tree().create_timer(2.0).timeout.connect(func():
+				print("novo: antes dinheiro=", Dados.dinheiro, " garagem=", Dados.historia.get("garagem"))
+				novo.pressed.emit()
+				print("novo: botao=", novo.text)
+				novo.pressed.emit())
 	var esconde := _botao("ESCONDER MENU")
 	esconde.add_theme_font_size_override("font_size", 15)
 	esconde.custom_minimum_size = Vector2(0, 50)
