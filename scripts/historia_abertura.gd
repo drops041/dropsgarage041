@@ -137,11 +137,8 @@ uniform vec2 bico = vec2(-1.0); // onde o jato está batendo agora (uv)
 float ruido(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 void fragment() {
 	vec4 c = texture(logo, UV);
-	// o fundo da foto é a parede preta: só a tinta (branco/amarelo) aparece
-	float tinta = smoothstep(0.6, 0.72, max(c.r, max(c.g, c.b)));
-	// os rabiscos e a luz nos cantos da foto ficam de fora: só o miolo (a logo)
-	vec2 d = (UV - vec2(0.5, 0.5)) / vec2(0.5, 0.47);
-	tinta *= 1.0 - smoothstep(0.82, 0.95, length(d * vec2(0.92, 1.0)));
+	// logo limpa (imagens/logo_drops_parede.png): amarelo, branco e o contorno preto, o resto transparente
+	float tinta = c.a;
 	// pintado em 4 faixas, de cima pra baixo, indo e voltando como uma demão
 	float faixas = 4.0;
 	float linha = floor(UV.y * faixas);
@@ -151,15 +148,15 @@ void fragment() {
 	float a = tinta * smoothstep(feito - 0.004, feito + 0.004, revela + borda);
 	// tinta fresca brilha um pouco perto do jato
 	float perto = 1.0 - smoothstep(0.0, 0.12, distance(UV, bico));
-	ALBEDO = c.rgb;
-	ROUGHNESS = mix(0.75, 0.25, perto);
+	ALBEDO = c.rgb * 0.82;   // tinta fosca: não estoura de branco embaixo do refletor
+	ROUGHNESS = mix(0.8, 0.3, perto);
 	ALPHA = a;
 	ALPHA_SCISSOR_THRESHOLD = 0.5;
 }
 """
 	logo_mat = ShaderMaterial.new()
 	logo_mat.shader = sh
-	logo_mat.set_shader_parameter("logo", load("res://imagens/logo_drops.jpg"))
+	logo_mat.set_shader_parameter("logo", load("res://imagens/logo_drops_parede.png"))
 	q.material_override = logo_mat
 	add_child(q)
 
