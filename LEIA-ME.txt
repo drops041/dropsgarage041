@@ -21,6 +21,14 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
   carros e o seu dinheiro (mexer no carro vai ser na oficina, pagando as peças: próximas etapas).
   O MODO LIVRE continua igual, tudo liberado (botão MODO LIVRE volta pra ele). Progresso salvo separado.
   Preços de todos os carros no carros.json ("preco"); "Áudio 6 Perua" agora é só "Perua".
+- MODO HISTÓRIA, 1º SERVIÇO: depois de comprar o primeiro carro, o DRAFAEL (dono da Drafael Motors) espera
+  na oficina. FALAR COM O DRAFAEL: ele traz a G3 velha (lavar, lixar, desamassar, pintar de vermelho) e paga
+  R$ 15.900 adiantado. Cada serviço da cabine desconta o material do seu bolso (lavar R$ 300, lixar R$ 800,
+  desamassar R$ 1.500, pintura R$ 8 mil a R$ 25 mil pelo tamanho do carro; numa peça só: 1/4 e 1/5).
+  A ficha do serviço (embaixo do mapa) vai ticando. Pronto: leva a G3 até a Drafael Motors (C no mapa) e
+  aperta ENTREGAR. Você volta pro seu carro, com o lucro (~R$ 5.300) e +100 XP.
+  Rodas da parede também custam no modo história (1/4 do jogo por roda: até aro 16 R$ 1 mil o jogo,
+  17-22 R$ 6 mil, 23+ R$ 10 mil). No modo livre continua tudo de graça.
 - A concessionária agora é a DRAFAEL MOTORS (dono: Drafael), com o letreiro novo na fachada, no totem e no balcão.
 - Lógico virou WOLVERINE, com a roda de trás no lugar (estava 10 cm pra trás).
 - BODY KIT desligado por enquanto (estava feio; volta quando tiver peças novas).

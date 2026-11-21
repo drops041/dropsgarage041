@@ -34,6 +34,24 @@ const HISTORIA_JURO := 1.5
 const CUSTO_SUSPENSAO := 5000
 const CUSTO_SOM := 8000
 const CUSTO_PINTURA := [8000, 25000]
+const CUSTO_LAVAR := 300
+const CUSTO_LIXAR := 800
+const CUSTO_DESAMASSAR := 1500
+const PECA_FRACAO := 0.25        # serviço numa peça só (porta, capô...) custa 1/4 do carro todo
+const PINTURA_PECA_FRACAO := 0.2
+
+
+## pintura do carro todo: R$ 8 mil (carro pequeno) até R$ 25 mil (picape grande), pelo entre-eixos
+static func custo_pintura(d: Dictionary) -> int:
+	var eixos := float(d.get("axF", 1.3)) - float(d.get("axR", -1.3))
+	var k := clampf((eixos - 2.6) / (3.6 - 2.6), 0.0, 1.0)   # até ~2,6 m (G3, Donas, Cliô...) = R$ 8 mil
+	return int(round(lerpf(CUSTO_PINTURA[0], CUSTO_PINTURA[1], k) / 500.0) * 500)
+
+
+## custo de um serviço da cabine ("s" lavar, "f" lixar, "a" desamassar)
+static func custo_servico(chave: String, so_peca := false) -> int:
+	var c: int = {"s": CUSTO_LAVAR, "f": CUSTO_LIXAR, "a": CUSTO_DESAMASSAR}.get(chave, 0)
+	return int(round(c * (PECA_FRACAO if so_peca else 1.0)))
 
 
 static func custo_roda(aro: int) -> int:
@@ -356,7 +374,30 @@ func zerar_historia() -> void:
 
 
 func tem_carro(id: String) -> bool:
-	return modo != "historia" or (historia.get("garagem", []) as Array).has(id)
+	if modo != "historia":
+		return true
+	if (historia.get("garagem", []) as Array).has(id):
+		return true
+	var sv: Dictionary = historia.get("servico", {})
+	return str(sv.get("carro", "")) == id and str(sv.get("estado", "")) in ["fazendo", "pronto"]
+
+
+## (modo história) paga uma peça/serviço; no modo livre é tudo de graça. false = não tem dinheiro
+func pagar(valor: int) -> bool:
+	if modo != "historia" or valor <= 0:
+		return true
+	if dinheiro < valor:
+		return false
+	dinheiro -= valor
+	salvar()
+	return true
+
+
+func indice_de(id: String) -> int:
+	for i in carros.size():
+		if carros[i]["id"] == id:
+			return i
+	return -1
 
 
 ## carros que aparecem na loja do Drops (por enquanto: os 5 do começo)

@@ -714,6 +714,13 @@ func _instalar(dt: float) -> void:
 	var tela := m.get_viewport().get_visible_rect().size
 	barra.position = Vector2((tela.x - barra.size.x) / 2.0, tela.y * 0.62)
 	if _t_inst >= T_INSTALAR:
+		# (modo história) cada roda é 1/4 do jogo (aro 16 pra baixo R$ 1 mil, 17-22 R$ 6 mil, 23+ R$ 10 mil)
+		var custo_r := int(Dados.custo_roda(int(Dados.cfg().get("aro", 15))) / 4)
+		if not Dados.pagar(custo_r):
+			_instalando = -1
+			barra.visible = false
+			m.toast("SEM DINHEIRO: a roda custa " + Dados.reais(custo_r), 2.0)
+			return
 		_trocar_roda(i, segurando)
 		instaladas[i] = segurando
 		_instalando = -1
@@ -1005,6 +1012,11 @@ const ANIM_SERVICO := {"s": ["Interact", 5.0, "LAVANDO", "esponja"], "f": ["Inte
 func _fazer_servico(alvo: String, chave: String, nome: String) -> void:
 	if m.pessoa and m.pessoa.ocupado():
 		return
+	# (modo história) o material do serviço sai do seu bolso
+	var custo := Dados.custo_servico(chave, alvo != "carro")
+	if not Dados.pagar(custo):
+		m.toast("SEM DINHEIRO: " + nome + " custa " + Dados.reais(custo), 2.0)
+		return
 	var v: CarroVisual = m.visual
 	var antes: Dictionary = (Dados.cfg().get("desgaste", {}) as Dictionary).duplicate(true)
 	var dg: Dictionary = antes.duplicate(true)
@@ -1108,6 +1120,13 @@ func _mudar(chave: String, valor) -> void:
 	# pintar de verdade: o boneco vai com a pistola e a cor nova só aparece no fim da demão
 	if (chave in ["cor", "cor2", "acabamento"] or chave.begins_with("peca:")) and m.pessoa and Pessoa.e_ual(m.pessoa.modelo) and not _pintando_ja:
 		if m.pessoa.ocupado():
+			return
+		# (modo história) tinta: carro todo = preço cheio (pelo tamanho do carro), uma peça = 20%
+		var custo_t := Dados.custo_pintura(m.dados)
+		if chave.begins_with("peca:") or (_alvo_pintura != "" and chave == "cor"):
+			custo_t = int(round(custo_t * Dados.PINTURA_PECA_FRACAO / 100.0) * 100)
+		if not Dados.pagar(custo_t):
+			m.toast("SEM DINHEIRO: a tinta custa " + Dados.reais(custo_t), 2.0)
 			return
 		var cor_tinta := Color(str(valor)) if str(valor).begins_with("#") else Color(str(Dados.cfg().get("cor", "#ffffff")))
 		var alvo := chave.substr(5) if chave.begins_with("peca:") else ("carro" if _alvo_pintura == "" else _alvo_pintura)

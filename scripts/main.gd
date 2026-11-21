@@ -94,6 +94,7 @@ var role: Node
 var policia: Policia
 var pessoa: Pessoa
 var oficina: Oficina
+var historia: Historia
 var barracao: Barracao         # (v34) evento dos carros novos no barracão do lado da Drops
 var sol_luz: DirectionalLight3D
 var elev_y := 0.0
@@ -148,6 +149,11 @@ func _ready() -> void:
 	oficina.name = "Oficina"
 	oficina.m = self
 	add_child(oficina)
+	if Dados.modo == "historia":   # (modo história) o Drafael, os serviços e a entrega na loja
+		historia = Historia.new()
+		historia.name = "Historia"
+		historia.m = self
+		add_child(historia)
 	if OS.has_environment("DROPS_TUTORIAL"):   # (v37) as dicas gerais não abrem mais sozinhas; ficam só as da oficina
 		hud.add_child(Tutorial.new())
 	barracao = Barracao.new()
@@ -2450,6 +2456,91 @@ func _teste13() -> void:
 			get_tree().quit()
 
 
+func _teste17() -> void:
+	# (modo história) Drafael chega, você aceita a G3, faz os 4 serviços, entrega na Drafael Motors
+	var ft := OS.get_environment("DROPS_FOTO")
+	var foto := func(n: String) -> void:
+		if ft != "":
+			get_viewport().get_texture().get_image().save_png(ft % n)
+	var log := func(o: String) -> void:
+		var sv: Dictionary = Dados.historia.get("servico", {})
+		print("t17 [", _f, "] ", o, " | carro=", Dados.carro()["id"], " dinheiro=", Dados.dinheiro, " etapa=", Dados.historia.get("etapa"), " estado=", sv.get("estado", "-"), " feitos=", historia.feitos() if historia else [], " xp=", Dados.historia.get("xp"))
+	var F := 60
+	if _f % F != 0:
+		return
+	match int(_f / F):
+		1:
+			intro = 0.0
+			Dados.entrar_historia()
+			Dados.zerar_historia()
+			Dados.comprar(Dados.indice_de("corsa"))
+			_criar_carro(carro.global_position + Vector3.UP * 0.5, carro.rotation.y)
+			historia = Historia.new()
+			historia.m = self
+			add_child(historia)
+		2:
+			descer()
+		3:
+			pessoa.global_position = mapa.drops_ponto(Historia.DRAFAEL_LOCAL + Vector3(1.3, 0.1, 0.9))
+			log.call("perto do Drafael")
+		4:
+			log.call("acao=" + historia._acao)
+			if _cam_t == null:
+				_cam_t = Camera3D.new(); _cam_t.far = 300.0; _cam_t.fov = 60.0; add_child(_cam_t)
+			_cam_t.current = true
+			_cam_t.global_position = mapa.drops_ponto(Historia.DRAFAEL_LOCAL + Vector3(2.6, 1.7, 3.2))
+			_cam_t.look_at(mapa.drops_ponto(Historia.DRAFAEL_LOCAL + Vector3(0, 1.1, 0)))
+		5:
+			foto.call("1_drafael")
+			_cam_t.current = false
+			historia._apertou()
+		6:
+			foto.call("2_pedido")
+			for b in historia.dialogo_botoes.get_children():
+				if (b as Button).text == "ACEITAR":
+					(b as Button).pressed.emit()
+		7:
+			log.call("aceitou")
+			foto.call("3_g3")
+			var mid := (float(dados["axF"]) + float(dados["axR"])) / 2.0
+			var c := mapa.drops_ponto(Oficina.ELEV)
+			var ez: Vector3 = mapa.drops_xf.basis * Oficina.ELEV_EIXO
+			teletransportar(c - ez * mid, atan2(ez.x, ez.z))
+		8:
+			descer()
+		9:
+			oficina._fazer_servico("carro", "s", "LAVAR")
+		16:
+			log.call("lavou")
+			oficina._fazer_servico("carro", "f", "LIXAR")
+		23:
+			log.call("lixou")
+			oficina._fazer_servico("carro", "a", "DESAMASSAR")
+		30:
+			log.call("desamassou")
+			oficina._alvo_pintura = ""
+			oficina._mudar("cor", "#b5121b")
+		37:
+			log.call("pintou")
+			foto.call("4_ficha")
+		38:
+			var cc := mapa.xf("concessionaria")
+			entrar_carro_ja()
+		39:
+			var cc := mapa.xf("concessionaria")
+			var fr: Vector3 = cc.basis * Vector3(1, 0, 0)
+			teletransportar(cc * Vector3(0, 0.5, 5.0), atan2(fr.x, fr.z))
+		41:
+			log.call("na loja: acao=" + historia._acao)
+			foto.call("5_loja")
+			historia._apertou()
+		42:
+			foto.call("6_entregue")
+			log.call("entregou")
+			Dados.sair_historia()
+			get_tree().quit()
+
+
 func _teste16() -> void:
 	# desmontagem com as mãos, caminho completo: tira 2 peças, guarda no cavalete, recria o carro,
 	# pega do cavalete e coloca de volta. DROPS_T16_CARRO = id do carro (padrão f150)
@@ -3014,6 +3105,9 @@ func _roteiro_teste() -> void:
 		return
 	if OS.get_environment("DROPS_TESTE") == "13":
 		_teste13()
+		return
+	if OS.get_environment("DROPS_TESTE") == "17":
+		_teste17()
 		return
 	if OS.get_environment("DROPS_TESTE") == "16":
 		_teste16()
