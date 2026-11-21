@@ -17,7 +17,12 @@ var anim: AnimationPlayer
 var pistola: Node3D
 var logo_mat: ShaderMaterial
 var t := 0.0
-var fase := "pinta"         # pinta -> vira -> fala -> loja
+var fase := "pinta"         # (video ->) pinta -> vira -> fala -> loja
+const VIDEO := "res://videos/abertura_historia.ogv"   # vídeo de 7 s antes da cena 3D (se existir)
+const T_FADE := 0.9         # segundos do preto clareando depois do vídeo
+var video: VideoStreamPlayer
+var cortina: ColorRect      # preto por cima de tudo: faz a transição do vídeo pro Drops
+var _fade := 0.0
 var carro_vis: CarroVisual
 var lista: Array = []       # índices dos carros à venda
 var k := 0
@@ -51,7 +56,9 @@ func _ready() -> void:
 	add_child(cam)
 	cam.current = true
 	_camera(0.0)
-	if not OS.has_environment("DROPS_TESTE"):
+	if ResourceLoader.exists(VIDEO) and not OS.has_environment("DROPS_SEM_VIDEO"):
+		_video()
+	elif not OS.has_environment("DROPS_TESTE"):
 		Dados.tocar_musica(true)
 	if OS.has_environment("DROPS_TESTE_NOVO"):
 		print("novo: abertura aberta, dinheiro=", Dados.dinheiro, " garagem=", Dados.historia.get("garagem"), " etapa=", Dados.historia.get("etapa"))
@@ -59,6 +66,48 @@ func _ready() -> void:
 
 
 # ---------------------------------------------------------------- cenário
+## vídeo de abertura em tela cheia; quando acaba (ou PULAR), o preto clareia e começa o Drops pintando
+func _video() -> void:
+	var camada := CanvasLayer.new()
+	camada.layer = 10
+	add_child(camada)
+	cortina = ColorRect.new()
+	cortina.color = Color.BLACK
+	cortina.set_anchors_preset(Control.PRESET_FULL_RECT)
+	cortina.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	camada.add_child(cortina)
+	video = VideoStreamPlayer.new()
+	video.stream = load(VIDEO)
+	video.set_anchors_preset(Control.PRESET_FULL_RECT)
+	video.expand = true
+	video.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	video.finished.connect(_fim_video)
+	camada.add_child(video)
+	# PULAR por cima do vídeo (pula só o vídeo; o segundo PULAR pula pra loja)
+	var pular := _botao("PULAR ›", false, 18)
+	pular.name = "pular_video"
+	pular.pressed.connect(_fim_video)
+	camada.add_child(pular)
+	pular.position = Vector2(get_viewport().get_visible_rect().size.x - 150, 24)
+	fase = "video"
+	t = 0.0
+	video.play()
+
+
+func _fim_video() -> void:
+	if fase != "video":
+		return
+	video.stop()
+	video.get_parent().get_node("pular_video").queue_free()
+	video.queue_free()
+	video = null
+	fase = "pinta"
+	t = 0.0
+	_fade = T_FADE
+	if not OS.has_environment("DROPS_TESTE"):
+		Dados.tocar_musica(true)
+
+
 func _mat(cor: Color, rug := 0.8, metal := 0.0) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.albedo_color = cor
@@ -369,6 +418,9 @@ func _comprar() -> void:
 
 
 func _pular() -> void:
+	if fase == "video":
+		_fim_video()
+		return
 	if fase in ["pinta", "vira", "fala"]:
 		logo_mat.set_shader_parameter("revela", 1.0)
 		_abrir_loja()
@@ -393,7 +445,17 @@ func _abrir_loja() -> void:
 # ---------------------------------------------------------------- roteiro
 func _process(dt: float) -> void:
 	t += dt
+	if cortina:
+		_fade -= dt
+		cortina.color.a = clampf(_fade / T_FADE, 0.0, 1.0)
+		if fase != "video" and _fade <= 0.0:
+			cortina.get_parent().queue_free()
+			cortina = null
 	match fase:
+		"video":
+			# segurança: se o vídeo travar ou não tocar, segue mesmo assim
+			if t > 9.0 or (t > 0.5 and video and not video.is_playing()):
+				_fim_video()
 		"pinta":
 			var r := clampf(t / T_PINTA, 0.0, 1.0)
 			logo_mat.set_shader_parameter("revela", r)
@@ -463,7 +525,8 @@ func _camera(dt: float) -> void:
 func _testes() -> void:
 	if _foto == "":
 		return
-	var marcas := {"pinta_meio": fase == "pinta" and t > T_PINTA * 0.5, "vira": fase == "fala" and t > 0.3,
+	var marcas := {"video": fase == "video" and t > 3.0, "fade": fase == "pinta" and t > T_FADE * 0.4,
+		"pinta_meio": fase == "pinta" and t > T_PINTA * 0.5, "vira": fase == "fala" and t > 0.3,
 		"loja": fase == "loja" and t > 1.5}
 	for nome in marcas:
 		if marcas[nome] and not _fotos_tiradas.has(nome):

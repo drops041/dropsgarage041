@@ -21,6 +21,10 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
   carros e o seu dinheiro (mexer no carro vai ser na oficina, pagando as peças: próximas etapas).
   O MODO LIVRE continua igual, tudo liberado (botão MODO LIVRE volta pra ele). Progresso salvo separado.
   Preços de todos os carros no carros.json ("preco"); "Áudio 6 Perua" agora é só "Perua".
+- ABERTURA COM VÍDEO: a história começa com os 7 primeiros segundos do vídeo (videos/abertura_historia.ogv,
+  fecha em preto); o preto clareia e entra o Drops pintando a logo. PULAR no vídeo pula só o vídeo.
+  Pra trocar o vídeo: ffmpeg -i video.mp4 -t 7 -c:v libtheora -q:v 7 -c:a libvorbis videos/abertura_historia.ogv
+- Drops mais magro (braços, ombros e tronco): ferramentas/afinar_personagem.py (opção --forca).
 - MODO HISTÓRIA, 1º SERVIÇO: depois de comprar o primeiro carro, o DRAFAEL (dono da Drafael Motors) espera
   na oficina. FALAR COM O DRAFAEL: ele traz a G3 velha (lavar, lixar, desamassar, pintar de vermelho) e paga
   R$ 15.900 adiantado. Cada serviço da cabine desconta o material do seu bolso (lavar R$ 300, lixar R$ 800,
