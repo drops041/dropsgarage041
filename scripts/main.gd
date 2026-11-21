@@ -463,9 +463,7 @@ func _galpao(hx: Transform3D) -> void:
 	telha.metallic = 0.5
 	telha.roughness = 0.5
 	telha.cull_mode = BaseMaterial3D.CULL_DISABLED
-	var conc := StandardMaterial3D.new()
-	conc.albedo_color = Color(0.56, 0.56, 0.55)
-	conc.roughness = 0.75
+	var conc := Texturas.material("garage_floor", 2.5, Color(1.05, 1.05, 1.05), 0.9)
 	var faixa := StandardMaterial3D.new()
 	faixa.albedo_color = Color(1.0, 0.82, 0.1)
 	faixa.roughness = 0.6
@@ -512,9 +510,7 @@ func _galpao(hx: Transform3D) -> void:
 	for s in [-1.0, 1.0]:
 		caixa.call(Vector3(0.25, 0.01, GALPAO_Z * 2.0), Vector3(s * (GALPAO_X - 1.2), topo_piso + 0.004, 0), faixa)
 	# paredes: laterais com as fotos dos projetos (até 4,5 m, em cima fica aberto) e o fundo com a logo da Drops
-	var reboco := StandardMaterial3D.new()
-	reboco.albedo_color = Color(0.22, 0.22, 0.24)
-	reboco.roughness = 0.9
+	var reboco := Texturas.material("painted_concrete_02", 3.0, Color(0.5, 0.5, 0.54), 1.0)
 	var ALT_PAREDE := 4.5
 	var painel := func(tex: String, tam: Vector2, pos: Vector3, giro_y: float) -> void:
 		var q := MeshInstance3D.new()

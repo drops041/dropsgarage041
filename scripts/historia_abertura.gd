@@ -168,13 +168,7 @@ func _sala() -> void:
 	we.environment = env
 	add_child(we)
 	# chão de concreto polido (cinza escuro, encerado, com manchas de cimento)
-	var chao := StandardMaterial3D.new()
-	chao.albedo_texture = _ruido_tex(Color("3c3d41"), Color("55565b"), 0.035, 7)
-	chao.roughness_texture = _ruido_tex(Color(0.12, 0.12, 0.12), Color(0.38, 0.38, 0.38), 0.05, 11)
-	chao.roughness = 1.0
-	chao.uv1_scale = Vector3(4, 4, 4)
-	chao.uv1_triplanar = true
-	chao.uv1_world_triplanar = true
+	var chao := Texturas.material("painted_concrete_02", 3.5, Color(0.75, 0.75, 0.78), 0.4, 0.6)
 	_caixa(Vector3(16, 0.1, 14), Vector3(0, -0.05, 2.0), chao)
 	# parede do fundo: cimento queimado escuro (onde vai a logo)
 	var fundo := StandardMaterial3D.new()

@@ -90,13 +90,9 @@ func _sala() -> void:
 	var w := 7.44
 	var dep := 10.1
 	var h := 4.6
-	var chao := StandardMaterial3D.new()
-	chao.albedo_color = Color("6c6d70")
-	chao.roughness = 0.55
-	chao.metallic = 0.1
-	var parede := StandardMaterial3D.new()
-	parede.albedo_color = Color("1d1d22")
-	parede.roughness = 0.9
+	# texturas de verdade (texturas/): cimento da oficina no chão, cimento pintado escuro nas paredes
+	var chao := Texturas.material("garage_floor", 2.2, Color(0.95, 0.95, 0.95), 0.85)
+	var parede := Texturas.material("painted_concrete_02", 3.0, Color(0.42, 0.42, 0.46), 1.0)
 	_caixa(Vector3(w, 0.1, dep), Vector3(0, -0.05, 0), chao)
 	_caixa(Vector3(w, 0.1, dep), Vector3(0, h, 0), parede)
 	_caixa(Vector3(0.2, h, dep), Vector3(-w / 2.0, h / 2.0, 0), parede)
