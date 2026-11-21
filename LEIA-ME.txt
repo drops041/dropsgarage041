@@ -21,6 +21,11 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
   carros e o seu dinheiro (mexer no carro vai ser na oficina, pagando as peças: próximas etapas).
   O MODO LIVRE continua igual, tudo liberado (botão MODO LIVRE volta pra ele). Progresso salvo separado.
   Preços de todos os carros no carros.json ("preco"); "Áudio 6 Perua" agora é só "Perua".
+- (21/11) LINK DA GARAGEM (todos os carros): python3 ferramentas/exportar_web_demo.py PASTA --godot GODOT
+  monta a página: garagem + G5 Cross no pacote principal; cada carro num pacote separado, baixado só quando
+  você escolhe (aparece "Baixando ...%"). Tudo em pedaços de texto base64 (.000.txt...) porque a página do
+  link do Claude só serve alguns tipos de arquivo, até 20 MB cada e 256 MB no total; os carros ficam como
+  anexos (assets) do link e o carros/lista.json diz o endereço de cada pedaço. Lexo NX fica de fora (licença NC).
 - (21/11) DEMO NO NAVEGADOR (pra mostrar pros amigos): preset "Web Demo (oficina)" no export_presets.cfg.
   Só a garagem/oficina no modo livre, com 15 carros (o arquivo index.pck tem que ficar abaixo de 200 MB pro itch.io).
   Sem SAIR PRO ROLÊ e sem MODO HISTÓRIA (feature "demo": Dados.demo()). Precisa dos modelos de exportação

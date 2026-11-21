@@ -5,8 +5,9 @@ Monta uma pasta pronta pra pôr num site:
   index.html / index.js / index.wasm / index.pck   -> a garagem + a G5 Cross (abre rápido)
   carros/<id>.pck.000, .001 ...                    -> cada carro num pacote, baixado só quando você escolhe
   carros/lista.json                                -> {"id": nº de pedaços}
-Arquivos maiores que PEDACO (19 MB) são cortados em pedaços (.000, .001...): alguns sites só aceitam
-arquivos de até 20 MB. A página junta os pedaços do index.wasm e do index.pck sozinha (script no index.html).
+O index.wasm, o index.pck e os pacotes dos carros vão em pedaços de texto (base64, .000.txt, .001.txt...):
+a página do link (artifact do Claude) só serve alguns tipos de arquivo e até 20 MB cada. A página junta e
+decodifica os pedaços do index.wasm e do index.pck sozinha (script no index.html); o jogo faz o mesmo com os carros.
 
 Uso: python3 ferramentas/exportar_web_demo.py SAIDA [--godot CAMINHO_DO_GODOT] [--carros id1,id2]
 Precisa dos modelos de exportação Web (sem threads) do Godot 4.7.2 instalados.
@@ -20,7 +21,8 @@ import subprocess
 import sys
 
 RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-PEDACO = 19 * 1024 * 1024
+PEDACO = 14 * 1024 * 1024        # bytes de verdade por pedaço (em base64 vira ~18,7 MB, abaixo do limite de 20 MB)
+FORA_DA_DEMO = {"lexusnx"}        # licença não comercial (CC BY-NC-SA): não vai pra link compartilhado
 NA_BASE = {"saveirog5"}            # carros que já vêm no pacote principal
 SEMPRE_BASE = ["saveiro_som"]      # peças que o jogo carrega por fora (trio da Saveiro)
 
@@ -61,31 +63,34 @@ def preset(n, nome, filtro, extra):
 
 
 def cortar(arq, destino_dir, nome):
-    """corta em pedaços de PEDACO bytes: nome.000, nome.001... devolve quantos"""
+    """corta em pedaços de PEDACO bytes, cada um em base64: nome.000.txt, nome.001.txt... devolve quantos"""
+    import base64
     n = 0
     with open(arq, "rb") as f:
         while True:
             b = f.read(PEDACO)
             if not b:
                 break
-            with open(os.path.join(destino_dir, "%s.%03d" % (nome, n)), "wb") as g:
-                g.write(b)
+            with open(os.path.join(destino_dir, "%s.%03d.txt" % (nome, n)), "wb") as g:
+                g.write(base64.b64encode(b))
             n += 1
     return n
 
 
 # script que entra no index.html: troca o fetch do index.wasm/index.pck pelos pedaços juntados
 JUNTAR = """<script>
-(function(){var P=%s,f0=window.fetch.bind(window);
+(function(){var P=%s,S=%s,f0=window.fetch.bind(window);
+var T=new Uint8Array(256);for(var k=0;k<64;k++)T['ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.charCodeAt(k)]=k;
+function b64(u){var n=u.length,pad=(u[n-1]==61)+(u[n-2]==61),o=new Uint8Array(n/4*3-pad),j=0;
+ for(var i=0;i<n;i+=4){var x=T[u[i]]<<18|T[u[i+1]]<<12|T[u[i+2]]<<6|T[u[i+3]];o[j++]=x>>16;if(j<o.length)o[j++]=x>>8&255;if(j<o.length)o[j++]=x&255}return o}
 window.fetch=function(u,o){var s=String(u&&u.url||u),m=s.match(/(index\\.(wasm|pck))(\\?.*)?$/);
  if(!m||!P[m[1]])return f0(u,o);var n=P[m[1]],tipo=m[2]=='wasm'?'application/wasm':'application/octet-stream';
- var base=s.slice(0,s.length-m[0].length),total=0,partes=[];
+ var base=s.slice(0,s.length-m[0].length);
  var st=new ReadableStream({start:function(c){var i=0;function prox(){if(i>=n){c.close();return}
-   f0(base+m[1]+'.'+('00'+i).slice(-3)).then(function(r){if(!r.ok)throw new Error('pedaco '+i);var rd=r.body.getReader();
-    function ler(){return rd.read().then(function(x){if(x.done){i++;return prox()}c.enqueue(x.value);return ler()})}return ler()})
-   .catch(function(e){c.error(e)})}prox()}});
+   f0(base+m[1]+'.'+('00'+i).slice(-3)+'.txt').then(function(r){if(!r.ok)throw new Error('pedaco '+i);return r.arrayBuffer()})
+   .then(function(a){c.enqueue(b64(new Uint8Array(a)));i++;prox()}).catch(function(e){c.error(e)})}prox()}});
  return Promise.resolve(new Response(st,{status:200,headers:{'Content-Type':tipo,'Content-Length':String(S[m[1]])}}));};
-var S=%s;})();
+})();
 </script>"""
 
 
@@ -99,13 +104,15 @@ def main():
     saida = os.path.abspath(a.saida)
     carros = json.load(open(os.path.join(RAIZ, "carros.json"), encoding="utf8"))
     ids = [c["id"] for c in carros if os.path.exists(os.path.join(RAIZ, "modelos", "carros", c["id"] + ".glb"))]
+    ids = [i for i in ids if i not in FORA_DA_DEMO]
     if a.carros:
         ids = [i for i in ids if i in a.carros.split(",")]
     fora = [i for i in ids if i not in NA_BASE]
+    excluir_ids = fora + sorted(FORA_DA_DEMO)
     # arquivos dos carros que ficam fora da base (o modelo e as texturas que saem dele)
     arqs = os.listdir(os.path.join(RAIZ, "modelos", "carros"))
     excl = list(EXCLUIR_BASE)
-    for i in fora:
+    for i in excluir_ids:
         rx = re.compile(r"^%s(\.glb|_\d+\.(png|jpg|jpeg|webp))$" % re.escape(i))
         excl += ["modelos/carros/" + f for f in arqs if rx.match(f)]
     presets_orig = os.path.join(RAIZ, "export_presets.cfg")
@@ -148,10 +155,7 @@ def main():
     for nome in ["index.wasm", "index.pck"]:
         arq = os.path.join(tmp, nome)
         tam[nome] = os.path.getsize(arq)
-        if tam[nome] > PEDACO:
-            partes[nome] = cortar(arq, saida, nome)
-        else:
-            shutil.copy(arq, os.path.join(saida, nome))
+        partes[nome] = cortar(arq, saida, nome)   # sempre em pedaços de texto (o .pck nem é tipo servido)
     for f in os.listdir(tmp):
         if f.startswith("index.") and f not in ("index.wasm", "index.pck", "index.html"):
             shutil.copy(os.path.join(tmp, f), os.path.join(saida, f))

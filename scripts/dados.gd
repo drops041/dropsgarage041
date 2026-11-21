@@ -414,7 +414,7 @@ static func demo() -> bool:
 
 
 # ---------------------------------------------------------------- demo do navegador: carros baixados na hora
-## Na demo cada carro vem num pacote separado (carros/<id>.pck, em pedaços de até 19 MB: .000, .001...),
+## Na demo cada carro vem num pacote separado (carros/<id>.pck, em pedaços de texto base64: .000.txt, .001.txt...),
 ## listado em carros/lista.json ({"id": nº de pedaços}). Baixa só quando você escolhe o carro.
 signal carro_baixado(id: String, ok: bool)
 var _lista_pacotes := {}
@@ -430,7 +430,8 @@ func carro_pronto(id: String) -> bool:
 
 func progresso_download() -> float:
 	if _http and _baixando != "" and _http.get_body_size() > 0:
-		var n := float(_lista_pacotes.get(_baixando, 1))
+		var lv = _lista_pacotes.get(_baixando, 1)
+		var n := float((lv as Array).size() if lv is Array else lv)
 		var feito := n - float(_fila.size()) - 1.0
 		return clampf((feito + float(_http.get_downloaded_bytes()) / float(_http.get_body_size())) / n, 0.0, 1.0)
 	return _progresso
@@ -468,8 +469,12 @@ func baixar_carro(id: String) -> void:
 
 func _montar_fila(id: String) -> void:
 	_fila = []
-	for k in int(_lista_pacotes.get(id, 0)):
-		_fila.append("%s.pck.%03d" % [id, k])
+	var v = _lista_pacotes.get(id, 0)
+	if v is Array:   # endereço de cada pedaço (ex.: "/_blob/..." quando fica guardado como anexo do link)
+		_fila = (v as Array).duplicate()
+		return
+	for k in int(v):
+		_fila.append("carros/%s.pck.%03d.txt" % [id, k])
 
 
 func _proximo_pedaco() -> void:
@@ -481,7 +486,9 @@ func _proximo_pedaco() -> void:
 		carro_baixado.emit(id, ok and carro_pronto(id))
 		return
 	var nome: String = _fila[0]
-	var url := _base_url() + "carros/" + ("lista.json" if nome == "lista" else nome)
+	var url := _base_url() + ("carros/lista.json" if nome == "lista" else nome)
+	if nome.begins_with("/") and OS.has_feature("web"):
+		url = str(JavaScriptBridge.eval("location.origin")) + nome
 	print("demo: baixando ", url)
 	if _http.request(url) != OK:
 		_falhou()
@@ -506,9 +513,10 @@ func _pedaco_chegou(result: int, code: int, _h: PackedStringArray, body: PackedB
 			_falhou()
 			return
 		f.seek_end()
-		f.store_buffer(body)
+		f.store_buffer(Marshalls.base64_to_raw(body.get_string_from_ascii()))   # pedaço em texto (base64)
 		f.close()
-		_progresso = 1.0 - float(_fila.size()) / maxf(1.0, float(_lista_pacotes.get(_baixando, 1)))
+		var lv = _lista_pacotes.get(_baixando, 1)
+		_progresso = 1.0 - float(_fila.size()) / maxf(1.0, float((lv as Array).size() if lv is Array else lv))
 	_proximo_pedaco.call_deferred()   # (o HTTPRequest ainda está fechando o pedido anterior)
 
 
@@ -520,6 +528,8 @@ func _falhou() -> void:
 
 
 func tem_carro(id: String) -> bool:
+	if demo() and id == "lexusnx":   # licença não comercial: fora do link compartilhado
+		return false
 	if modo != "historia":
 		return true
 	if (historia.get("garagem", []) as Array).has(id):
