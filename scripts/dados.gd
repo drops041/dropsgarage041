@@ -207,6 +207,13 @@ func _ready() -> void:
 		for i in carros.size():
 			if carros[i]["id"] == OS.get_environment("DROPS_CARRO"):
 				idx = i
+	if demo():
+		_voltar_historia = false   # demo: só o modo livre, num carro que veio no pacote
+		if not tem_carro(str(carros[idx]["id"])):
+			for i in carros.size():
+				if tem_carro(str(carros[i]["id"])):
+					idx = i
+					break
 	if _voltar_historia:
 		entrar_historia()
 	_carregar_faixa()
@@ -401,7 +408,14 @@ func zerar_historia() -> void:
 	salvar()
 
 
+## (demo do navegador: só a oficina e alguns carros, pra mostrar pros amigos)
+static func demo() -> bool:
+	return OS.has_feature("demo") or OS.has_environment("DROPS_DEMO")
+
+
 func tem_carro(id: String) -> bool:
+	if demo() and not ResourceLoader.exists("res://modelos/carros/%s.glb" % id):
+		return false
 	if modo != "historia":
 		return true
 	if (historia.get("garagem", []) as Array).has(id):

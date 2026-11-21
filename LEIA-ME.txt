@@ -21,6 +21,12 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
   carros e o seu dinheiro (mexer no carro vai ser na oficina, pagando as peças: próximas etapas).
   O MODO LIVRE continua igual, tudo liberado (botão MODO LIVRE volta pra ele). Progresso salvo separado.
   Preços de todos os carros no carros.json ("preco"); "Áudio 6 Perua" agora é só "Perua".
+- (21/11) DEMO NO NAVEGADOR (pra mostrar pros amigos): preset "Web Demo (oficina)" no export_presets.cfg.
+  Só a garagem/oficina no modo livre, com 15 carros (o arquivo index.pck tem que ficar abaixo de 200 MB pro itch.io).
+  Sem SAIR PRO ROLÊ e sem MODO HISTÓRIA (feature "demo": Dados.demo()). Precisa dos modelos de exportação
+  Web do Godot 4.7.2 (Editor > Gerenciar modelos de exportação). Exportar: Projeto > Exportar > Web Demo.
+  Publicar: itch.io > Upload new project > Kind of project: HTML > sobe o zip com index.html >
+  marca "This file will be played in the browser" > Visibility: Restricted ou Draft (só quem tem o link).
 - (21/11) Abertura: depois do vídeo já abre a loja do primeiro carro (a parte do Drops pintando saiu: está no vídeo).
 - (21/11) O DRAFAEL agora espera LÁ FORA, na calçada em frente ao portão, com a G3 parada na rua atrás dele.
   Ele chama de tempos em tempos ("Ô parceiro! Chega aqui fora!"); você vai a pé até ele e conversa.

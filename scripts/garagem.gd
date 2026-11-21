@@ -383,8 +383,10 @@ func _botao(texto: String, marcado := false) -> Button:
 
 
 ## categorias do menu (carrossel em arco no topo, estilo garagem de jogo de rua)
-const CATS := [["carro", "CARRO"], ["medidas", "SUSPENSÃO"], ["pintura", "PINTURA"], ["rodas", "RODAS"],
+const _CATS := [["carro", "CARRO"], ["medidas", "SUSPENSÃO"], ["pintura", "PINTURA"], ["rodas", "RODAS"],
 	["neon", "NEON"], ["som", "SOM"], ["kit", "AEROFÓLIO"], ["personagem", "VOCÊ"], ["musica", "MÚSICA"], ["role", "SAIR PRO ROLÊ"]]
+## (demo do navegador) só a oficina: sem rolê na cidade
+var CATS: Array = _CATS.filter(func(c): return not (Dados.demo() and c[0] == "role"))
 const CIANO := Color("4fd8ff")
 var carrossel: Control
 var _desenho_carrossel: Control
@@ -533,6 +535,7 @@ func _ui() -> void:
 	modo_b.custom_minimum_size = Vector2(0, 50)
 	modo_b.pressed.connect(_trocar_modo)
 	baixo.add_child(modo_b)
+	modo_b.visible = not Dados.demo()
 	if Dados.modo == "historia":
 		# NOVO JOGO: começa a história do zero (aperta 2 vezes pra confirmar; o modo livre não muda)
 		var novo := _botao("NOVO JOGO")
@@ -571,6 +574,7 @@ func _ui() -> void:
 	var sair := _botao_amarelo("SAIR PRO ROLÊ", 20)
 	sair.custom_minimum_size = Vector2(210, 50)
 	baixo.add_child(sair)
+	sair.visible = not Dados.demo()
 	# painel de opções (esquerda)
 	fundo = PanelContainer.new()
 	fundo.clip_contents = true
@@ -840,6 +844,12 @@ func _montar_aba() -> void:
 				lista.append([k, "Desligado" if k == "off" else k.capitalize()])
 			_opcoes(lista, "neon", str(c.get("neon", "off")), 2)
 		"kit":
+			if Acessorios.encaixes_do(Dados.carro()).is_empty():
+				var av := Label.new()
+				av.text = "Aerofólio é só pra carro.\nPicape não tem (troca de carro na aba CARRO)."
+				av.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+				av.add_theme_font_size_override("font_size", 18)
+				conteudo.add_child(av)
 			for e in Acessorios.encaixes_do(Dados.carro()):
 				_titulo(e[1])
 				_opcoes(e[2], e[0], str(c.get(e[0], "cor" if str(e[0]).ends_with("_cor") else "off")), mini(4, (e[2] as Array).size()))
