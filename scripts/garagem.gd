@@ -209,8 +209,52 @@ func _caixa(tam: Vector3, pos: Vector3, mat: Material) -> void:
 
 
 # ---------------------------------------------------------------- carro
+var _aviso_download: Label
+
+
+## demo do navegador: o carro escolhido ainda não veio? baixa e mostra o andamento
+func _esperar_carro() -> bool:
+	var id := str(Dados.carro()["id"])
+	if Dados.carro_pronto(id):
+		if _aviso_download:
+			_aviso_download.visible = false
+		return false
+	if _aviso_download == null:
+		_aviso_download = Label.new()
+		_aviso_download.add_theme_font_size_override("font_size", 26)
+		_aviso_download.add_theme_color_override("font_outline_color", Color.BLACK)
+		_aviso_download.add_theme_constant_override("outline_size", 10)
+		_aviso_download.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_aviso_download.set_anchors_preset(Control.PRESET_CENTER)
+		_aviso_download.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		raiz_ui.add_child(_aviso_download)
+		Dados.carro_baixado.connect(func(bid: String, ok: bool):
+			if not is_instance_valid(self):
+				return
+			if not ok:
+				_aviso_download.text = "Não deu pra baixar o carro.\nConfere a internet e escolhe ele de novo."
+				return
+			if bid == str(Dados.carro()["id"]):
+				_trocar_carro(0))
+	_aviso_download.visible = true
+	_aviso_download.text = "Baixando " + str(Dados.carro()["nome"]) + "..."
+	_aviso_download.position = get_viewport().get_visible_rect().size * Vector2(0.62, 0.5) - Vector2(180, 30)
+	_aviso_download.size = Vector2(360, 60)
+	Dados.baixar_carro(id)
+	if visual:
+		visual.visible = false
+	nome_l.text = Dados.carro()["nome"]
+	sub_l.text = str(Dados.carro()["sub"]).to_upper()
+	if contador_l:
+		var lista := Dados.escolhiveis()
+		contador_l.text = "%d/%d" % [lista.find(Dados.idx) + 1, lista.size()]
+	return true
+
+
 func _trocar_carro(passo: int) -> void:
 	Dados.proximo_carro(passo)
+	if _esperar_carro():
+		return
 	if visual:
 		visual.queue_free()
 	visual = CarroVisual.new()
@@ -276,6 +320,8 @@ func _boneco(mostrar: bool) -> void:
 
 # ---------------------------------------------------------------- câmera
 func _process(dt: float) -> void:
+	if _aviso_download and _aviso_download.visible and not Dados.carro_pronto(str(Dados.carro()["id"])):
+		_aviso_download.text = "Baixando %s...  %d%%" % [Dados.carro()["nome"], int(Dados.progresso_download() * 100.0)]
 	if OS.has_environment("DROPS_ABA_FOTO"):   # testes: foto da aba aberta e sai
 		_t += dt
 		if _t > 4.0:

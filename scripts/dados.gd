@@ -209,9 +209,9 @@ func _ready() -> void:
 				idx = i
 	if demo():
 		_voltar_historia = false   # demo: só o modo livre, num carro que veio no pacote
-		if not tem_carro(str(carros[idx]["id"])):
+		if not carro_pronto(str(carros[idx]["id"])):
 			for i in carros.size():
-				if tem_carro(str(carros[i]["id"])):
+				if carro_pronto(str(carros[i]["id"])):
 					idx = i
 					break
 	if _voltar_historia:
@@ -413,9 +413,113 @@ static func demo() -> bool:
 	return OS.has_feature("demo") or OS.has_environment("DROPS_DEMO")
 
 
+# ---------------------------------------------------------------- demo do navegador: carros baixados na hora
+## Na demo cada carro vem num pacote separado (carros/<id>.pck, em pedaços de até 19 MB: .000, .001...),
+## listado em carros/lista.json ({"id": nº de pedaços}). Baixa só quando você escolhe o carro.
+signal carro_baixado(id: String, ok: bool)
+var _lista_pacotes := {}
+var _baixando := ""
+var _http: HTTPRequest
+var _fila: Array = []          # pedaços que faltam baixar do carro atual
+var _progresso := 0.0
+
+
+func carro_pronto(id: String) -> bool:
+	return not demo() or ResourceLoader.exists("res://modelos/carros/%s.glb" % id)
+
+
+func progresso_download() -> float:
+	if _http and _baixando != "" and _http.get_body_size() > 0:
+		var n := float(_lista_pacotes.get(_baixando, 1))
+		var feito := n - float(_fila.size()) - 1.0
+		return clampf((feito + float(_http.get_downloaded_bytes()) / float(_http.get_body_size())) / n, 0.0, 1.0)
+	return _progresso
+
+
+func _base_url() -> String:
+	if OS.has_feature("web"):
+		return str(JavaScriptBridge.eval("location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, '')"))
+	return OS.get_environment("DROPS_DEMO_URL")
+
+
+func baixar_carro(id: String) -> void:
+	if carro_pronto(id) or _baixando == id:
+		return
+	if _baixando != "":
+		_http.cancel_request()
+	if _http == null:
+		_http = HTTPRequest.new()
+		_http.use_threads = false
+		_http.download_chunk_size = 4 * 1024 * 1024   # 4 MB por quadro (o padrão de 64 KB deixava o download lento)
+		add_child(_http)
+		_http.request_completed.connect(_pedaco_chegou)
+	_baixando = id
+	_progresso = 0.0
+	DirAccess.make_dir_recursive_absolute("user://carros")
+	var f := FileAccess.open("user://carros/%s.pck" % id, FileAccess.WRITE)
+	if f:
+		f.close()
+	if _lista_pacotes.is_empty():
+		_fila = ["lista"]
+	else:
+		_montar_fila(id)
+	_proximo_pedaco()
+
+
+func _montar_fila(id: String) -> void:
+	_fila = []
+	for k in int(_lista_pacotes.get(id, 0)):
+		_fila.append("%s.pck.%03d" % [id, k])
+
+
+func _proximo_pedaco() -> void:
+	if _fila.is_empty():
+		var ok := ProjectSettings.load_resource_pack("user://carros/%s.pck" % _baixando)
+		print("demo: pacote ", _baixando, " carregado=", ok, " existe=", carro_pronto(_baixando))
+		var id := _baixando
+		_baixando = ""
+		carro_baixado.emit(id, ok and carro_pronto(id))
+		return
+	var nome: String = _fila[0]
+	var url := _base_url() + "carros/" + ("lista.json" if nome == "lista" else nome)
+	print("demo: baixando ", url)
+	if _http.request(url) != OK:
+		_falhou()
+
+
+func _pedaco_chegou(result: int, code: int, _h: PackedStringArray, body: PackedByteArray) -> void:
+	print("demo: pedaço ", _fila[0] if not _fila.is_empty() else "?", " result=", result, " code=", code, " bytes=", body.size())
+	if result != HTTPRequest.RESULT_SUCCESS or code >= 400:
+		_falhou()
+		return
+	var nome: String = _fila.pop_front()
+	if nome == "lista":
+		var j = JSON.parse_string(body.get_string_from_utf8())
+		_lista_pacotes = j if j is Dictionary else {}
+		if not _lista_pacotes.has(_baixando):
+			_falhou()
+			return
+		_montar_fila(_baixando)
+	else:
+		var f := FileAccess.open("user://carros/%s.pck" % _baixando, FileAccess.READ_WRITE)
+		if f == null:
+			_falhou()
+			return
+		f.seek_end()
+		f.store_buffer(body)
+		f.close()
+		_progresso = 1.0 - float(_fila.size()) / maxf(1.0, float(_lista_pacotes.get(_baixando, 1)))
+	_proximo_pedaco.call_deferred()   # (o HTTPRequest ainda está fechando o pedido anterior)
+
+
+func _falhou() -> void:
+	var id := _baixando
+	_baixando = ""
+	_fila = []
+	carro_baixado.emit(id, false)
+
+
 func tem_carro(id: String) -> bool:
-	if demo() and not ResourceLoader.exists("res://modelos/carros/%s.glb" % id):
-		return false
 	if modo != "historia":
 		return true
 	if (historia.get("garagem", []) as Array).has(id):
