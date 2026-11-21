@@ -970,6 +970,8 @@ func _criar_carro(pos: Vector3, giro: float) -> void:
 	var axF := float(dados["axF"])
 	var axR := float(dados["axR"])
 	carro = VehicleBody3D.new()
+	if mapa:
+		mapa.alvo = carro   # (conserto) trocou de carro: a cidade continua carregando em volta do carro novo
 	carro.mass = 1150.0
 	carro.center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
 	carro.center_of_mass = Vector3(0, 0.0, (axF + axR) / 2.0)
@@ -1054,12 +1056,13 @@ func _physics_process(dt: float) -> void:
 	_desgaste_rodando(dt)
 	var frente := carro.global_basis.z
 	var vel := carro.linear_velocity.dot(frente)
-	var acel := Input.get_action_strength("acelerar")
+	var acel := maxf(Input.get_action_strength("acelerar"), _acel_teste)
 	var freio := Input.get_action_strength("frear")
 	if visual:
 		visual.frear(freio > 0.0)   # luz de freio
-	var forca := 3400.0 * float(dados.get("acc", 8.5)) / 8.5
-	var vmax := float(dados.get("vmax", 50)) * 0.9
+	var mt: Array = Dados.MOTOR[clampi(int(cfg.get("motor", 0)), 0, Dados.MOTOR.size() - 1)]   # preparação do motor
+	var forca := 3400.0 * float(dados.get("acc", 8.5)) / 8.5 * float(mt[2])
+	var vmax := float(dados.get("vmax", 50)) * 0.9 * float(mt[3])
 	carro.brake = 0.0
 	carro.engine_force = 0.0
 	if acel > 0.0:
@@ -1074,6 +1077,8 @@ func _physics_process(dt: float) -> void:
 	# drift: freio de mão solta a traseira, dá um empurrão no giro e solta fumaça
 	var mao := Input.is_action_pressed("freio_mao")
 	var curva := Input.get_action_strength("esquerda") - Input.get_action_strength("direita")
+	if _vira_teste != 0.0:
+		curva = _vira_teste
 	for w in rodas:
 		if not w.use_as_steering:
 			w.brake = 40.0 if mao else 0.0
@@ -2456,6 +2461,225 @@ func _teste13() -> void:
 			get_tree().quit()
 
 
+func _teste20() -> void:
+	# (modo história) 2º serviço: aceita o Vambora pelo PC, troca as rodas pra aro 17, põe ar e soca pelo PC
+	if _f == 60:
+		intro = 0.0
+		Dados.entrar_historia()
+		Dados.zerar_historia()
+		Dados.comprar(Dados.indice_de("corsa"))
+		Dados.historia["etapa"] = "volta_oficina"
+		Dados.historia["servicos_feitos"] = 1
+		Dados.configs.erase("bora")
+		_criar_carro(carro.global_position + Vector3.UP * 0.5, carro.rotation.y)
+		historia = Historia.new()
+		historia.m = self
+		add_child(historia)
+	elif _f == 120:
+		descer()
+	elif _f == 160:
+		historia._aceitar(historia._pedido_vambora())
+		Dados.historia["etapa"] = "servico2"
+		print("t20 aceitou: carro=", Dados.carro()["id"], " dinheiro=", Dados.dinheiro, " feitos=", historia.feitos())
+	elif _f == 200:
+		Dados.pagar(Dados.custo_roda(17))
+		historia._mudar_carro("aro", 17)
+		Dados.pagar(Dados.CUSTO_SUSPENSAO)
+		historia._mudar_carro("ar", true)
+		var rmax := CarroVisual.rebaixo_max(Dados.carro())
+		historia._mudar_carro("rebaixo", minf(14.0, rmax))
+		historia._mudar_carro("rebaixo_tras", minf(14.0, rmax))
+	elif _f == 260:
+		print("t20 depois: dinheiro=", Dados.dinheiro, " feitos=", historia.feitos(), " estado=", historia.servico().get("estado"), " cfg aro=", Dados.cfg().get("aro"), " ar=", Dados.cfg().get("ar"), " reb=", Dados.cfg().get("rebaixo"), "/", Dados.cfg().get("rebaixo_tras"))
+		Dados.sair_historia()
+		get_tree().quit()
+
+
+var _t19 := {}
+func _teste19() -> void:
+	# (modo história) depois de entregar a G3: PC -> CLANDESTINA -> corre (piloto automático) -> ganha a 1ª;
+	# a 2ª perde com motor original, compra o estágio 1 no PC e ganha
+	var ft := OS.get_environment("DROPS_FOTO")
+	var foto := func(n: String) -> void:
+		if ft != "":
+			get_viewport().get_texture().get_image().save_png(ft % n)
+	var log := func(o: String) -> void:
+		print("t19 [", _f, "] ", o, " | dinheiro=", Dados.dinheiro, " clandestina=", Dados.historia.get("clandestina", 0), " motor=", Dados.cfg().get("motor", 0), " etapa=", Dados.historia.get("etapa"))
+	if _t19.is_empty():
+		_t19 = {"fase": "montar", "t": 0.0, "corridas": 0}
+	var dt := get_physics_process_delta_time()
+	_t19["t"] += dt
+	var cl: Clandestina = historia.clandestina if historia else null
+	match _t19["fase"]:
+		"montar":
+			if _t19["t"] < 1.0:
+				return
+			intro = 0.0
+			Dados.entrar_historia()
+			Dados.zerar_historia()
+			Dados.comprar(Dados.indice_de("corsa"))
+			Dados.historia["etapa"] = "volta_oficina"
+			Dados.historia["servicos_feitos"] = 1
+			_criar_carro(carro.global_position + Vector3.UP * 0.5, carro.rotation.y)
+			historia = Historia.new()
+			historia.m = self
+			add_child(historia)
+			_t19["fase"] = "ao_pc"; _t19["t"] = 0.0
+		"ao_pc":
+			if _t19["t"] < 1.5:
+				return
+			descer()
+			_t19["fase"] = "no_pc"; _t19["t"] = 0.0
+		"no_pc":
+			if _t19["t"] < 1.0:
+				return
+			var fr: Vector3 = historia.pc.global_basis.z
+			pessoa.global_position = historia.pc.global_position + fr * 0.9 + Vector3.UP * 0.1
+			_t19["fase"] = "abrir"; _t19["t"] = 0.0
+		"abrir":
+			if _t19["t"] < 1.0:
+				return
+			log.call("perto do pc=" + str(historia.perto_do_pc()) + " acao=" + historia._acao)
+			if _cam_t == null:
+				_cam_t = Camera3D.new(); _cam_t.far = 300.0; _cam_t.fov = 60.0; add_child(_cam_t)
+			_cam_t.current = true
+			_cam_t.global_position = historia.pc.global_position + historia.pc.global_basis.z * 2.6 + historia.pc.global_basis.x * 1.2 + Vector3.UP * 1.6
+			_cam_t.look_at(historia.pc.global_position + Vector3.UP * 0.9)
+			_t19["fase"] = "foto_pc"; _t19["t"] = 0.0
+		"foto_pc":
+			if _t19["t"] < 0.5:
+				return
+			foto.call("1_pc")
+			_cam_t.current = false
+			historia.abrir_pc("clandestina")
+			_t19["fase"] = "tela"; _t19["t"] = 0.0
+		"tela":
+			if _t19["t"] < 0.6:
+				return
+			foto.call("2_tela_clandestina")
+			historia.abrir_pc("motor")
+			_t19["fase"] = "tela2"; _t19["t"] = 0.0
+		"tela2":
+			if _t19["t"] < 0.6:
+				return
+			foto.call("3_tela_motor")
+			historia.abrir_pc("servico")
+			_t19["fase"] = "tela3"; _t19["t"] = 0.0
+		"tela3":
+			if _t19["t"] < 0.6:
+				return
+			foto.call("4_tela_servico")
+			historia.abrir_pc("clandestina")
+			for b in historia._pc_conteudo.get_children():
+				if b is Button and (b as Button).text == "MARCAR NO MAPA":
+					(b as Button).pressed.emit()
+			_t19["fase"] = "ir"; _t19["t"] = 0.0
+		"ir":
+			if _t19["t"] < 0.5:
+				return
+			var d := cl.dir3()
+			teletransportar(mapa.no_chao(cl.na_pista(0.0, 0.0) - d * 6.0, 0.6), atan2(d.x, d.z))
+			_t19["fase"] = "esperar_botao"; _t19["t"] = 0.0
+		"esperar_botao":
+			if _t19["t"] < 3.0:
+				return
+			historia._atualizar_botao()
+			log.call("na largada: acao=" + historia._acao + " botao=" + historia.botao.text)
+			foto.call("5_largada_%d" % _t19["corridas"])
+			historia._apertou()
+			_t19["fase"] = "correndo"; _t19["t"] = 0.0
+		"correndo":
+			if cl.contagem <= 0.0 and cl.correndo:
+				_acel_teste = 1.0
+				var pr := cl.progresso(carro.global_position)
+				var alvo := cl.na_pista(pr.x + 18.0, Clandestina.FAIXA)
+				var fr := carro.global_basis.z
+				var quer := Vector3(alvo.x - carro.global_position.x, 0, alvo.z - carro.global_position.z).normalized()
+				_vira_teste = clampf(fr.cross(quer).y * 3.0, -1.0, 1.0)
+				if int(_t19["t"] * 60) == 300:
+					foto.call("6_correndo_%d" % _t19["corridas"])
+			if not cl.correndo and _t19["t"] > 5.0:
+				_acel_teste = 0.0
+				_vira_teste = 0.0
+				_t19["corridas"] += 1
+				log.call("fim da corrida " + str(_t19["corridas"]) + ": " + historia.dialogo_l.text.get_slice("\n", 0))
+				foto.call("7_resultado_%d" % _t19["corridas"])
+				_t19["fase"] = "depois"; _t19["t"] = 0.0
+		"depois":
+			if _t19["t"] < 1.0:
+				return
+			historia.dialogo.visible = false
+			match int(_t19["corridas"]):
+				1:   # ganhou a 1ª: marca a 2ª e corre com motor original
+					Dados.historia["clandestina_marcada"] = true
+					cl.ativar()
+					_t19["fase"] = "ir"
+				2:   # perdeu a 2ª: compra o estágio 1 e tenta de novo
+					Dados.pagar(int(Dados.MOTOR[1][1]))
+					Dados.mudar("motor", 1)
+					cfg = Dados.cfg()
+					cl._por_rival_parado()
+					cl._feixe.visible = true
+					_t19["fase"] = "ir"
+				_:
+					log.call("fim")
+					Dados.sair_historia()
+					get_tree().quit()
+			_t19["t"] = 0.0
+
+
+var _t18 := {}
+var _acel_teste := 0.0   # testes automáticos: acelerador apertado
+var _vira_teste := 0.0   # testes automáticos: volante (-1 direita .. 1 esquerda)
+var _cl_teste: Clandestina
+func _teste18() -> void:
+	# mede o tempo dos 500 m da clandestina (Av. Juscelino) de cada carro inicial com cada estágio de motor,
+	# com um "piloto" que segue a avenida
+	var carros := ["corsa", "golg2", "clio", "astrag", "logan"]
+	if _t18.is_empty():
+		_t18 = {"k": 0, "fase": "largar", "t": 0.0}
+		intro = 0.0
+		_cl_teste = Clandestina.new()
+		_cl_teste.m = self
+		add_child(_cl_teste)
+	var k: int = _t18["k"]
+	if k >= carros.size() * 4:
+		get_tree().quit()
+		return
+	var cid: String = carros[k / 4]
+	var mot: int = k % 4
+	var dt := get_physics_process_delta_time()
+	match _t18["fase"]:
+		"largar":
+			Dados.idx = Dados.indice_de(cid)
+			Dados.mudar("motor", mot)
+			var d := _cl_teste.dir3()
+			_criar_carro(mapa.no_chao(_cl_teste.na_pista(0.0, Clandestina.FAIXA), 1.0), atan2(d.x, d.z))
+			mapa.carregar_perto(carro.global_position)
+			_t18["fase"] = "assentar"
+			_t18["t"] = 0.0
+		"assentar":
+			_t18["t"] += dt
+			if _t18["t"] > 3.0:
+				_t18["t"] = 0.0
+				_t18["fase"] = "correr"
+				_acel_teste = 1.0
+		"correr":
+			_t18["t"] += dt
+			_cl_teste.limpar_pista()
+			var pr := _cl_teste.progresso(carro.global_position)
+			var alvo := _cl_teste.na_pista(pr.x + 18.0, Clandestina.FAIXA)
+			var fr := carro.global_basis.z
+			var quer := Vector3(alvo.x - carro.global_position.x, 0, alvo.z - carro.global_position.z).normalized()
+			_vira_teste = clampf(fr.cross(quer).y * 3.0, -1.0, 1.0)
+			if pr.x >= 500.0 or _t18["t"] > 60.0:
+				_acel_teste = 0.0
+				_vira_teste = 0.0
+				print("t18 ", cid, " motor ", mot, " 500m em %.2f s (vel final %.0f km/h, fora da pista %.1f m)" % [_t18["t"], carro.linear_velocity.length() * 3.6, pr.y])
+				_t18["k"] = k + 1
+				_t18["fase"] = "largar"
+
+
 func _teste17() -> void:
 	# (modo história) Drafael chega, você aceita a G3, faz os 4 serviços, entrega na Drafael Motors
 	var ft := OS.get_environment("DROPS_FOTO")
@@ -3105,6 +3329,15 @@ func _roteiro_teste() -> void:
 		return
 	if OS.get_environment("DROPS_TESTE") == "13":
 		_teste13()
+		return
+	if OS.get_environment("DROPS_TESTE") == "20":
+		_teste20()
+		return
+	if OS.get_environment("DROPS_TESTE") == "19":
+		_teste19()
+		return
+	if OS.get_environment("DROPS_TESTE") == "18":
+		_teste18()
 		return
 	if OS.get_environment("DROPS_TESTE") == "17":
 		_teste17()

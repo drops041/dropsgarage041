@@ -37,6 +37,14 @@ const CUSTO_PINTURA := [8000, 25000]
 const CUSTO_LAVAR := 300
 const CUSTO_LIXAR := 800
 const CUSTO_DESAMASSAR := 1500
+## preparação do motor (por carro, cfg "motor" 0..3): [nome, preço, força x, velocidade x]
+const MOTOR := [["Original", 0, 1.0, 1.0], ["Estágio 1 · filtro, escape e remap", 3000, 1.10, 1.04],
+	["Estágio 2 · comando e cabeçote", 8000, 1.25, 1.09], ["Estágio 3 · turbo", 20000, 1.5, 1.18]]
+## clandestinas (arrancada de 500 m na Av. Juscelino): [rival, carro do rival, tempo do rival (s), prêmio]
+## (medido no teste 18 com os carros do começo: original ~16,3 s · estágio 1 ~15,4 · estágio 2 ~14,4 · estágio 3 ~13,1)
+## a 1ª é fácil; a 2ª precisa do estágio 1, a 3ª do estágio 2, a 4ª do estágio 3
+const CLANDESTINAS := [["Zé da Quebrada", "golg2", 21.0, 1000], ["Japa do G5", "golg5", 16.0, 2000],
+	["Bigode da G6", "saveiro", 14.95, 4000], ["Tchê do Golfo", "golfgti", 13.75, 8000]]
 const PECA_FRACAO := 0.25        # serviço numa peça só (porta, capô...) custa 1/4 do carro todo
 const PINTURA_PECA_FRACAO := 0.2
 

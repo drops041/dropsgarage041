@@ -29,6 +29,17 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
   aperta ENTREGAR. Você volta pro seu carro, com o lucro (~R$ 5.300) e +100 XP.
   Rodas da parede também custam no modo história (1/4 do jogo por roda: até aro 16 R$ 1 mil o jogo,
   17-22 R$ 6 mil, 23+ R$ 10 mil). No modo livre continua tudo de graça.
+- MODO HISTÓRIA, CONTINUAÇÃO: na entrega da G3 o Drafael já fala do próximo serviço (Vambora: rodas aro 17,
+  suspensão a ar e socar) e manda olhar o PC da oficina. PC DA OFICINA (mesinha do lado da cabine, USAR O PC):
+  · SERVIÇOS: aceita o pedido do Vambora (R$ 16.500 adiantado, peças R$ 11 mil).
+  · MOTOR: preparação por carro: estágio 1 R$ 3 mil (+10% força), 2 R$ 8 mil (+25%), 3 R$ 20 mil (+50%, turbo).
+  · RODAS E SUSPENSÃO: troca o aro (pagando o jogo), instala suspensão a ar (R$ 5 mil) e depois soca de graça.
+  · CLANDESTINA: "Achou que seria somente reforma? Bem-vindo à primeira clandestina..." MARCAR NO MAPA:
+    feixe vermelho na Av. Juscelino Kubitschek e seta em cima do carro. Lá, CORRER CONTRA o rival:
+    arrancada de 500 m seguindo a avenida (a rua fica sem trânsito na hora). Ganhou: prêmio + 50 XP.
+    Perdeu: TENTAR DE NOVO quantas vezes quiser. 1ª fácil (R$ 1 mil), 2ª precisa do estágio 1 (R$ 2 mil),
+    3ª do estágio 2 (R$ 4 mil), 4ª do estágio 3 (R$ 8 mil). Tempos medidos no teste 18.
+- CONSERTO: trocar de carro (tecla C, botão CARRO) fazia a cidade parar de carregar em volta de você.
 - A concessionária agora é a DRAFAEL MOTORS (dono: Drafael), com o letreiro novo na fachada, no totem e no balcão.
 - Lógico virou WOLVERINE, com a roda de trás no lugar (estava 10 cm pra trás).
 - BODY KIT desligado por enquanto (estava feio; volta quando tiver peças novas).
