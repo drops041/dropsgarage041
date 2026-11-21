@@ -515,7 +515,8 @@ func atualizar(cfg: Dictionary) -> void:
 		m.albedo_texture = _brilho()
 		neon_chao.material_override = m
 	_som()
-	Acessorios.montar(self)   # body kit e acessórios (lip, saias, aerofólio, santo antônio, capota, rack)
+	if Acessorios.LIGADO:
+		Acessorios.montar(self)   # body kit e acessórios (lip, saias, aerofólio, santo antônio, capota, rack)
 
 
 ## uma roda (pneu + aro), com o centro na origem e o eixo em X; lado -1 = esquerda

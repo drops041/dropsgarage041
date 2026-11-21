@@ -35,6 +35,9 @@ func _ready() -> void:
 	add_child(cam)
 	cam.current = true
 	_ui()
+	if Dados.modo == "historia" and (Dados.historia.get("garagem", []) as Array).is_empty():
+		get_tree().change_scene_to_file.call_deferred("res://cenas/historia_abertura.tscn")
+		return
 	_trocar_carro(0)
 	if OS.has_environment("DROPS_CAM"):   # testes: "pitch,dist"
 		pitch = float(OS.get_environment("DROPS_CAM").get_slice(",", 0))
@@ -208,8 +211,7 @@ func _caixa(tam: Vector3, pos: Vector3, mat: Material) -> void:
 
 # ---------------------------------------------------------------- carro
 func _trocar_carro(passo: int) -> void:
-	Dados.idx = (Dados.idx + passo + Dados.carros.size()) % Dados.carros.size()
-	Dados.salvar()
+	Dados.proximo_carro(passo)
 	if visual:
 		visual.queue_free()
 	visual = CarroVisual.new()
@@ -382,7 +384,7 @@ func _botao(texto: String, marcado := false) -> Button:
 
 
 ## categorias do menu (carrossel em arco no topo, estilo garagem de jogo de rua)
-const CATS := [["carro", "CARRO"], ["medidas", "SUSPENSÃO"], ["pintura", "PINTURA"], ["rodas", "RODAS"], ["kit", "BODY KIT"],
+const CATS := [["carro", "CARRO"], ["medidas", "SUSPENSÃO"], ["pintura", "PINTURA"], ["rodas", "RODAS"],
 	["neon", "NEON"], ["som", "SOM"], ["personagem", "VOCÊ"], ["musica", "MÚSICA"], ["role", "SAIR PRO ROLÊ"]]
 const CIANO := Color("4fd8ff")
 var carrossel: Control
@@ -394,6 +396,20 @@ var faixa_cima: TextureRect
 var faixa_baixo: TextureRect
 var contador_l: Label
 var painel_aberto := true
+var saldo_l: Label
+
+
+## MODO HISTÓRIA <-> MODO LIVRE (o livre continua igual: tudo liberado, pra quem quer jogo rápido)
+func _trocar_modo() -> void:
+	if Dados.modo == "historia":
+		Dados.sair_historia()
+		get_tree().reload_current_scene()
+		return
+	Dados.entrar_historia()
+	if (Dados.historia.get("garagem", []) as Array).is_empty():
+		get_tree().change_scene_to_file("res://cenas/historia_abertura.tscn")   # primeira vez: o Drops e a loja
+	else:
+		get_tree().reload_current_scene()
 
 
 func _cat_i() -> int:
@@ -507,6 +523,17 @@ func _ui() -> void:
 	partes_box.add_theme_constant_override("separation", 8)
 	partes_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	baixo.add_child(partes_box)
+	saldo_l = Label.new()
+	saldo_l.add_theme_font_size_override("font_size", 22)
+	saldo_l.add_theme_color_override("font_color", Color("7dff8a"))
+	saldo_l.visible = Dados.modo == "historia"
+	saldo_l.text = Dados.reais(Dados.dinheiro)
+	baixo.add_child(saldo_l)
+	var modo_b := _botao("MODO LIVRE" if Dados.modo == "historia" else "MODO HISTÓRIA")
+	modo_b.add_theme_font_size_override("font_size", 15)
+	modo_b.custom_minimum_size = Vector2(0, 50)
+	modo_b.pressed.connect(_trocar_modo)
+	baixo.add_child(modo_b)
 	var esconde := _botao("ESCONDER MENU")
 	esconde.add_theme_font_size_override("font_size", 15)
 	esconde.custom_minimum_size = Vector2(0, 50)
@@ -520,6 +547,7 @@ func _ui() -> void:
 	orig.custom_minimum_size = Vector2(0, 50)
 	orig.pressed.connect(func(): Dados.original(); visual.atualizar(Dados.cfg()); _montar_aba())
 	baixo.add_child(orig)
+	orig.visible = Dados.modo != "historia"   # (modo história) voltar de fábrica de graça não vale
 	var sair := _botao_amarelo("SAIR PRO ROLÊ", 20)
 	sair.custom_minimum_size = Vector2(210, 50)
 	baixo.add_child(sair)
@@ -728,11 +756,21 @@ func _montar_aba() -> void:
 		_montar_carrossel()
 		_posicionar()
 	if contador_l:
-		contador_l.text = "%d/%d" % [Dados.idx + 1, Dados.carros.size()]
+		var lista := Dados.escolhiveis()
+		contador_l.text = "%d/%d" % [lista.find(Dados.idx) + 1, lista.size()]
 	for n in conteudo.get_children():
 		n.queue_free()
 	_boneco(aba == "personagem")
 	var c := Dados.cfg()
+	if Dados.modo == "historia" and aba in ["medidas", "pintura", "rodas", "neon", "som"]:
+		# (modo história) mexer no carro é na oficina, pagando as peças: aqui só olha
+		_titulo("Modo história")
+		var av := Label.new()
+		av.text = "Aqui você só olha o carro.\nAs mudanças são feitas na OFICINA, pagando as peças:\nPC da oficina (suspensão, aro, pneu) e mesa de tintas na cabine (pintura).\n\nSaldo: " + Dados.reais(Dados.dinheiro)
+		av.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		av.add_theme_font_size_override("font_size", 18)
+		conteudo.add_child(av)
+		return
 	match aba:
 		"medidas":
 			var rmax := CarroVisual.rebaixo_max(Dados.carro())
@@ -795,13 +833,15 @@ func _montar_aba() -> void:
 			gc.add_theme_constant_override("h_separation", 8)
 			gc.add_theme_constant_override("v_separation", 8)
 			conteudo.add_child(gc)
-			for i in Dados.carros.size():
+			var lista_c := Dados.escolhiveis()   # (modo história: só os seus carros)
+			for k in lista_c.size():
+				var i: int = lista_c[k]
 				var b := _botao(str(Dados.carros[i]["nome"]), i == Dados.idx)
 				b.add_theme_font_size_override("font_size", 16)
 				b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 				b.custom_minimum_size = Vector2(0, 52)
 				b.clip_text = true
-				var passo := i - Dados.idx
+				var passo := k - lista_c.find(Dados.idx)
 				b.pressed.connect(_trocar_carro.bind(passo))
 				gc.add_child(b)
 		"personagem":

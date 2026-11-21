@@ -1,5 +1,7 @@
 class_name Acessorios
 extends RefCounted
+## (20/11) DESLIGADO a pedido: o body kit estava feio. Fica sem até achar peças novas (aí é só pôr true).
+const LIGADO := false
 ## Body kit e acessórios do carro, por ENCAIXE (slot). Cada encaixe tem opções; "off" = sem peça.
 ##
 ## Como cada peça é montada (na ordem):

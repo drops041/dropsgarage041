@@ -1297,8 +1297,7 @@ func _process(dt: float) -> void:
 	if carro == null:
 		return
 	if Input.is_action_just_pressed("trocar_carro"):
-		Dados.idx = (Dados.idx + 1) % Dados.carros.size()
-		Dados.salvar()
+		Dados.proximo_carro(1)
 		_criar_carro(carro.global_position + Vector3.UP * 0.8, carro.rotation.y)
 		return
 	_interpolar_carro()
@@ -1916,8 +1915,7 @@ func _hud() -> void:
 		_salvar_ar()
 		get_tree().change_scene_to_file("res://cenas/garagem.tscn"))
 	_botao_ui("CARRO", "carro").pressed.connect(func():
-		Dados.idx = (Dados.idx + 1) % Dados.carros.size()
-		Dados.salvar()
+		Dados.proximo_carro(1)
 		_criar_carro(carro.global_position + Vector3.UP * 0.8, carro.rotation.y))
 	var bm := _botao_ui("♫ MÚSICA", "musica")
 	var pm := Dados.painel_musica()   # tocar/parar, trocar de música e volume só da música

@@ -18,6 +18,30 @@ const RODAS := [["work", "Trampo E03"], ["tsw5", "5 Raios Turbo"], ["vgt", "Vis�
 	["jerez", "Jerez"], ["jettagli", "Jeta GLX"], ["tiguan", "Despacito R"], ["id4", "Volt Aero"],
 	["raptor", "Raptora Beadlock"], ["aco15", "Calota de Fábrica"], ["antera", "Antares 109"], ["vsxv", "Trampo VS"]]
 const ARQUIVO := "user://garagem.json"
+const ARQUIVO_HISTORIA := "user://historia.json"   # (modo história) carros, dinheiro e progresso separados do modo livre
+
+## ---------------------------------------------------------------- MODO HISTÓRIA: economia combinada (20/11)
+## Custo das peças pro jogador (o que ele gasta pra fazer o serviço):
+##   suspensão a ar R$ 5 mil · som R$ 8 mil
+##   rodas: até aro 16 R$ 1 mil · aro 17 a 22 R$ 6 mil · aro 23 pra cima R$ 10 mil
+##   pintura: R$ 8 mil (carro pequeno) até R$ 25 mil (carro grande)
+## O cliente (o Drops, dono da Drops Car) paga as peças x 1,5 na hora em que você aceita o serviço:
+## você compra as peças e fica com o que sobra (o lucro).
+## Começo: serviços baratos; vai aumentando aos poucos (nem lento nem rápido demais).
+## O MODO LIVRE continua igual (tudo liberado, pra quem quer jogo rápido).
+const HISTORIA_DINHEIRO_INICIAL := 20000
+const HISTORIA_JURO := 1.5
+const CUSTO_SUSPENSAO := 5000
+const CUSTO_SOM := 8000
+const CUSTO_PINTURA := [8000, 25000]
+
+
+static func custo_roda(aro: int) -> int:
+	if aro >= 23:
+		return 10000
+	if aro >= 17:
+		return 6000
+	return 1000
 
 var carros: Array = []
 var idx := 0                 # carro escolhido
@@ -26,6 +50,10 @@ var visual := {}   # (fase 2) roupa, cabelo e pele do protagonista (ver Pessoa.V
 var configs := {}            # id do carro -> configuração
 var dinheiro := 1000000
 var recordes := {}
+var modo := "livre"          # "livre" (tudo liberado, como sempre foi) ou "historia"
+var historia := {}           # (modo história) {"etapa", "garagem": [ids dos carros que você tem], "nivel", "xp"}
+var _livre := {}             # guarda o modo livre enquanto joga a história
+var _voltar_historia := false
 
 
 const MUSICAS := [["res://audio/drops-garage.mp3", "Drops Garage"], ["res://audio/mega_funk.mp3", "Set Mega Funk (Xhakinha)"]]
@@ -140,6 +168,8 @@ func _ready() -> void:
 			tutorial_feito = bool(salvo.get("tutorial", false))
 			dicas = salvo.get("dicas", {}) if salvo.get("dicas", {}) is Dictionary else {}
 			faixa = clampi(int(salvo.get("faixa", 0)), 0, MUSICAS.size() - 1)
+			if str(salvo.get("modo", "livre")) == "historia" and not OS.has_environment("DROPS_TESTE") and not OS.has_environment("DROPS_LIVRE"):
+				_voltar_historia = true   # fechou o jogo no modo história: volta nele
 	if OS.has_environment("DROPS_VISUAL"):   # testes: visual do protagonista em JSON
 		visual = JSON.parse_string(OS.get_environment("DROPS_VISUAL"))
 	if OS.has_environment("DROPS_PERSONAGEM"):
@@ -148,6 +178,8 @@ func _ready() -> void:
 		for i in carros.size():
 			if carros[i]["id"] == OS.get_environment("DROPS_CARRO"):
 				idx = i
+	if _voltar_historia:
+		entrar_historia()
 	_carregar_faixa()
 
 
@@ -270,9 +302,108 @@ func original() -> void:
 
 
 func salvar() -> void:
+	# o arquivo de sempre guarda o MODO LIVRE (no modo história, o que estava guardado em _livre)
+	var lv := _livre if modo == "historia" else {"idx": idx, "configs": configs, "dinheiro": dinheiro}
 	var f := FileAccess.open(ARQUIVO, FileAccess.WRITE)
 	if f:
-		f.store_string(JSON.stringify({"v31": true, "v43": true, "v44": true, "visual": visual, "idx": idx, "carro": carros[idx]["id"], "personagem": personagem, "configs": configs, "dinheiro": dinheiro, "recordes": recordes, "volume_musica": volume_musica, "faixa": faixa, "graficos": graficos, "tutorial": tutorial_feito, "dicas": dicas}))
+		f.store_string(JSON.stringify({"v31": true, "v43": true, "v44": true, "visual": visual, "idx": lv["idx"], "carro": carros[lv["idx"]]["id"], "personagem": personagem, "configs": lv["configs"], "dinheiro": lv["dinheiro"], "recordes": recordes, "volume_musica": volume_musica, "faixa": faixa, "graficos": graficos, "tutorial": tutorial_feito, "dicas": dicas, "modo": modo}))
+	if modo == "historia":
+		var h := FileAccess.open(ARQUIVO_HISTORIA, FileAccess.WRITE)
+		if h:
+			h.store_string(JSON.stringify({"idx": idx, "carro": carros[idx]["id"], "configs": configs, "dinheiro": dinheiro, "historia": historia}))
+
+
+# ---------------------------------------------------------------- modo história
+func entrar_historia() -> void:
+	if modo == "historia":
+		return
+	_livre = {"idx": idx, "configs": configs.duplicate(true), "dinheiro": dinheiro}
+	modo = "historia"
+	configs = {}
+	dinheiro = HISTORIA_DINHEIRO_INICIAL
+	historia = {"etapa": "abertura", "garagem": [], "nivel": 1, "xp": 0}
+	if FileAccess.file_exists(ARQUIVO_HISTORIA):
+		var s = JSON.parse_string(FileAccess.get_file_as_string(ARQUIVO_HISTORIA))
+		if s is Dictionary:
+			configs = s.get("configs", {}) if s.get("configs", {}) is Dictionary else {}
+			dinheiro = int(s.get("dinheiro", dinheiro))
+			if s.get("historia", {}) is Dictionary:
+				historia.merge(s["historia"], true)
+			_ir_para(str(s.get("carro", "")))
+	if not tem_carro(carros[idx]["id"]) and not (historia["garagem"] as Array).is_empty():
+		_ir_para(str(historia["garagem"][0]))
+	salvar()
+
+
+func sair_historia() -> void:
+	if modo != "historia":
+		return
+	salvar()
+	modo = "livre"
+	idx = int(_livre.get("idx", idx))
+	configs = _livre.get("configs", {})
+	dinheiro = int(_livre.get("dinheiro", 1000000))
+	_livre = {}
+	salvar()
+
+
+## começa a história do zero (apaga o progresso da história; o modo livre não muda)
+func zerar_historia() -> void:
+	configs = {}
+	dinheiro = HISTORIA_DINHEIRO_INICIAL
+	historia = {"etapa": "abertura", "garagem": [], "nivel": 1, "xp": 0}
+	salvar()
+
+
+func tem_carro(id: String) -> bool:
+	return modo != "historia" or (historia.get("garagem", []) as Array).has(id)
+
+
+## carros que aparecem na loja do Drops (por enquanto: os 5 do começo)
+func a_venda() -> Array:
+	var out := []
+	for i in carros.size():
+		if carros[i].get("inicial", false):
+			out.append(i)
+	return out
+
+
+func comprar(i: int) -> bool:
+	var preco := int(carros[i].get("preco", 0))
+	if modo != "historia" or dinheiro < preco or tem_carro(carros[i]["id"]):
+		return false
+	dinheiro -= preco
+	(historia["garagem"] as Array).append(carros[i]["id"])
+	idx = i
+	if historia.get("etapa", "") == "abertura":
+		historia["etapa"] = "primeiro_carro"
+	salvar()
+	return true
+
+
+## índices dos carros que dá pra escolher agora (história: só os seus)
+func escolhiveis() -> Array:
+	var out := []
+	for i in carros.size():
+		if tem_carro(carros[i]["id"]):
+			out.append(i)
+	return out
+
+
+## troca pro próximo carro (passo 1) ou o anterior (-1); no modo história só passa pelos seus
+func proximo_carro(passo := 1) -> void:
+	var lista := escolhiveis()
+	if lista.is_empty():
+		return
+	var k := lista.find(idx)
+	idx = lista[posmod((k if k >= 0 else 0) + (passo if k >= 0 else 0), lista.size())]
+	salvar()
+
+
+func _ir_para(id: String) -> void:
+	for i in carros.size():
+		if carros[i]["id"] == id:
+			idx = i
 
 
 func ganhar(valor: int) -> void:
