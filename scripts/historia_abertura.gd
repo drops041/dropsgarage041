@@ -9,7 +9,7 @@ const VISUAL_DROPS := {"cima": "camiseta", "cor_cima": "#ffd400", "baixo": "calc
 	"cor_tenis": "#18181b", "cabelo": "raspado", "barba": true, "cor_cabelo": "preto", "pele": "media"}
 const T_PINTA := 6.5        # segundos pintando a logo
 const T_VIRA := 1.1         # segundos virando pra frente
-const FALA := "E aí, beleza? Eu sou o Drops, dono da Drops Car.\nPra começar, escolhe teu primeiro carro. Tá baratinho, é pra reformar!"
+const FALA := "Olá, sou o Drops! Bora fazer parte desse sonho?\nVocê ganhou R$ 20 mil: compre seu primeiro carro e customize sua imaginação!"
 
 var cam: Camera3D
 var drops: Node3D           # modelo do Drops (com AnimationPlayer)
