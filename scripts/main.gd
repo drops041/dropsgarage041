@@ -253,6 +253,7 @@ func aplicar_graficos() -> void:
 		vp.scaling_3d_scale = 1.0
 		vp.msaa_3d = Viewport.MSAA_2X
 		vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA
+	Dados.ajustar_msaa(vp)
 	if sol_luz:
 		sol_luz.shadow_enabled = alto    # só carro, gente e árvore fazem sombra (a cidade não), até 45 m
 	CarroVisual.lod_extra = 2.5 if alto else 1.0
@@ -2705,15 +2706,15 @@ func _teste17() -> void:
 		2:
 			descer()
 		3:
-			pessoa.global_position = mapa.drops_ponto(Historia.DRAFAEL_LOCAL + Vector3(1.3, 0.1, 0.9))
+			pessoa.global_position = historia.drafael.global_position + mapa.drops_xf.basis * Vector3(0.6, 0.1, 1.4)
 			log.call("perto do Drafael")
 		4:
 			log.call("acao=" + historia._acao)
 			if _cam_t == null:
 				_cam_t = Camera3D.new(); _cam_t.far = 300.0; _cam_t.fov = 60.0; add_child(_cam_t)
 			_cam_t.current = true
-			_cam_t.global_position = mapa.drops_ponto(Historia.DRAFAEL_LOCAL + Vector3(2.6, 1.7, 3.2))
-			_cam_t.look_at(mapa.drops_ponto(Historia.DRAFAEL_LOCAL + Vector3(0, 1.1, 0)))
+			_cam_t.global_position = mapa.drops_ponto(Vector3(-3.5, 1.6, 3.5))   # de dentro do portão, olhando pra rua
+			_cam_t.look_at(historia.drafael.global_position + Vector3.UP * 1.1)
 		5:
 			foto.call("1_drafael")
 			_cam_t.current = false

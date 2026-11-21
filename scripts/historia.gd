@@ -10,9 +10,11 @@ const AMARELO := Color("ffd400")
 ## o Drafael: camisa branca, calça preta, careca de barba
 const VISUAL_DRAFAEL := {"cima": "camiseta", "cor_cima": "#ececea", "baixo": "calca", "cor_baixo": "#18181b",
 	"cor_tenis": "#18181b", "cabelo": "careca", "barba": true, "cor_cabelo": "preto", "pele": "morena"}
-## onde o Drafael espera, na entrada da oficina (coordenadas da Drops) e pra onde ele olha
-const DRAFAEL_LOCAL := Vector3(0.7, 0.0, 14.4)    # no salão da oficina, na boca do corredor
-const G3_LOCAL := Vector3(3.0, 0.6, 18.2)         # onde a G3 aparece quando você aceita (o mesmo lugar onde o carro sai)
+## (21/11) o Drafael espera LÁ FORA, na calçada em frente ao portão, com a G3 estacionada atrás dele
+## (coordenadas da Drops: x pra esquerda de quem olha da rua, z pra dentro do lote; o portão fica em z = 0)
+const DRAFAEL_LOCAL := Vector3(1.0, 0.0, -2.3)    # na calçada, olhando pro portão
+const G3_LOCAL := Vector3(2.4, 0.6, -5.8)         # a G3 parada na rua, de frente pro portão
+const CHAMAR_CADA := 25.0                         # de quanto em quanto tempo ele chama (s)
 const COR_PEDIDA := ["Vermelho", "#b5121b"]
 const XP_SERVICO := 100
 
@@ -37,6 +39,8 @@ var _pc_conteudo: VBoxContainer
 var _avisou_pc := false
 var aba_ficha: Button          # setinha na lateral que abre/fecha a ficha do serviço
 var _ficha_aberta := false
+var g3_parada: CarroVisual     # a G3 do Drafael parada na rua (só enfeite, até você aceitar)
+var _chamou := -100.0
 ## o PC da oficina: mesinha encostada na parede da cabine, perto da porta (coordenadas da Drops)
 const PC_LOCAL := Vector3(0.05, 0.0, 25.3)
 
@@ -131,15 +135,26 @@ func _atualizar_mundo() -> void:
 	elif not esperando and drafael:
 		drafael.queue_free()
 		drafael = null
+	if not esperando and g3_parada:
+		g3_parada.queue_free()
+		g3_parada = null
 
 
 func _criar_drafael() -> void:
 	drafael = Pessoa.criar("res://modelos/personagens/protagonista.glb", 1.80)
 	add_child(drafael)
 	Pessoa.vestir(drafael, VISUAL_DRAFAEL)
-	drafael.global_position = m.mapa.drops_ponto(DRAFAEL_LOCAL)
-	var olha: Vector3 = m.mapa.drops_ponto(G3_LOCAL) - drafael.global_position   # olhando pro meio da oficina
+	drafael.global_position = _no_chao(DRAFAEL_LOCAL, 0.0)
+	var olha: Vector3 = m.mapa.drops_ponto(Vector3(2.3, 0, 3.0)) - drafael.global_position   # olhando pro portão
 	drafael.rotation.y = atan2(olha.x, olha.z)
+	# a G3 velha estacionada atrás dele, de frente pro portão
+	var i := Dados.indice_de("saveirog3")
+	if i >= 0:
+		g3_parada = CarroVisual.new()
+		add_child(g3_parada)
+		g3_parada.montar(Dados.carros[i], Dados.cfg(i))
+		g3_parada.global_position = _no_chao(G3_LOCAL, 0.0)
+		g3_parada.rotation.y = _giro_pro_portao()
 	_anim = drafael.find_child("AnimationPlayer", true, false) as AnimationPlayer
 	if _anim:
 		for n in ["drops/Idle", "drops/parado"]:
@@ -156,6 +171,35 @@ func _criar_drafael() -> void:
 	nome.no_depth_test = true
 	nome.position = Vector3(0, 2.15, 0)
 	drafael.add_child(nome)
+
+
+## ponto da Drops no chão de verdade (a rua fica mais baixa que o lote)
+func _no_chao(local: Vector3, acima: float) -> Vector3:
+	var p: Vector3 = m.mapa.drops_ponto(Vector3(local.x, 0, local.z))
+	return m.mapa.no_chao(p, acima)
+
+
+## giro de quem está na rua olhando pro portão
+func _giro_pro_portao() -> float:
+	var dentro: Vector3 = m.mapa.drops_xf.basis * Vector3(0, 0, 1)
+	return atan2(dentro.x, dentro.z)
+
+
+## enquanto você não vai lá fora, ele chama de tempos em tempos
+func _chamar() -> void:
+	if drafael == null or dialogo.visible:
+		return
+	var voce: Vector3 = m.pessoa.global_position if m.pe and m.pessoa else (m.carro.global_position if m.carro else Vector3.ZERO)
+	var dist := voce.distance_to(drafael.global_position)
+	var agora := Time.get_ticks_msec() / 1000.0
+	if dist < 9.0:
+		if not m.pe and agora - _chamou > 8.0:
+			_chamou = agora
+			m.toast("Desce do carro pra falar com o Drafael", 3.0)
+		return
+	if agora - _chamou > CHAMAR_CADA:
+		_chamou = agora
+		m.toast("Drafael (lá fora, no portão): \"Ô parceiro! Chega aqui fora!\"", 4.0)
 
 
 # ---------------------------------------------------------------- tela
@@ -305,10 +349,13 @@ func _aceitar(p: Dictionary = {}) -> void:
 	Dados.idx = Dados.indice_de(str(p["carro"]))
 	Dados.salvar()
 	# a G3 aparece na entrada da oficina; o seu carro fica guardado (volta quando você entregar a G3)
-	var saida: Vector3 = m.mapa.drops_xf.basis * Vector3(0, 0, -1)   # de frente pra saída, como o carro começa
+	# a G3 que estava parada na rua vira o carro do serviço: entra nela e leva pra dentro da oficina
+	if g3_parada:
+		g3_parada.queue_free()
+		g3_parada = null
 	if m.pe:
-		m._criar_carro(m.mapa.drops_ponto(G3_LOCAL), atan2(saida.x, saida.z))
-	m.toast("+" + Dados.reais(p["pago"]) + "  ·  O carro do Drafael é teu até entregar!", 3.0)
+		m._criar_carro(_no_chao(G3_LOCAL, 0.6), _giro_pro_portao())
+	m.toast("+" + Dados.reais(p["pago"]) + "  ·  Entra na G3 e leva ela pra dentro da oficina!", 4.0)
 	_atualizar_mundo()
 
 
@@ -348,6 +395,7 @@ func _process(dt: float) -> void:
 	_atualizar_mundo()
 	_atualizar_ficha()
 	_atualizar_botao()
+	_chamar()
 	_cobrar_pintura_na_saida()
 	if str(Dados.historia.get("etapa", "")) == "volta_oficina" and not _avisou_pc and m.oficina and m.carro \
 			and m.oficina.dentro(m.pessoa.global_position if m.pe and m.pessoa else m.carro.global_position):

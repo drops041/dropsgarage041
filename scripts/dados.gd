@@ -152,6 +152,9 @@ func tocar_musica(sim: bool) -> void:
 
 
 func _ready() -> void:
+	ajustar_msaa(get_tree().root)
+	if placa_sem_msaa():
+		print("placa ", RenderingServer.get_video_adapter_name(), ": sem MSAA (evita quadrados pretos)")
 	# símbolos (♫ ▲ ▼ ◎) também no navegador/celular: fonte reserva com esses desenhos
 	var reserva := load("res://fontes/DejaVuSans.ttf") as Font
 	var base := ThemeDB.fallback_font
@@ -274,6 +277,23 @@ static func leve() -> bool:
 
 
 ## gráfico caprichado (padrão a partir da v33, inclusive no celular): dá pra voltar pro leve no painel da música
+## (21/11) placas AMD Polaris (RX 460-590, ex.: RX 580) desenham QUADRADOS PRETOS no Forward+ quando o
+## antisserrilhado MSAA está ligado junto com o SSAO (sombra de contato do cenário). Nelas o jogo usa FXAA.
+static func placa_sem_msaa() -> bool:
+	if OS.has_environment("DROPS_SEM_MSAA"):
+		return true
+	var nome := RenderingServer.get_video_adapter_name().to_lower()
+	var re := RegEx.create_from_string("rx\\s*(4[5-9]0|5[4-9]0)\\b|polaris|rx\\s*vega|radeon\\s*\\(tm\\)\\s*rx\\s*(4|5)\\d0")
+	return re.search(nome) != null
+
+
+## põe o antisserrilhado certo pra placa (chamado no começo e quando muda o gráfico)
+static func ajustar_msaa(vp: Viewport) -> void:
+	if placa_sem_msaa():
+		vp.msaa_3d = Viewport.MSAA_DISABLED
+		vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA
+
+
 static func grafico_alto() -> bool:
 	if OS.has_feature("web") or OS.has_environment("DROPS_LEVE"):
 		return false

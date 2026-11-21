@@ -56,17 +56,18 @@ func _ready() -> void:
 	add_child(cam)
 	cam.current = true
 	_camera(0.0)
+	# (21/11) a parte do Drops pintando a logo agora é o vídeo: depois dele já abre a loja do primeiro carro
 	if ResourceLoader.exists(VIDEO) and not OS.has_environment("DROPS_SEM_VIDEO"):
 		_video()
-	elif not OS.has_environment("DROPS_TESTE"):
-		Dados.tocar_musica(true)
+	else:
+		_ir_pra_loja()
 	if OS.has_environment("DROPS_TESTE_NOVO"):
 		print("novo: abertura aberta, dinheiro=", Dados.dinheiro, " garagem=", Dados.historia.get("garagem"), " etapa=", Dados.historia.get("etapa"))
 		get_tree().quit()
 
 
 # ---------------------------------------------------------------- cenário
-## vídeo de abertura em tela cheia; quando acaba (ou PULAR), o preto clareia e começa o Drops pintando
+## vídeo de abertura em tela cheia; quando acaba (ou PULAR), o preto clareia e abre a loja do primeiro carro
 func _video() -> void:
 	var camada := CanvasLayer.new()
 	camada.layer = 10
@@ -83,7 +84,7 @@ func _video() -> void:
 	video.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	video.finished.connect(_fim_video)
 	camada.add_child(video)
-	# PULAR por cima do vídeo (pula só o vídeo; o segundo PULAR pula pra loja)
+	# PULAR por cima do vídeo: vai direto pra loja
 	var pular := _botao("PULAR ›", false, 18)
 	pular.name = "pular_video"
 	pular.pressed.connect(_fim_video)
@@ -101,9 +102,16 @@ func _fim_video() -> void:
 	video.get_parent().get_node("pular_video").queue_free()
 	video.queue_free()
 	video = null
-	fase = "pinta"
-	t = 0.0
 	_fade = T_FADE
+	_ir_pra_loja()
+
+
+## logo já pintada na parede, o Drops do lado do carro falando, painel de compra aberto
+func _ir_pra_loja() -> void:
+	logo_mat.set_shader_parameter("revela", 1.0)
+	_abrir_loja()
+	cam.h_offset = 1.5
+	_camera(0.0)
 	if not OS.has_environment("DROPS_TESTE"):
 		Dados.tocar_musica(true)
 
@@ -164,6 +172,10 @@ func _sala() -> void:
 	env.adjustment_enabled = true
 	env.adjustment_contrast = 1.08
 	env.adjustment_saturation = 1.15
+	if not Dados.grafico_alto():
+		env.ssr_enabled = false
+		env.ssao_enabled = false
+		env.glow_enabled = false
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
@@ -208,7 +220,7 @@ func _sala() -> void:
 	sp.spot_angle = 40.0
 	sp.spot_attenuation = 0.6
 	sp.light_energy = 2.3
-	sp.shadow_enabled = true
+	sp.shadow_enabled = Dados.grafico_alto()
 	sp.shadow_blur = 1.5
 	add_child(sp)
 	var topo := SpotLight3D.new()
@@ -219,13 +231,13 @@ func _sala() -> void:
 	topo.light_energy = 5.0
 	topo.light_size = 0.6
 	topo.light_specular = 0.35
-	topo.shadow_enabled = true
+	topo.shadow_enabled = Dados.grafico_alto()
 	topo.shadow_blur = 2.0
 	add_child(topo)
 	var sol := DirectionalLight3D.new()
 	sol.rotation_degrees = Vector3(-50, 30, 0)
 	sol.light_energy = 0.35
-	sol.shadow_enabled = true
+	sol.shadow_enabled = Dados.grafico_alto()
 	add_child(sol)
 	var o := OmniLight3D.new()
 	o.position = Vector3(1.5, 2.6, 6.0)

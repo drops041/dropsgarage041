@@ -21,6 +21,14 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
   carros e o seu dinheiro (mexer no carro vai ser na oficina, pagando as peças: próximas etapas).
   O MODO LIVRE continua igual, tudo liberado (botão MODO LIVRE volta pra ele). Progresso salvo separado.
   Preços de todos os carros no carros.json ("preco"); "Áudio 6 Perua" agora é só "Perua".
+- (21/11) Abertura: depois do vídeo já abre a loja do primeiro carro (a parte do Drops pintando saiu: está no vídeo).
+- (21/11) O DRAFAEL agora espera LÁ FORA, na calçada em frente ao portão, com a G3 parada na rua atrás dele.
+  Ele chama de tempos em tempos ("Ô parceiro! Chega aqui fora!"); você vai a pé até ele e conversa.
+  Aceitando, a G3 vira o seu carro do serviço ali na rua: é só entrar e levar pra dentro da oficina.
+  Posições em scripts/historia.gd (DRAFAEL_LOCAL e G3_LOCAL, coordenadas da Drops).
+- (21/11) QUADRADOS PRETOS na AMD RX 580 (e outras Polaris: RX 460-590): é o MSAA junto com o SSAO no Forward+.
+  O jogo detecta a placa e troca o MSAA pelo FXAA sozinho (Dados.placa_sem_msaa). Gráfico LEVE na abertura
+  também desliga reflexo, SSAO, brilho e sombras.
 - ABERTURA COM VÍDEO: a história começa com os 7 primeiros segundos do vídeo (videos/abertura_historia.ogv,
   fecha em preto); o preto clareia e entra o Drops pintando a logo. PULAR no vídeo pula só o vídeo.
   Pra trocar o vídeo: ffmpeg -i video.mp4 -t 7 -c:v libtheora -q:v 7 -c:a libvorbis videos/abertura_historia.ogv
