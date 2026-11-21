@@ -35,6 +35,8 @@ var pc_painel: PanelContainer
 var _pc_aba := "motor"
 var _pc_conteudo: VBoxContainer
 var _avisou_pc := false
+var aba_ficha: Button          # setinha na lateral que abre/fecha a ficha do serviço
+var _ficha_aberta := false
 ## o PC da oficina: mesinha encostada na parede da cabine, perto da porta (coordenadas da Drops)
 const PC_LOCAL := Vector3(0.05, 0.0, 25.3)
 
@@ -192,6 +194,23 @@ func _ui() -> void:
 	ficha.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ficha.visible = false
 	camada.add_child(ficha)
+	# a ficha fica escondida: uma setinha na lateral esquerda abre e fecha
+	aba_ficha = Button.new()
+	aba_ficha.focus_mode = Control.FOCUS_NONE
+	aba_ficha.add_theme_font_size_override("font_size", 17)
+	var ea: StyleBoxFlat = m._estilo(Color(0.04, 0.04, 0.06, 0.85), AMARELO)
+	ea.corner_radius_top_left = 0
+	ea.corner_radius_bottom_left = 0
+	for e in ["normal", "hover", "pressed"]:
+		aba_ficha.add_theme_stylebox_override(e, ea)
+	for c in ["font_color", "font_hover_color", "font_pressed_color"]:
+		aba_ficha.add_theme_color_override(c, AMARELO)
+	aba_ficha.custom_minimum_size = Vector2(0, 52)
+	aba_ficha.visible = false
+	aba_ficha.pressed.connect(func():
+		_ficha_aberta = not _ficha_aberta
+		_atualizar_ficha())
+	camada.add_child(aba_ficha)
 	ficha_l = RichTextLabel.new()
 	ficha_l.bbcode_enabled = true
 	ficha_l.fit_content = true
@@ -234,7 +253,9 @@ func _posicionar() -> void:
 	var t := get_viewport().get_visible_rect().size
 	botao.size = Vector2(320, 60)
 	botao.position = Vector2((t.x - botao.size.x) / 2.0, t.y - 210)
-	ficha.position = Vector2(14, 196)   # embaixo do mapa e do botão da suspensão (o meio do topo é dos avisos)
+	# setinha colada na borda esquerda, no meio da altura; a ficha abre do lado dela
+	aba_ficha.position = Vector2(0, t.y * 0.55)   # embaixo do botão da suspensão, em cima do joystick
+	ficha.position = Vector2(aba_ficha.position.x + 150, t.y * 0.30)
 	dialogo.size = Vector2(minf(t.x - 80, 760), 0)
 	dialogo.position = Vector2((t.x - dialogo.size.x) / 2.0, t.y * 0.5 - 130)
 
@@ -292,6 +313,10 @@ func _aceitar(p: Dictionary = {}) -> void:
 
 
 func _entregar() -> void:
+	var pend := custo_pintura_anotada()
+	if pend > 0:
+		Dados.dinheiro -= pend
+		Dados.historia.erase("pintura")
 	var sv := servico()
 	var lucro := int(sv.get("pago", 0)) - int(sv.get("custo", 0))
 	sv["estado"] = "entregue"
@@ -323,6 +348,7 @@ func _process(dt: float) -> void:
 	_atualizar_mundo()
 	_atualizar_ficha()
 	_atualizar_botao()
+	_cobrar_pintura_na_saida()
 	if str(Dados.historia.get("etapa", "")) == "volta_oficina" and not _avisou_pc and m.oficina and m.carro \
 			and m.oficina.dentro(m.pessoa.global_position if m.pe and m.pessoa else m.carro.global_position):
 		_avisou_pc = true
@@ -333,6 +359,7 @@ func _atualizar_ficha() -> void:
 	var sv := servico()
 	if str(sv.get("estado", "")) not in ["fazendo", "pronto"]:
 		ficha.visible = false
+		aba_ficha.visible = false
 		return
 	var f := feitos()
 	var tudo := not f.is_empty() and not f.has(false)
@@ -351,7 +378,14 @@ func _atualizar_ficha() -> void:
 	elif sv["estado"] == "fazendo":
 		txt += "\n[color=#9aa0aa]Rodas e suspensão: PC da oficina · pintura e lavagem: cabine[/color]"
 	ficha_l.text = txt
-	ficha.visible = true
+	var n_ok := 0
+	for x in f:
+		if x:
+			n_ok += 1
+	aba_ficha.text = ("◀ " if _ficha_aberta else "▶ ") + "SERVIÇO %d/%d" % [n_ok, f.size()]
+	aba_ficha.visible = true
+	ficha.visible = _ficha_aberta
+	ficha.position.x = aba_ficha.position.x + aba_ficha.size.x + 8
 
 
 func _atualizar_botao() -> void:
@@ -681,3 +715,52 @@ func _aba_clandestina() -> void:
 		pc_painel.visible = false
 		m.toast("CLANDESTINA MARCADA: Av. Juscelino (siga a seta vermelha)", 3.5))
 	_pc_conteudo.add_child(b)
+
+
+# ---------------------------------------------------------------- pintura: cobra uma vez, na saída da oficina
+var _carro_dentro := true
+
+## custo da pintura anotada pro carro atual: carro todo = preço cheio; só peças = 20% cada (no máximo o cheio)
+func custo_pintura_anotada() -> int:
+	var pt: Dictionary = Dados.historia.get("pintura", {})
+	if str(pt.get("carro", "")) != str(Dados.carro()["id"]):
+		return 0
+	var cheio := Dados.custo_pintura(Dados.carro())
+	if pt.get("todo", false):
+		return cheio
+	var por_peca := int(round(cheio * Dados.PINTURA_PECA_FRACAO / 100.0) * 100)
+	return mini(cheio, por_peca * (pt.get("pecas", []) as Array).size())
+
+
+## anota uma demão (peca "" = carro todo). false = não tem dinheiro pra pagar na saída
+func anotar_pintura(peca: String) -> bool:
+	var cid := str(Dados.carro()["id"])
+	var antes: Dictionary = Dados.historia.get("pintura", {})
+	var pt := antes.duplicate(true) if str(antes.get("carro", "")) == cid else {"carro": cid, "todo": false, "pecas": []}
+	if peca == "":
+		pt["todo"] = true
+	elif not (pt["pecas"] as Array).has(peca):
+		(pt["pecas"] as Array).append(peca)
+	Dados.historia["pintura"] = pt
+	var custo := custo_pintura_anotada()
+	if Dados.dinheiro < custo:
+		Dados.historia["pintura"] = antes
+		m.toast("SEM DINHEIRO: essa pintura sai " + Dados.reais(custo), 2.2)
+		return false
+	Dados.salvar()
+	m.toast("Tinta: " + Dados.reais(custo) + " · cobra UMA vez quando o carro sair da oficina", 2.6)
+	return true
+
+
+func _cobrar_pintura_na_saida() -> void:
+	if m.oficina == null or m.carro == null:
+		return
+	var dentro: bool = m.oficina.dentro(m.carro.global_position)
+	if _carro_dentro and not dentro and not m.pe:
+		var custo := custo_pintura_anotada()
+		if custo > 0:
+			Dados.dinheiro -= custo
+			Dados.historia.erase("pintura")
+			Dados.salvar()
+			m.toast("PINTURA COBRADA: " + Dados.reais(custo), 2.6)
+	_carro_dentro = dentro

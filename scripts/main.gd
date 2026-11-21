@@ -1172,8 +1172,9 @@ func _desgaste_rodando(dt: float) -> void:
 	var dv := _vel_ant - v
 	_vel_ant = v
 	_t_batida = maxf(0.0, _t_batida - dt)
+	dv.y = 0.0   # (21/11) lombada, meio-fio e pulo não contam como batida: só o tranco pro lado/pra frente
 	var choque := dv.length()
-	if choque > 4.0 and _t_batida <= 0.0:
+	if choque > 7.5 and _t_batida <= 0.0:   # antes 4 m/s (~15 km/h): qualquer tranco amassava
 		_t_batida = 0.6
 		var loc: Vector3 = carro.global_basis.inverse() * dv.normalized()   # pra onde a batida empurrou (no carro)
 		var peca := "carro"
@@ -1184,7 +1185,10 @@ func _desgaste_rodando(dt: float) -> void:
 		else:
 			var lado := "L" if loc.x > 0.0 else "R"
 			peca = "PF" + lado
-		_amassar(peca, clampf((choque - 4.0) * 0.06, 0.04, 0.35))
+		var quanto := clampf((choque - 7.5) * 0.045, 0.03, 0.28)
+		if not visual.pecas.has(peca):
+			quanto *= 0.45   # carro sem peças separadas (G3...): a batida ia pro carro inteiro; amassa bem menos
+		_amassar(peca, quanto)
 	_rodado += v.length() * dt
 	if _rodado > 500.0:   # a cada meio quilômetro
 		_rodado = 0.0

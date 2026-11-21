@@ -47,7 +47,8 @@ float fbm(vec3 p) {
 
 // amassado: "buracos" suaves espalhados (0 = liso, 1 = fundo do amassado)
 float campo_amassado(vec3 p) {
-	return smoothstep(0.46, 0.68, fbm(p * 1.9 + semente * 3.7));
+	// (21/11) menos manchas e mais espalhadas: antes parecia a lataria toda enrugada
+	return smoothstep(0.55, 0.74, fbm(p * 1.35 + semente * 3.7));
 }
 
 void vertex() {

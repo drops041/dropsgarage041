@@ -1121,13 +1121,11 @@ func _mudar(chave: String, valor) -> void:
 	if (chave in ["cor", "cor2", "acabamento"] or chave.begins_with("peca:")) and m.pessoa and Pessoa.e_ual(m.pessoa.modelo) and not _pintando_ja:
 		if m.pessoa.ocupado():
 			return
-		# (modo história) tinta: carro todo = preço cheio (pelo tamanho do carro), uma peça = 20%
-		var custo_t := Dados.custo_pintura(m.dados)
-		if chave.begins_with("peca:") or (_alvo_pintura != "" and chave == "cor"):
-			custo_t = int(round(custo_t * Dados.PINTURA_PECA_FRACAO / 100.0) * 100)
-		if not Dados.pagar(custo_t):
-			m.toast("SEM DINHEIRO: a tinta custa " + Dados.reais(custo_t), 2.0)
-			return
+		# (modo história) a tinta é cobrada UMA vez, quando o carro sai da oficina (dá pra testar cores à vontade)
+		if Dados.modo == "historia" and m.historia:
+			var peca_p := chave.substr(5) if chave.begins_with("peca:") else ("" if _alvo_pintura == "" or chave != "cor" else _alvo_pintura)
+			if not m.historia.anotar_pintura(peca_p):
+				return
 		var cor_tinta := Color(str(valor)) if str(valor).begins_with("#") else Color(str(Dados.cfg().get("cor", "#ffffff")))
 		var alvo := chave.substr(5) if chave.begins_with("peca:") else ("carro" if _alvo_pintura == "" else _alvo_pintura)
 		var posto := _posto_de_trabalho(alvo if m.visual.pecas.has(alvo) else "carro")

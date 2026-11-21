@@ -39,6 +39,10 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
     arrancada de 500 m seguindo a avenida (a rua fica sem trânsito na hora). Ganhou: prêmio + 50 XP.
     Perdeu: TENTAR DE NOVO quantas vezes quiser. 1ª fácil (R$ 1 mil), 2ª precisa do estágio 1 (R$ 2 mil),
     3ª do estágio 2 (R$ 4 mil), 4ª do estágio 3 (R$ 8 mil). Tempos medidos no teste 18.
+- FICHA DO SERVIÇO escondida: setinha "▶ SERVIÇO 2/4" na lateral esquerda abre e fecha.
+- PINTURA no modo história: cobra UMA vez só, quando o carro sai da oficina (dá pra testar as cores à vontade).
+- AMASSADO: lombada e meio-fio não amassam mais; só batida forte (~27 km/h pra cima), e carro sem peças
+  separadas (G3) amassa bem menos. O desenho do amassado ficou com menos manchas (parecia todo enrugado).
 - CONSERTO: trocar de carro (tecla C, botão CARRO) fazia a cidade parar de carregar em volta de você.
 - A concessionária agora é a DRAFAEL MOTORS (dono: Drafael), com o letreiro novo na fachada, no totem e no balcão.
 - Lógico virou WOLVERINE, com a roda de trás no lugar (estava 10 cm pra trás).
