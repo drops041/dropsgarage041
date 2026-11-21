@@ -72,16 +72,19 @@ func _sala() -> void:
 	env.adjustment_contrast = 1.06
 	env.adjustment_saturation = 1.1
 	# (visual 2) estúdio: o HDR de softboxes reflete na lataria (verniz) — é ele que dá o brilho de showroom
-	if ResourceLoader.exists("res://imagens/estudio/estudio.hdr"):
+	# HDRI de oficina de verdade (Poly Haven, imagens/hdri/oficina.hdr); sem ele, o estúdio antigo
+	var hdr := "res://imagens/hdri/oficina.hdr" if ResourceLoader.exists("res://imagens/hdri/oficina.hdr") else "res://imagens/estudio/estudio.hdr"
+	if ResourceLoader.exists(hdr):
 		var ps := PanoramaSkyMaterial.new()
-		ps.panorama = load("res://imagens/estudio/estudio.hdr")
+		ps.panorama = load(hdr)
+		ps.energy_multiplier = 0.55 if hdr.contains("oficina") else 1.0
 		var sk := Sky.new()
 		sk.sky_material = ps
 		sk.radiance_size = Sky.RADIANCE_SIZE_512
 		env.sky = sk
 		env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 		env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-		env.ambient_light_sky_contribution = 0.55   # parte da luz ambiente vem do estúdio (a lateral não fica cinza)
+		env.ambient_light_sky_contribution = 0.3 if hdr.contains("oficina") else 0.55   # parte da luz ambiente vem do estúdio (a lateral não fica cinza)
 		env.ambient_light_energy = 0.8
 	var we := WorldEnvironment.new()
 	we.environment = env

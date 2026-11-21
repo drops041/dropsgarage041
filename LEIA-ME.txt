@@ -25,6 +25,14 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
   fecha em preto); o preto clareia e entra o Drops pintando a logo. PULAR no vídeo pula só o vídeo.
   Pra trocar o vídeo: ffmpeg -i video.mp4 -t 7 -c:v libtheora -q:v 7 -c:a libvorbis videos/abertura_historia.ogv
 - Drops mais magro (braços, ombros e tronco): ferramentas/afinar_personagem.py (opção --forca).
+- GRÁFICO: texturas de verdade (Poly Haven, CC0) na pasta texturas/ — chão de cimento da oficina (garage_floor)
+  e cimento pintado (painted_concrete_02) nas paredes da garagem, do galpão do encontro e no piso da abertura.
+  Helper: scripts/texturas.gd (Texturas.material("nome", metros)). HDRIs em imagens/hdri/ (oficina.hdr = reflexo
+  da garagem; estacionamento.hdr guardado pro próximo passo). Abertura com showroom novo (piso encerado com
+  reflexo, LEDs no teto e nas paredes, refletor no carro).
+- HILUX NOVA (Toyota Hilux Revo 2021): importada com importar_carro.py + portas.py + juntar_malhas.py +
+  simplificar_glb.py (1,15 mi -> 630 mil triângulos). Abre a tampa da caçamba; as portas do modelo não vêm
+  separadas (só os adesivos), então elas não abrem.
 - MODO HISTÓRIA, 1º SERVIÇO: depois de comprar o primeiro carro, o DRAFAEL (dono da Drafael Motors) espera
   na oficina. FALAR COM O DRAFAEL: ele traz a G3 velha (lavar, lixar, desamassar, pintar de vermelho) e paga
   R$ 15.900 adiantado. Cada serviço da cabine desconta o material do seu bolso (lavar R$ 300, lixar R$ 800,
