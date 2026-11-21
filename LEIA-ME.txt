@@ -21,6 +21,7 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
   carros e o seu dinheiro (mexer no carro vai ser na oficina, pagando as peças: próximas etapas).
   O MODO LIVRE continua igual, tudo liberado (botão MODO LIVRE volta pra ele). Progresso salvo separado.
   Preços de todos os carros no carros.json ("preco"); "Áudio 6 Perua" agora é só "Perua".
+- A concessionária agora é a DRAFAEL MOTORS (dono: Drafael), com o letreiro novo na fachada, no totem e no balcão.
 - Lógico virou WOLVERINE, com a roda de trás no lugar (estava 10 cm pra trás).
 - BODY KIT desligado por enquanto (estava feio; volta quando tiver peças novas).
 - CONSERTOS (20/11): cavalete de peças se arruma sozinho (peça sobrando, peça fantasma na mão);

@@ -25,7 +25,7 @@ const ARQUIVO_HISTORIA := "user://historia.json"   # (modo história) carros, di
 ##   suspensão a ar R$ 5 mil · som R$ 8 mil
 ##   rodas: até aro 16 R$ 1 mil · aro 17 a 22 R$ 6 mil · aro 23 pra cima R$ 10 mil
 ##   pintura: R$ 8 mil (carro pequeno) até R$ 25 mil (carro grande)
-## O cliente (o Drops, dono da Drops Car) paga as peças x 1,5 na hora em que você aceita o serviço:
+## O cliente (o Drafael, dono da Drafael Motors) paga as peças x 1,5 na hora em que você aceita o serviço:
 ## você compra as peças e fica com o que sobra (o lucro).
 ## Começo: serviços baratos; vai aumentando aos poucos (nem lento nem rápido demais).
 ## O MODO LIVRE continua igual (tudo liberado, pra quem quer jogo rápido).

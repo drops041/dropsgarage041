@@ -1,7 +1,7 @@
 extends Node3D
-## MODO HISTÓRIA — abertura: o Drops (dono da Drops Car) de costas, pintando a logo na parede com a pistola.
+## MODO HISTÓRIA — abertura: o Drops (dono da Drops Garage) de costas, pintando a logo na parede com a pistola.
 ## Termina, vira pra frente, fala com você, e aparece a loja do primeiro carro (os 5 baratos do começo).
-## Os próximos carros você compra indo até a Drops Car, na cidade.
+## Os próximos carros você compra na Drafael Motors (loja do Drafael), na cidade.
 
 const AMARELO := Color("ffd400")
 ## o Drops: camiseta amarela da loja, calça jeans, cabelo raspado e barba
@@ -295,7 +295,7 @@ func _ui() -> void:
 	v.add_theme_constant_override("separation", 8)
 	painel.add_child(v)
 	var tit := Label.new()
-	tit.text = "DROPS CAR · SEU PRIMEIRO CARRO"
+	tit.text = "SEU PRIMEIRO CARRO"
 	tit.add_theme_font_size_override("font_size", 18)
 	tit.add_theme_color_override("font_color", AMARELO)
 	v.add_child(tit)

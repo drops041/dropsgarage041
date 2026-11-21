@@ -1,7 +1,7 @@
 class_name Concessionaria
 extends Node
-## (v37) Concessionária DROPS CAR, feita aqui no jogo (no lugar do modelo antigo, que vinha bugado e com
-## logos de montadoras). Prédio com fachada de vidro, letreiro DROPS CAR na faixa da fachada (letras
+## (v37) Concessionária DRAFAEL MOTORS (antes DROPS CAR; o dono é o Drafael), feita aqui no jogo (no lugar do modelo antigo, que vinha bugado e com
+## logos de montadoras). Prédio com fachada de vidro, letreiro DRAFAEL MOTORS na faixa da fachada (letras
 ## amarelas acesas), salão com piso claro brilhante e carros em exposição, pátio na frente com 2 carros.
 ## Coordenadas locais: origem no meio da frente do prédio; +Z = pátio/rua (0..7), o prédio vai de z 0 a -18.
 
@@ -123,15 +123,15 @@ func _predio() -> void:
 	_caixa(Vector3(0, 0.03, -0.05), Vector3(LARG, 0.06, 0.16), caixilho)
 	for s in [-1.0, 1.0]:
 		_caixa(Vector3(s * (porta / 2.0 + 0.04), (ALT - 1.0) / 2.0, -0.05), Vector3(0.08, ALT - 1.0, 0.16), caixilho)
-	# FAIXA DA FACHADA com o letreiro DROPS CAR (letras acesas presas na faixa, não soltas)
+	# FAIXA DA FACHADA com o letreiro DRAFAEL MOTORS (letras acesas presas na faixa, não soltas)
 	var faixa_y := ALT - 0.5
 	_caixa(Vector3(0, faixa_y, 0.1), Vector3(LARG + 0.6, 1.0, 0.5), grafite)
 	_caixa(Vector3(0, faixa_y - 0.52, 0.12), Vector3(LARG + 0.6, 0.06, 0.52), _mat("filete", AMARELO, 0.4, 0.0, 1.5))
-	var placa := _caixa(Vector3(0, faixa_y + 0.1, 0.37), Vector3(9.6, 1.5, 0.08), _mat("placa", Color(0.04, 0.04, 0.05), 0.3, 0.2))
+	var placa := _caixa(Vector3(0, faixa_y + 0.1, 0.37), Vector3(14.6, 1.5, 0.08), _mat("placa", Color(0.04, 0.04, 0.05), 0.3, 0.2))
 	placa.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var t := Label3D.new()
-	t.text = "DROPS CAR"
-	t.font_size = 220
+	t.text = "DRAFAEL MOTORS"
+	t.font_size = 190
 	t.outline_size = 0
 	t.pixel_size = 0.0072
 	t.modulate = AMARELO
@@ -153,8 +153,8 @@ func _predio() -> void:
 	# totem na esquerda do pátio
 	_caixa(Vector3(-hx - 0.8, 3.0, 6.0), Vector3(1.4, 6.0, 0.5), grafite, false, true)
 	var t2 := Label3D.new()
-	t2.text = "DROPS\nCAR"
-	t2.font_size = 120
+	t2.text = "DRAFAEL\nMOTORS"
+	t2.font_size = 64
 	t2.pixel_size = 0.005
 	t2.modulate = AMARELO
 	t2.shaded = false
@@ -166,8 +166,8 @@ func _predio() -> void:
 	_caixa(Vector3(0, 0.55, -FUNDO + 2.2), Vector3(5.0, 1.1, 0.8), grafite, true, true)
 	_caixa(Vector3(0, 1.13, -FUNDO + 2.2), Vector3(5.2, 0.06, 0.9), _mat("tampo", AMARELO, 0.4), true)
 	var t3 := Label3D.new()
-	t3.text = "DROPS CAR"
-	t3.font_size = 90
+	t3.text = "DRAFAEL MOTORS"
+	t3.font_size = 62
 	t3.pixel_size = 0.006
 	t3.modulate = Color(0.12, 0.12, 0.13)
 	t3.font = f

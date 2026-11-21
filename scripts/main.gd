@@ -365,7 +365,7 @@ func _predios() -> void:
 	# encontro: galpão aberto num terrenão de verdade, de frente pra rua
 	if mapa.tem("hangar"):
 		_galpao(mapa.xf("hangar"))
-	# (v37) concessionária DROPS CAR feita no próprio jogo (o modelo antigo vinha bugado e com logos de montadoras)
+	# (v37) concessionária DRAFAEL MOTORS (antes DROPS CAR) feita no próprio jogo (o modelo antigo vinha bugado e com logos de montadoras)
 	if mapa.tem("concessionaria"):
 		var cc := Concessionaria.new()
 		cc.name = "Concessionaria"
@@ -3275,7 +3275,7 @@ func _desenhar_mapa() -> void:
 	var pois := [[mapa.drops_ponto(Vector3(2.3, 0, 2)), AMARELO, "D", "Drops Garage"]]
 	if mapa.tem("hangar"): pois.append([mapa.xf("hangar").origin, Color("ff5cd6"), "E", "Encontro"])
 	if mapa.tem("posto"): pois.append([mapa.xf("posto").origin, Color("5cc8ff"), "P", "Posto"])
-	if mapa.tem("concessionaria"): pois.append([mapa.xf("concessionaria").origin, Color("ff9a3c"), "C", "Drops Car (concessionária)"])
+	if mapa.tem("concessionaria"): pois.append([mapa.xf("concessionaria").origin, Color("ff9a3c"), "C", "Drafael Motors (concessionária)"])
 	if barracao and mapa.tem("barracao"): pois.append([barracao.entrada, Color("9e4dff"), "N", "Barracão (carros novos)"])
 	if mapa.tem("delegacia"): pois.append([del_xf * Vector3(-60, 0, -14.3), Color("4f7dff"), "★", "Delegacia"])
 	if policia:
