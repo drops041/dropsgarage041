@@ -44,6 +44,7 @@ var _luzes: Array[OmniLight3D] = []
 var _shader_chao: Shader
 var _grao: Texture2D
 var _detalhe: Texture2D        # asfalto (R), calçada de pedrinha (G) e grama (B) de perto
+var _grama: Texture2D          # (v41) foto de grama (Grass, textura que o usuário mandou)
 @export var distancia_sinalizacao := 170.0
 @export var distancia_arvore_real := 70.0     # até aqui a árvore é o modelo 3D de verdade; depois vira a árvore leve
 const ARVORES_REAIS := ["res://modelos/cenario/arvores/arvore_a.glb", "res://modelos/cenario/arvores/arvore_b.glb"]
@@ -69,6 +70,8 @@ func _ready() -> void:
 		_grao = load(pasta + "blocos/tex/grao.png")
 	if ResourceLoader.exists(pasta + "blocos/tex/detalhe.png"):
 		_detalhe = load(pasta + "blocos/tex/detalhe.png")
+	if ResourceLoader.exists(pasta + "blocos/tex/grama.jpg"):
+		_grama = load(pasta + "blocos/tex/grama.jpg")
 	_criar_chao_e_bordas()
 	_criar_drops()
 	_variantes_arvore()   # monta as árvores 3D já no carregamento (antes travava na primeira vez)
@@ -342,6 +345,9 @@ func _preparar(no: Node) -> void:
 					sm.set_shader_parameter("grao", _grao)
 				if _detalhe:
 					sm.set_shader_parameter("detalhe", _detalhe)
+				if _grama:
+					sm.set_shader_parameter("grama", _grama)
+					sm.set_shader_parameter("tem_grama", true)
 				if tem("drops_garage"):
 					sm.set_shader_parameter("furo_a", Projection(xf("drops_garage").affine_inverse()))
 					sm.set_shader_parameter("lim_a", Vector4(-5.15, 0.3, 4.55, 28.45))   # oficina (piso de epóxi/concreto)
@@ -558,6 +564,8 @@ render_mode cull_back;
 uniform sampler2D mapa : source_color, filter_linear_mipmap_anisotropic, repeat_disable;
 uniform sampler2D grao : filter_linear_mipmap, repeat_enable;
 uniform sampler2D detalhe : filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D grama : source_color, filter_linear_mipmap_anisotropic, repeat_enable;   // (v41) foto de grama de verdade
+uniform bool tem_grama = false;
 // (v35) dentro da Drops e do barracão o chão do bloco some (o piso de lá fica 2-3 cm acima e brigava com ele)
 uniform mat4 furo_a = mat4(0.0);
 uniform vec4 lim_a = vec4(0.0);
@@ -587,7 +595,7 @@ void fragment() {
 	vec3 d2 = texture(detalhe, wpos.xz * 0.11 + vec2(0.41, 0.13)).rgb;
 	float asf = mix(0.62 + d1.r * 0.76, 1.0, 0.25) * mix(0.9, 1.1, d2.r);
 	float cal = 0.7 + texture(detalhe, wpos.xz * 1.1).g * 0.6;
-	float gra = 0.66 + d1.b * 0.7;
+	float gra = tem_grama ? 1.0 : 0.66 + d1.b * 0.7;
 	float k = 1.0;
 	k = mix(k, asf, m_asf * medio);
 	k = mix(k, cal, m_cal * perto);
@@ -595,6 +603,12 @@ void fragment() {
 	float g1 = texture(grao, wpos.xz * 0.55).r;
 	float g2 = texture(grao, wpos.xz * 0.11 + vec2(0.37, 0.71)).r;
 	c *= mix(1.0, mix(0.86, 1.1, g1), perto * (1.0 - m_asf)) * mix(0.95, 1.04, g2) * k;
+	if (tem_grama) {
+		// grama de verdade: as folhinhas da foto, na cor que o bloco já tinha (a média da foto vira 1)
+		vec3 gt = texture(grama, wpos.xz * 0.32).rgb / vec3(0.365, 0.454, 0.204);
+		vec3 gt2 = texture(grama, wpos.xz * 0.07 + vec2(0.3, 0.6)).rgb / vec3(0.365, 0.454, 0.204);
+		c = mix(c, c * clamp(mix(gt, gt2, 0.35), 0.4, 1.8), m_gra * medio);
+	}
 	ALBEDO = c;
 	ROUGHNESS = mix(0.93, 0.8, m_asf);
 	SPECULAR = mix(0.25, 0.35, m_asf);

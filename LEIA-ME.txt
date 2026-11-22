@@ -105,6 +105,13 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
   TIRAR aparece perto da beirada da peça (porta grande da Fortão não dava); dá pra tirar/pôr peça com
   o carro parado em qualquer lugar da oficina. G5 Cross sem as rodas velhas do modelo (os "dentes"
   brancos em volta do pneu) e caixa de roda preta; Fortão 150 sem os pedaços brancos atrás das rodas.
+- OFICINA NOVA NA GARAGEM (22/11): o pacote Auto Workshop que você mandou (Garage_OBJ + textures.zip + .blend)
+  virou a sala da garagem: parede de concreto, porta de enrolar, vala com tampa, prateleira vermelha com galões,
+  suporte de pneus, balanceadora, tambor de óleo, bancada vermelha e calhas de lâmpada. Arquivo:
+  modelos/cenario/oficina_nova/oficina_nova.glb (convertido com ferramentas/blend_bpy_glb.py e imagens_jpg.py).
+  Dá pra voltar pra sala antiga no painel de música/opções: botão OFICINA: NOVA/ANTIGA.
+- GRAMA DE VERDADE NO MAPA: a textura Grass que você mandou entra na grama da cidade (as folhinhas aparecem
+  de perto em vez de mancha borrada). Arquivo: mapa_cic/blocos/tex/grama.jpg.
 - CONSERTO G5 CROSS (22/11): alargador dos para-lamas inteiro e preto (a lataria atravessava ele e deixava
   faixas brancas): ferramentas/alargador_preto.py + shader scripts/shaders/plastico_frente.gdshader (plástico
   desenhado um pouco à frente da lataria; carros.json "plastico_na_frente"). Caixa de roda toda preta (as

@@ -108,9 +108,30 @@ func _sala() -> void:
 	var w := 7.44
 	var dep := 10.1
 	var h := 4.6
+	# (v41) oficina nova (modelo 3D com textura: pneus na parede, bancada vermelha, porta de enrolar, vala)
+	var nova := Dados.sala_garagem != "antiga" and ResourceLoader.exists(SALA_NOVA)
+	if nova:
+		w = 6.0
+		dep = 10.0
+		h = 3.93
+		var sala: Node3D = load(SALA_NOVA).instantiate()
+		sala.rotation_degrees.y = SALA_NOVA_GIRO
+		sala.position = SALA_NOVA_POS
+		add_child(sala)
 	# texturas de verdade (texturas/): cimento da oficina no chão, cimento pintado escuro nas paredes
-	var chao := Texturas.material("garage_floor", 2.2, Color(0.95, 0.95, 0.95), 0.85)
+	var chao := Texturas.material("garage_floor", 2.2, Color(0.95, 0.95, 0.95), 0.85) if not nova else null
 	var parede := Texturas.material("painted_concrete_02", 3.0, Color(0.42, 0.42, 0.46), 1.0)
+	if not nova:
+		_sala_antiga(w, dep, h, chao, parede)
+	_enfeites(w, dep, h, nova)
+
+
+const SALA_NOVA := "res://modelos/cenario/oficina_nova/oficina_nova.glb"
+const SALA_NOVA_GIRO := 90.0
+const SALA_NOVA_POS := Vector3(0, 0, 0)
+
+
+func _sala_antiga(w: float, dep: float, h: float, chao: Material, parede: Material) -> void:
 	_caixa(Vector3(w, 0.1, dep), Vector3(0, -0.05, 0), chao)
 	_caixa(Vector3(w, 0.1, dep), Vector3(0, h, 0), parede)
 	_caixa(Vector3(0.2, h, dep), Vector3(-w / 2.0, h / 2.0, 0), parede)
@@ -127,6 +148,9 @@ func _sala() -> void:
 		add_child(load("res://modelos/cenario/oficina_por_dentro.glb").instantiate())
 	else:
 		push_warning("Falta a pasta modelos/cenario (a cidade e a oficina)")
+
+
+func _enfeites(w: float, dep: float, h: float, nova: bool) -> void:
 	# grafite da Drops no fundo, acima das prateleiras
 	var logo := MeshInstance3D.new()
 	var q := QuadMesh.new()
@@ -138,7 +162,10 @@ func _sala() -> void:
 	lm.emission_texture = lm.albedo_texture
 	lm.emission_energy_multiplier = 0.35
 	logo.material_override = lm
-	logo.position = Vector3(0, 3.55, -dep / 2.0 + 0.12)
+	logo.position = Vector3(0, h - 1.05, -dep / 2.0 + 0.12)
+	if nova:   # em cima da porta de enrolar, sem passar do forro (que é mais baixo)
+		q.size = Vector2(1.8, 1.3)
+		logo.position = Vector3(0, h - 0.78, -dep / 2.0 + 0.2)
 	add_child(logo)
 	# faixa da Show de Ferragens na parede da direita
 	var faixa := Label3D.new()
@@ -157,7 +184,7 @@ func _sala() -> void:
 	fm.emission = AMARELO
 	fm.emission_energy_multiplier = 0.25
 	fundo.material_override = fm
-	fundo.position = Vector3(w / 2.0 - 0.12, 3.95, -1.0)
+	fundo.position = Vector3(w / 2.0 - 0.12, h - 0.65, -1.0)
 	fundo.rotation.y = -PI / 2.0
 	add_child(fundo)
 	faixa.position = Vector3(0, 0, 0.01)
@@ -165,7 +192,7 @@ func _sala() -> void:
 	# luzes de oficina (tubulares em cima do carro)
 	for z in [-1.6, 0.4, 2.4]:
 		var s := SpotLight3D.new()
-		s.position = Vector3(0, 4.3, z)
+		s.position = Vector3(0, h - 0.3, z)
 		s.rotation_degrees = Vector3(-90, 0, 0)
 		s.spot_range = 7.0
 		s.spot_angle = 62.0
@@ -182,8 +209,9 @@ func _sala() -> void:
 		tm.emission = Color.WHITE
 		tm.emission_energy_multiplier = 3.0
 		tubo.material_override = tm
-		tubo.position = Vector3(0, 4.45, z)
-		add_child(tubo)
+		tubo.position = Vector3(0, h - 0.15, z)
+		if not nova:   # a oficina nova já tem as calhas de lâmpada no teto
+			add_child(tubo)
 	# luzes de recorte (como num estúdio de foto): desenham as linhas da lataria dos dois lados
 	for lado in [[Vector3(-3.2, 1.5, 2.6), Color("dfe8ff"), 1.3], [Vector3(3.3, 1.8, -2.4), Color("fff1dc"), 1.0]]:
 		var rl := SpotLight3D.new()

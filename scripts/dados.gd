@@ -88,6 +88,7 @@ var faixa := 0
 var volume_musica := 0.8        # 0..1, só a música (os efeitos não mudam)
 var tutorial_feito := false     # (v36) dicas da primeira vez já vistas
 var dicas := {}                  # (v37) dicas da oficina já mostradas (elevador, rodas)
+var sala_garagem := "nova"   # (v41) "nova": oficina com textura (pneus, bancada vermelha); "antiga": a sala escura de antes
 var graficos := "alto"          # (v33) "alto": resolução cheia, antiserrilhado, sombra dos carros; "leve": o modo antigo do celular
 var _espectro: AudioEffectSpectrumAnalyzerInstance
 var grave := 0.0          # 0..1, batida do grave da música (pro carro pular e o neon piscar)
@@ -194,6 +195,7 @@ func _ready() -> void:
 			recordes = salvo.get("recordes", {})
 			volume_musica = clampf(float(salvo.get("volume_musica", 0.8)), 0.0, 1.0)
 			graficos = str(salvo.get("graficos", "alto"))
+			sala_garagem = str(salvo.get("sala_garagem", "nova"))
 			tutorial_feito = bool(salvo.get("tutorial", false))
 			dicas = salvo.get("dicas", {}) if salvo.get("dicas", {}) is Dictionary else {}
 			faixa = clampi(int(salvo.get("faixa", 0)), 0, MUSICAS.size() - 1)
@@ -359,7 +361,7 @@ func salvar() -> void:
 	var lv := _livre if modo == "historia" else {"idx": idx, "configs": configs, "dinheiro": dinheiro}
 	var f := FileAccess.open(ARQUIVO, FileAccess.WRITE)
 	if f:
-		f.store_string(JSON.stringify({"v31": true, "v43": true, "v44": true, "visual": visual, "idx": lv["idx"], "carro": carros[lv["idx"]]["id"], "personagem": personagem, "configs": lv["configs"], "dinheiro": lv["dinheiro"], "recordes": recordes, "volume_musica": volume_musica, "faixa": faixa, "graficos": graficos, "tutorial": tutorial_feito, "dicas": dicas, "modo": modo}))
+		f.store_string(JSON.stringify({"v31": true, "v43": true, "v44": true, "visual": visual, "idx": lv["idx"], "carro": carros[lv["idx"]]["id"], "personagem": personagem, "configs": lv["configs"], "dinheiro": lv["dinheiro"], "recordes": recordes, "volume_musica": volume_musica, "faixa": faixa, "graficos": graficos, "sala_garagem": sala_garagem, "tutorial": tutorial_feito, "dicas": dicas, "modo": modo}))
 	if modo == "historia":
 		var h := FileAccess.open(ARQUIVO_HISTORIA, FileAccess.WRITE)
 		if h:

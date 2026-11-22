@@ -7,6 +7,7 @@ var play: Button
 var vol_l: Label
 var barra: HSlider
 var graf: Button
+var sala_b: Button
 
 
 func _init() -> void:
@@ -51,6 +52,8 @@ func _init() -> void:
 	var mais := _botao(vlinha, "+", 52)
 	graf = _botao(col, "", 260)
 	graf.pressed.connect(_graficos)
+	sala_b = _botao(col, "", 260)
+	sala_b.pressed.connect(_sala)
 	ant.pressed.connect(_anterior)
 	play.pressed.connect(_tocar)
 	prox.pressed.connect(_proxima)
@@ -85,9 +88,21 @@ func _graficos() -> void:
 		cena.aplicar_graficos()
 
 
+## (v41) troca a oficina da garagem: a nova (com textura) ou a antiga (sala escura); recarrega a garagem
+func _sala() -> void:
+	Dados.sala_garagem = "antiga" if Dados.sala_garagem != "antiga" else "nova"
+	Dados.salvar()
+	atualiza()
+	var cena := get_tree().current_scene
+	if cena and cena.scene_file_path.ends_with("garagem.tscn"):
+		get_tree().reload_current_scene.call_deferred()
+
+
 func atualiza() -> void:
 	if nome == null:
 		return
+	if sala_b:
+		sala_b.text = "OFICINA: " + ("ANTIGA" if Dados.sala_garagem == "antiga" else "NOVA")
 	if graf:
 		graf.text = "GRÁFICOS: " + ("ALTO" if Dados.graficos != "leve" else "LEVE")
 	nome.text = "♫ " + Dados.nome_musica()

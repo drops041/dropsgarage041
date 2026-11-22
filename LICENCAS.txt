@@ -118,3 +118,7 @@ IPPUC / Prefeitura de Curitiba; e os autores dos itens PENDENTES, quando descobr
 SONS (22/11)
 - audio/partida.ogg, audio/partida2.ogg: "Car engine start 01" — looneybits (opengameart.org/content/car-engine-start-01) — CC0
 - audio/motor.ogg, audio/motor2.ogg, audio/pneu.ogg: trechos do "SuperTuxKart sound effects" — Scribe (opengameart.org/content/supertuxkart-sound-effects) — CC0
+
+Oficina nova da garagem (modelos/cenario/oficina_nova) e grama do mapa (mapa_cic/blocos/tex/grama.jpg):
+pacotes "Auto Workshop"/"Garage" e "Grass" enviados pelo dono do projeto. Conferir a licença de cada um
+antes de publicar o jogo (se for de loja/site, guardar o link e o tipo de licença aqui).
