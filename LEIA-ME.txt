@@ -105,6 +105,11 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
   TIRAR aparece perto da beirada da peça (porta grande da Fortão não dava); dá pra tirar/pôr peça com
   o carro parado em qualquer lugar da oficina. G5 Cross sem as rodas velhas do modelo (os "dentes"
   brancos em volta do pneu) e caixa de roda preta; Fortão 150 sem os pedaços brancos atrás das rodas.
+- CONSERTO G5 CROSS (22/11): alargador dos para-lamas inteiro e preto (a lataria atravessava ele e deixava
+  faixas brancas): ferramentas/alargador_preto.py + shader scripts/shaders/plastico_frente.gdshader (plástico
+  desenhado um pouco à frente da lataria; carros.json "plastico_na_frente"). Caixa de roda toda preta (as
+  paredes claras de dentro do para-lama): caixa_de_roda.py --raio 1.95 --xmax 0.85 --centro e
+  --caixa 0.28,0.5,0.95 --pular door. Teste visual: testes/teste_cores.tscn e teste_cores2.tscn.
 - Godot 4.7.2, com visual Forward+ no PC e Mobile no celular.
 - Carros novos: G3, Robusta (modelo novo, licença liberada), Fênix, Esse Dez, Astral, Rangido,
   Monarca 68, Áudio 6 Perua, Sandeiro, Lógico e Cliô. Roda nova: Trampo VS.

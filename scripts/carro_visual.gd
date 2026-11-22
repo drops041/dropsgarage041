@@ -893,6 +893,11 @@ func _materiais(raiz: Node) -> void:
 		var escondidas := 0
 		for i in m.mesh.get_surface_count():
 			var mat := m.mesh.surface_get_material(i)
+			if mat and mat.resource_name in d.get("plastico_na_frente", []):
+				if not cache.has(mat):
+					cache[mat] = _plastico_na_frente(mat)
+				m.set_surface_override_material(i, cache[mat])
+				continue
 			var cls := classe_material(mat, str(m.name))
 			if cls == "pintura":
 				m.set_surface_override_material(i, mat_pintura)
@@ -913,6 +918,18 @@ func _materiais(raiz: Node) -> void:
 				m.set_surface_override_material(i, cache[chave])
 		if escondidas == m.mesh.get_surface_count():
 			m.visible = false
+
+
+## (v41) plástico (alargador do para-lama) que a lataria atravessa no modelo: desenha ele um pouco à frente
+## (carros.json "plastico_na_frente": nomes dos materiais)
+func _plastico_na_frente(orig: Material) -> ShaderMaterial:
+	var m := _shader("res://scripts/shaders/plastico_frente.gdshader")
+	var sm := orig as BaseMaterial3D
+	if sm:
+		m.set_shader_parameter("cor", sm.albedo_color)
+		if sm.albedo_texture:
+			m.set_shader_parameter("textura", sm.albedo_texture)
+	return m
 
 
 var _lanternas: Array[ShaderMaterial] = []   # (visual 2) lentes vermelhas: acendem mais no freio

@@ -4,7 +4,7 @@ Muitos modelos têm o forro de dentro do para-lama claro (cinza/branco) ou a cha
 Com o carro socado, isso aparece em volta do pneu como uns "dentes" brancos.
 Aqui os triângulos de dentro da caixa de roda passam pra um material preto fosco (não apaga nada).
 
-Uso: python3 ferramentas/caixa_de_roda.py [--salvar] [--raio 1.45] [--xmin 0.45] id1 id2 ...
+Uso: python3 ferramentas/caixa_de_roda.py [--salvar] [--raio 1.45] [--xmin 0.45] [--xmax 0.85] [--pular door] id1 id2 ...
 Região (coordenadas do carro): distância até o centro da roda original (y=wy, z=eixo) < raio * wy
 e |x| entre W/2 - 0.42 e a pele de fora do para-lama menos 3 cm.
 """
@@ -37,7 +37,7 @@ def claro(m):
     return tem_tex or (0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2]) > 0.2
 
 
-def processar(cid, c, raio, salvar, xmin=None):
+def processar(cid, c, raio, salvar, xmin=None, xmax=None, pular=None, centro=False, caixa=None):
     arq = os.path.join(RAIZ, "modelos", "carros", cid + ".glb")
     g = GLB(arq)
     j = g.j
@@ -62,6 +62,8 @@ def processar(cid, c, raio, salvar, xmin=None):
                 xs.append(np.abs(P[(r < raio * wy) & (r > 1.0 * wy), 0]))
     xs = np.concatenate(xs) if xs else np.array([W / 2])
     xo = float(np.percentile(xs, 95)) - 0.03 if len(xs) else W / 2 - 0.05
+    if xmax is not None:
+        xo = xmax
     preto = material_preto(j) if salvar else -1
     total = 0
     for p in prims:
@@ -72,13 +74,19 @@ def processar(cid, c, raio, salvar, xmin=None):
         if nome.split("__")[0] in NAO_MEXE or nome.startswith(("LUZ", "INTERIOR")) or nome == NOME_PRETO:
             continue
         if nome.startswith("PAINT") or not claro(m):
-            continue   # lataria pintada não: por fora ela também passa perto da roda (o topo do para-lama)
+            continue
+        if pular and any(k in p["nome"] for k in pular):
+            continue   # ex.: portas (o forro da porta passa perto da roda mas é da porta)   # lataria pintada não: por fora ela também passa perto da roda (o topo do para-lama)
         T = p["pw"][p["idx"].reshape(-1, 3)]
         s = np.zeros(len(T), bool)
         for ax in eixos:
             r = np.hypot(T[:, :, 1] - wy, T[:, :, 2] - ax)
             ax_ = np.abs(T[:, :, 0])
-            s |= (r < raio * wy).all(1) & (ax_ < xo).all(1) & (ax_ > (W / 2 - 0.42 if xmin is None else xmin)).all(1)
+            dentro = (r < raio * wy) & (ax_ < xo) & (ax_ > (W / 2 - 0.42 if xmin is None else xmin))
+            s |= dentro.sum(1) >= (2 if centro else 3)   # --centro: basta 2 cantos dentro (parede grande da caixa de roda)
+            if caixa:   # --caixa xmin,meio_z,ymax: caixa reta em volta do eixo (paredes fundas, ex.: G5 Cross)
+                C = T.mean(1)
+                s |= (np.abs(C[:, 0]) > caixa[0]) & (np.abs(C[:, 0]) < xo) & (np.abs(C[:, 2] - ax) < caixa[1]) & (C[:, 1] < caixa[2])
         n = int(s.sum())
         if not n:
             continue
@@ -113,10 +121,13 @@ def main():
     xmin = None   # --xmin 0.45: pega também suspensão/braço mais pra dentro (picape larga)
     if "--xmin" in args:
         xmin = float(args[args.index("--xmin") + 1])
-    ids = [a for i, a in enumerate(args) if not a.startswith("--") and (i == 0 or args[i - 1] not in ("--raio", "--xmin"))]
+    xmax = float(args[args.index("--xmax") + 1]) if "--xmax" in args else None   # (G5 Cross) parede até perto da pele
+    pular = args[args.index("--pular") + 1].split(",") if "--pular" in args else None   # --pular door
+    caixa = [float(v) for v in args[args.index("--caixa") + 1].split(",")] if "--caixa" in args else None
+    ids = [a for i, a in enumerate(args) if not a.startswith("--") and (i == 0 or args[i - 1] not in ("--raio", "--xmin", "--xmax", "--pular", "--caixa"))]
     carros = {c["id"]: c for c in json.load(open(os.path.join(RAIZ, "carros.json"), encoding="utf8"))}
     for cid in ids:
-        processar(cid, carros[cid], raio, salvar, xmin)
+        processar(cid, carros[cid], raio, salvar, xmin, xmax, pular, "--centro" in args, caixa)
 
 
 if __name__ == "__main__":
