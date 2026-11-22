@@ -176,35 +176,190 @@ func _predio() -> void:
 	t3.global_transform = xf * Transform3D(Basis(), Vector3(0, 3.4, -FUNDO + 0.35))
 
 
+# ---------------------------------------------------------------- exposição: UM DE CADA CARRO (22/11)
+## 31 carros: 2 fileiras dentro do salão (os menores) e 1 no pátio (os compridos: picapes e SUVs), com o
+## meio do pátio livre (porta e lugar de entregar carro). Os carros só carregam quando você chega perto
+## (um por vez, pra não travar) e somem quando você vai longe.
+const PERTO := 140.0
+const LONGE := 280.0
+var vagas: Array = []          # [{id, i, pos (local), cv}]
+var _tick := 0.0
+var drafael: Node3D
+var _anim: AnimationPlayer
+var _rota := [Vector3(-11.5, 0, -7.3), Vector3(-4.0, 0, -7.3), Vector3(4.0, 0, -7.3), Vector3(11.5, 0, -7.3)]
+var _alvo_k := 1
+var _parado := 2.0
+var _falando_com: Node3D
+
+
 func _carros() -> void:
-	# [id, posição local, giro, cor]
-	var lugares := [["golfgti", Vector3(-8.5, 0.05, 3.6), 0.55, ""], ["jetta", Vector3(8.0, 0.05, 3.6), -0.55, ""],
-		["tiguan", Vector3(-9.5, 0.04, -7.5), 0.5, "#16171a"], ["id4", Vector3(-2.8, 0.04, -6.0), -0.35, "#f2f2f2"],
-		["santacruz", Vector3(4.0, 0.04, -8.0), 0.35, "#b5121b"], ["taigun", Vector3(10.0, 0.04, -6.5), -0.6, "#3b6470"]]
-	for l in lugares:
-		var i := -1
-		for k in Dados.carros.size():
-			if Dados.carros[k]["id"] == l[0]:
-				i = k
-		if i < 0:
-			continue
+	var lista := []
+	for i in Dados.carros.size():
 		var d: Dictionary = Dados.carros[i]
-		var cfg: Dictionary = (d["padrao"] as Dictionary).duplicate(true)
-		cfg["neon"] = "off"
-		cfg["som"] = "off"
-		if str(l[3]) != "":
-			cfg["cor"] = l[3]
-			cfg["acabamento"] = "brilho"
-		var cv := CarroVisual.new()
-		add_child(cv)
-		cv.montar(d, cfg, true)
-		cv.alcance(110.0)
-		cv.global_transform = xf * Transform3D(Basis(Vector3.UP, float(l[2])), l[1])
-		var corpo := StaticBody3D.new()
-		var col := CollisionShape3D.new()
-		var box := BoxShape3D.new()
-		box.size = Vector3(float(d["W"]), 1.3, cv.comprimento)
-		col.shape = box
-		col.position = Vector3(0, 0.65, (cv.frente_z + cv.tras_z) / 2.0)
-		corpo.add_child(col)
-		cv.add_child(corpo)
+		var comp := float(d.get("axF", 1.3)) - float(d.get("axR", -1.3)) + 1.75
+		lista.append([comp, i])
+	lista.sort_custom(func(a, b): return a[0] < b[0])
+	var pos := []
+	for k in 11:
+		pos.append(Vector3(-13.0 + 2.6 * k, 0.04, -3.9))     # fileira da frente do salão
+	for k in 11:
+		pos.append(Vector3(-13.0 + 2.6 * k, 0.04, -10.6))    # fileira do fundo
+	for x in [-13.0, -10.0, -7.0, -4.0, 4.0, 7.0, 10.0, 13.0, 16.0]:   # (o totem fica na ponta esquerda)
+		pos.append(Vector3(x, 0.05, 3.5))                     # pátio (os mais compridos)
+	for k in mini(lista.size(), pos.size()):
+		var i: int = lista[k][1]
+		vagas.append({"id": str(Dados.carros[i]["id"]), "i": i, "pos": pos[k], "cv": null})
+
+
+func _process(dt: float) -> void:
+	_tick += dt
+	if _tick >= 0.25:
+		_tick = 0.0
+		_carregar_perto()
+	_andar(dt)
+
+
+func _voce() -> Vector3:
+	if m.pe and m.pessoa:
+		return m.pessoa.global_position
+	return m.carro.global_position if m.carro else Vector3(1e9, 0, 1e9)
+
+
+func _carregar_perto() -> void:
+	if vagas.is_empty():
+		return
+	var dist := _voce().distance_to(xf.origin)
+	if dist > LONGE:
+		for v in vagas:
+			if v["cv"]:
+				(v["cv"] as Node).queue_free()
+				v["cv"] = null
+		if drafael:
+			drafael.queue_free()
+			drafael = null
+		return
+	if dist > PERTO:
+		return
+	if drafael == null:
+		_criar_drafael()
+	for v in vagas:   # um carro por vez
+		if v["cv"] == null:
+			_expor(v)
+			return
+
+
+func _expor(v: Dictionary) -> void:
+	var d: Dictionary = Dados.carros[int(v["i"])]
+	var cfg: Dictionary = (d["padrao"] as Dictionary).duplicate(true)
+	cfg["neon"] = "off"
+	cfg["som"] = "off"
+	cfg["acabamento"] = "brilho"
+	var cv := CarroVisual.new()
+	add_child(cv)
+	cv.montar(d, cfg, true)
+	cv.alcance(90.0)
+	var centro := (cv.frente_z + cv.tras_z) / 2.0
+	var p: Vector3 = v["pos"]
+	cv.global_transform = xf * Transform3D(Basis(), p - Vector3(0, 0, centro))
+	var corpo := StaticBody3D.new()
+	var col := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(float(d["W"]), 1.3, cv.comprimento)
+	col.shape = box
+	col.position = Vector3(0, 0.65, centro)
+	corpo.add_child(col)
+	cv.add_child(corpo)
+	var placa := Label3D.new()   # nome e preço em cima do carro
+	placa.text = "%s\n%s" % [d["nome"], Dados.reais(int(d.get("preco", 0)))]
+	placa.font_size = 44
+	placa.pixel_size = 0.004
+	placa.outline_size = 10
+	placa.modulate = AMARELO
+	placa.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	placa.visibility_range_end = 16.0
+	placa.position = Vector3(0, 2.1, centro)
+	cv.add_child(placa)
+	v["cv"] = cv
+
+
+## carro em exposição mais perto do ponto (até 'raio' metros), ou {} se nenhum
+func carro_perto(p: Vector3, raio := 3.2) -> Dictionary:
+	var melhor := {}
+	var md := raio
+	for v in vagas:
+		if v["cv"] == null:
+			continue
+		var c: Vector3 = xf * (v["pos"] as Vector3)
+		var dd := Vector2(p.x - c.x, p.z - c.z).length()
+		if dd < md:
+			md = dd
+			melhor = v
+	return melhor
+
+
+# ---------------------------------------------------------------- o Drafael andando pela loja
+func _criar_drafael() -> void:
+	drafael = Pessoa.criar("res://modelos/personagens/protagonista.glb", 1.80)
+	add_child(drafael)
+	Pessoa.vestir(drafael, Historia.VISUAL_DRAFAEL)
+	drafael.global_position = xf * _rota[0]
+	_anim = drafael.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	var nome := Label3D.new()
+	nome.text = "DRAFAEL"
+	nome.font_size = 48
+	nome.pixel_size = 0.005
+	nome.modulate = AMARELO
+	nome.outline_size = 8
+	nome.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	nome.visibility_range_end = 40.0
+	nome.position = Vector3(0, 2.15, 0)
+	drafael.add_child(nome)
+	_tocar("drops/parado")
+
+
+func _tocar(a: String, vel := 1.0) -> void:
+	if _anim and _anim.has_animation(a):
+		if _anim.current_animation != a:
+			_anim.play(a, 0.25)
+		_anim.speed_scale = vel
+
+
+## com você do lado ele para e vira pra você; senão anda de um lado pro outro olhando os carros
+func atender(quem: Node3D) -> void:
+	_falando_com = quem
+
+
+func _andar(dt: float) -> void:
+	if drafael == null:
+		return
+	# (história) quando ele está lá na Drops te esperando com um serviço, não está na loja
+	var fora: bool = m.historia != null and m.historia.drafael != null
+	drafael.visible = not fora
+	if fora:
+		return
+	if _falando_com and is_instance_valid(_falando_com) and _falando_com.global_position.distance_to(drafael.global_position) < 4.0:
+		var o := _falando_com.global_position - drafael.global_position
+		drafael.rotation.y = lerp_angle(drafael.rotation.y, atan2(o.x, o.z), minf(1.0, dt * 6.0))
+		_tocar("drops/parado")
+		return
+	_falando_com = null
+	if _parado > 0.0:
+		_parado -= dt
+		_tocar("drops/parado")
+		if _parado <= 0.0:
+			_alvo_k = (_alvo_k + 1) % _rota.size()
+		return
+	var alvo: Vector3 = xf * (_rota[_alvo_k] as Vector3)
+	var d := Vector3(alvo.x - drafael.global_position.x, 0, alvo.z - drafael.global_position.z)
+	if d.length() < 0.15:
+		_parado = randf_range(2.0, 5.0)
+		# para olhando pra um carro do lado
+		drafael.rotation.y += PI / 2.0 * (1.0 if randf() < 0.5 else -1.0)
+		if _alvo_k == _rota.size() - 1 or _alvo_k == 0:
+			_rota.reverse()
+			_alvo_k = 0
+		return
+	var passo := minf(d.length(), Pessoa.UAL_PASSO_ANDA * dt)
+	drafael.global_position += d.normalized() * passo
+	drafael.rotation.y = lerp_angle(drafael.rotation.y, atan2(d.x, d.z), minf(1.0, dt * 8.0))
+	_tocar("drops/anda")

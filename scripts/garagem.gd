@@ -39,6 +39,21 @@ func _ready() -> void:
 		get_tree().change_scene_to_file.call_deferred("res://cenas/historia_abertura.tscn")
 		return
 	_trocar_carro(0)
+	if OS.has_environment("DROPS_TESTE_CONTA"):   # teste do orçamento do modo história
+		get_tree().create_timer(1.5).timeout.connect(func():
+			print("conta: modo=", Dados.modo, " carro=", Dados.carro()["id"], " dinheiro=", Dados.dinheiro)
+			_mudar("aro", 20.0)
+			_mudar("cor", "#ff0000")
+			_mudar("flanco", 4.0)
+			_mudar("ar", true)
+			print("conta: itens=", _orcamento(), " total=", _total(_orcamento()))
+			_desfazer_conta()
+			print("conta: depois de desfazer=", _orcamento(), " aro=", Dados.cfg().get("aro"))
+			_mudar("neon", "rosa")
+			print("conta: pagou=", _pagar_conta(), " dinheiro=", Dados.dinheiro, " resta=", _orcamento(), " revenda=", Dados.valor_revenda(str(Dados.carro()["id"])))
+			_mudar("som", "trio")
+			print("conta: cobrar abre janela=", _cobrar(func(): print("conta: depois")))
+			get_tree().quit())
 	if OS.has_environment("DROPS_CAM"):   # testes: "pitch,dist"
 		pitch = float(OS.get_environment("DROPS_CAM").get_slice(",", 0))
 		dist = float(OS.get_environment("DROPS_CAM").get_slice(",", 1))
@@ -251,7 +266,186 @@ func _esperar_carro() -> bool:
 	return true
 
 
+# ---------------------------------------------------------------- (modo história) orçamento da garagem
+## Na história dá pra mexer em tudo igual ao modo livre; o que mudou desde a última conta vira ORÇAMENTO.
+## Paga na hora (PAGAR) ou volta como estava (DESFAZER). Trocar de carro / sair com conta aberta pergunta.
+const PRECO_COR_RODA := 600
+const PRECO_PNEUS := 1200
+const PRECO_CAMBER := 300
+const PRECO_RECUO := 400
+const PRECO_NEON := 1500
+const PRECO_AEROFOLIO := 2500
+const PRECO_COR_AEROFOLIO := 600
+var _base_cfg := {}
+var _base_id := ""
+var conta_box: HBoxContainer
+var conta_l: Label
+var _janela_conta: PanelContainer
+
+
+func _guardar_base() -> void:
+	_base_id = str(Dados.carro()["id"])
+	_base_cfg = (Dados.configs.get(_base_id, {}) as Dictionary).duplicate(true)
+	_atualizar_conta()
+
+
+## itens que mudaram desde a última conta: [[nome, valor], ...]
+func _orcamento() -> Array:
+	var out := []
+	if Dados.modo != "historia" or _base_id != str(Dados.carro()["id"]):
+		return out
+	var guardado = Dados.configs.get(_base_id)
+	Dados.configs[_base_id] = _base_cfg
+	var antes := Dados.cfg()
+	if guardado == null:
+		Dados.configs.erase(_base_id)
+	else:
+		Dados.configs[_base_id] = guardado
+	var agora := Dados.cfg()
+	var mudou := func(chaves: Array) -> bool:
+		for k in chaves:
+			if str(antes.get(k, "")) != str(agora.get(k, "")):
+				return true
+		return false
+	if mudou.call(["cor", "acabamento", "cor2", "cores_pecas"]):
+		out.append(["Pintura", Dados.custo_pintura(Dados.carro())])
+	var rodas_novas: bool = mudou.call(["roda", "aro"])
+	if rodas_novas:
+		out.append(["Rodas aro %d" % int(agora.get("aro", 0)), Dados.custo_roda(int(agora.get("aro", 0)))])
+	elif mudou.call(["cor_roda", "borda"]):
+		out.append(["Pintura das rodas", PRECO_COR_RODA])
+	if mudou.call(["tala", "tala_tras", "flanco"]):
+		out.append(["Pneus", PRECO_PNEUS])
+	if bool(agora.get("ar", false)) and not bool(antes.get("ar", false)):
+		out.append(["Suspensão a ar", Dados.CUSTO_SUSPENSAO])
+	if mudou.call(["camber"]):
+		out.append(["Cambagem", PRECO_CAMBER])
+	if mudou.call(["recuo", "recuo_tras"]):
+		out.append(["Espaçadores (recuo)", PRECO_RECUO])
+	if mudou.call(["neon"]) and str(agora.get("neon", "off")) != "off":
+		out.append(["Neon", PRECO_NEON])
+	if mudou.call(["som"]) and str(agora.get("som", "off")) != "off":
+		out.append(["Som", Dados.CUSTO_SOM])
+	if mudou.call(["kit_aerofolio"]) and str(agora.get("kit_aerofolio", "off")) != "off":
+		out.append(["Aerofólio", PRECO_AEROFOLIO])
+	elif mudou.call(["kit_aerofolio_cor"]) and str(agora.get("kit_aerofolio", "off")) != "off":
+		out.append(["Pintura do aerofólio", PRECO_COR_AEROFOLIO])
+	return out
+
+
+func _total(itens: Array) -> int:
+	var t := 0
+	for it in itens:
+		t += int(it[1])
+	return t
+
+
+func _atualizar_conta() -> void:
+	if conta_box == null:
+		return
+	var t := _total(_orcamento())
+	conta_box.visible = t > 0
+	if conta_l:
+		conta_l.text = "ORÇAMENTO " + Dados.reais(t)
+	if saldo_l:
+		saldo_l.text = Dados.reais(Dados.dinheiro)
+
+
+func _pagar_conta() -> bool:
+	var itens := _orcamento()
+	var t := _total(itens)
+	if t <= 0:
+		return true
+	if not Dados.pagar(t):
+		return false
+	Dados.investir(_base_id, t)
+	Dados.salvar()
+	_guardar_base()
+	return true
+
+
+func _desfazer_conta() -> void:
+	if _base_id == "":
+		return
+	Dados.restaurar_cfg(_base_id, _base_cfg)
+	if _base_cfg.is_empty():
+		Dados.configs.erase(_base_id)
+		Dados.salvar()
+	if visual:
+		visual.atualizar(Dados.cfg())
+	_montar_aba()
+	_atualizar_conta()
+
+
+## com orçamento aberto: mostra a conta e só faz a ação (trocar de carro, sair) depois de pagar ou desfazer
+func _cobrar(depois: Callable) -> bool:
+	var itens := _orcamento()
+	if _total(itens) <= 0:
+		return false
+	if _janela_conta:
+		_janela_conta.queue_free()
+	_janela_conta = PanelContainer.new()
+	var est := _estilo(Color(0.05, 0.05, 0.07, 0.96), AMARELO, 2)
+	est.set_corner_radius_all(14)
+	est.set_content_margin_all(18)
+	_janela_conta.add_theme_stylebox_override("panel", est)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 6)
+	_janela_conta.add_child(v)
+	var t := Label.new()
+	t.text = "CONTA DA OFICINA"
+	t.add_theme_font_size_override("font_size", 24)
+	t.add_theme_color_override("font_color", AMARELO)
+	v.add_child(t)
+	for it in itens:
+		var l := Label.new()
+		l.text = "%s ....... %s" % [it[0], Dados.reais(int(it[1]))]
+		l.add_theme_font_size_override("font_size", 17)
+		v.add_child(l)
+	var tot := Label.new()
+	tot.text = "TOTAL %s   ·   você tem %s" % [Dados.reais(_total(itens)), Dados.reais(Dados.dinheiro)]
+	tot.add_theme_font_size_override("font_size", 18)
+	tot.add_theme_color_override("font_color", Color("7dff8a") if Dados.dinheiro >= _total(itens) else Color("ff6b6b"))
+	v.add_child(tot)
+	var h := HBoxContainer.new()
+	h.add_theme_constant_override("separation", 8)
+	v.add_child(h)
+	var fechar := func():
+		if is_instance_valid(_janela_conta):
+			_janela_conta.queue_free()
+		_janela_conta = null
+	if Dados.dinheiro >= _total(itens):
+		var pg := _botao("PAGAR")
+		pg.pressed.connect(func():
+			fechar.call()
+			_pagar_conta()
+			depois.call())
+		h.add_child(pg)
+	var dz := _botao("DESFAZER")
+	dz.pressed.connect(func():
+		fechar.call()
+		_desfazer_conta()
+		depois.call())
+	h.add_child(dz)
+	var vt := _botao("VOLTAR")
+	vt.pressed.connect(fechar)
+	h.add_child(vt)
+	raiz_ui.add_child(_janela_conta)
+	var tela := get_viewport().get_visible_rect().size
+	_janela_conta.reset_size()
+	_janela_conta.position = (tela - _janela_conta.get_combined_minimum_size()) / 2.0
+	return true
+
+
+func _ir_pro_role() -> void:
+	if _cobrar(_ir_pro_role):
+		return
+	get_tree().change_scene_to_file("res://cenas/main.tscn")
+
+
 func _trocar_carro(passo: int) -> void:
+	if passo != 0 and _cobrar(_trocar_carro.bind(passo)):
+		return
 	Dados.proximo_carro(passo)
 	if _esperar_carro():
 		return
@@ -271,6 +465,7 @@ func _trocar_carro(passo: int) -> void:
 		b.pressed.connect(func(): visual.abrir(chave))
 		partes_box.add_child(b)
 	sub_l.text = str(Dados.carro()["sub"]).to_upper()
+	_guardar_base()
 	_montar_aba()
 
 
@@ -296,6 +491,7 @@ func _mudar(chave: String, valor) -> void:
 	Dados.mudar(chave, valor)
 	visual.atualizar(Dados.cfg())
 	_montar_aba()
+	_atualizar_conta()
 
 
 ## o protagonista em pé do lado do carro (só na aba do guarda-roupa)
@@ -371,7 +567,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		elif e.keycode == KEY_RIGHT or e.keycode == KEY_E:
 			_ir_cat(1)
 		elif e.keycode == KEY_ENTER and aba == "role":
-			get_tree().change_scene_to_file("res://cenas/main.tscn")
+			_ir_pro_role()
 	if e is InputEventScreenTouch:
 		if e.pressed:
 			toques[e.index] = e.position
@@ -448,6 +644,8 @@ var saldo_l: Label
 
 ## MODO HISTÓRIA <-> MODO LIVRE (o livre continua igual: tudo liberado, pra quem quer jogo rápido)
 func _trocar_modo() -> void:
+	if _cobrar(_trocar_modo):
+		return
 	if Dados.modo == "historia":
 		Dados.sair_historia()
 		get_tree().reload_current_scene()
@@ -576,6 +774,26 @@ func _ui() -> void:
 	saldo_l.visible = Dados.modo == "historia"
 	saldo_l.text = Dados.reais(Dados.dinheiro)
 	baixo.add_child(saldo_l)
+	conta_box = HBoxContainer.new()
+	conta_box.add_theme_constant_override("separation", 6)
+	conta_box.visible = false
+	baixo.add_child(conta_box)
+	conta_l = Label.new()
+	conta_l.add_theme_font_size_override("font_size", 18)
+	conta_l.add_theme_color_override("font_color", AMARELO)
+	conta_box.add_child(conta_l)
+	var pagar_b := _botao("PAGAR")
+	pagar_b.add_theme_font_size_override("font_size", 15)
+	pagar_b.custom_minimum_size = Vector2(0, 50)
+	pagar_b.pressed.connect(func():
+		if not _pagar_conta():
+			_cobrar(func(): pass))
+	conta_box.add_child(pagar_b)
+	var desf_b := _botao("DESFAZER")
+	desf_b.add_theme_font_size_override("font_size", 15)
+	desf_b.custom_minimum_size = Vector2(0, 50)
+	desf_b.pressed.connect(_desfazer_conta)
+	conta_box.add_child(desf_b)
 	var modo_b := _botao("MODO LIVRE" if Dados.modo == "historia" else "MODO HISTÓRIA")
 	modo_b.add_theme_font_size_override("font_size", 15)
 	modo_b.custom_minimum_size = Vector2(0, 50)
@@ -661,7 +879,7 @@ func _botao_amarelo(texto: String, fonte: int) -> Button:
 	b.add_theme_stylebox_override("pressed", _estilo(Color("e6be00"), AMARELO))
 	b.add_theme_color_override("font_color", Color("111111"))
 	b.add_theme_color_override("font_hover_color", Color("111111"))
-	b.pressed.connect(func(): get_tree().change_scene_to_file("res://cenas/main.tscn"))
+	b.pressed.connect(_ir_pro_role)
 	return b
 
 
@@ -749,7 +967,7 @@ func _montar_carrossel() -> void:
 		b.pressed.connect(func():
 			if passo == 0:
 				if aba == "role":
-					get_tree().change_scene_to_file("res://cenas/main.tscn")
+					_ir_pro_role()
 				painel_aberto = true
 				_posicionar()
 			else:
@@ -832,20 +1050,22 @@ func _montar_aba() -> void:
 		n.queue_free()
 	_boneco(aba == "personagem")
 	var c := Dados.cfg()
-	if Dados.modo == "historia" and aba in ["medidas", "pintura", "rodas", "neon", "som", "kit"]:
-		# (modo história) mexer no carro é na oficina, pagando as peças: aqui só olha
-		_titulo("Modo história")
-		var av := Label.new()
-		av.text = "Aqui você só olha o carro.\nAs mudanças são feitas na OFICINA, pagando as peças:\nPC da oficina (suspensão, aro, pneu) e mesa de tintas na cabine (pintura).\n\nSaldo: " + Dados.reais(Dados.dinheiro)
-		av.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		av.add_theme_font_size_override("font_size", 18)
-		conteudo.add_child(av)
-		return
 	match aba:
 		"medidas":
 			var rmax := CarroVisual.rebaixo_max(Dados.carro())
-			_linha("Rebaixo dianteiro", "rebaixo", 1.0, 0.0, rmax, c, "%d cm", "suspensão da frente (0 = original, até %d = aterrado)" % int(rmax))
-			_linha("Rebaixo traseiro", "rebaixo_tras", 1.0, 0.0, rmax, c, "%d cm", "suspensão de trás (0 = original, até %d = aterrado)" % int(rmax))
+			if Dados.modo == "historia" and not bool(c.get("ar", false)):
+				# (história) sem suspensão a ar o carro fica na altura de fábrica
+				var bar := _botao("INSTALAR SUSPENSÃO A AR · " + Dados.reais(Dados.CUSTO_SUSPENSAO))
+				bar.pressed.connect(func(): _mudar("ar", true))
+				conteudo.add_child(bar)
+				var av := Label.new()
+				av.text = "Sem suspensão a ar não dá pra rebaixar."
+				av.add_theme_font_size_override("font_size", 15)
+				av.add_theme_color_override("font_color", Color("9aa0aa"))
+				conteudo.add_child(av)
+			else:
+				_linha("Rebaixo dianteiro", "rebaixo", 1.0, 0.0, rmax, c, "%d cm", "suspensão da frente (0 = original, até %d = aterrado)" % int(rmax))
+				_linha("Rebaixo traseiro", "rebaixo_tras", 1.0, 0.0, rmax, c, "%d cm", "suspensão de trás (0 = original, até %d = aterrado)" % int(rmax))
 			_linha("Roda (aro)", "aro", 1.0, 14.0, 28.0, c, "%d\"", "aro 14 até 28")
 			_linha("Pneu (flanco)", "flanco", 0.5, 3.0, 9.0, c, "%.1f cm", "flanco baixo = pneu fininho")
 			_linha("Tala dianteira", "tala", 0.5, 6.0, 10.0, c, "%.1f\"", "largura das rodas da frente")

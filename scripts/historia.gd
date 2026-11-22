@@ -338,6 +338,10 @@ func _apertou() -> void:
 			abrir_pc()
 		"correr":
 			clandestina.largar()
+		"falar_loja":
+			_conversa_loja()
+		"ver_carro":
+			_ver_carro(_carro_visto)
 
 
 func _aceitar(p: Dictionary = {}) -> void:
@@ -384,6 +388,123 @@ func _entregar() -> void:
 		else "Logo eu trago mais serviço. E quando quiser trocar de carro, a loja é aqui!"
 	_falar("Ficou TOP, parceiro! Esse carro vai vender rapidinho.\nTeu lucro nesse serviço ficou em torno de " + Dados.reais(lucro) + " (depende do quanto você gastou de material).\n+" + str(XP_SERVICO) + " XP\n\n" + prox,
 		[["VALEU!", func(): pass]])
+
+
+# ---------------------------------------------------------------- loja: comprar, vender, trocar (22/11)
+var _carro_visto := {}
+
+
+func _drafael_loja_perto() -> bool:
+	var cc = m.concessionaria
+	if cc == null or cc.drafael == null or not cc.drafael.visible or not (m.pe and m.pessoa):
+		return false
+	return m.pessoa.global_position.distance_to(cc.drafael.global_position) < 2.8
+
+
+func _meus_carros() -> Array:
+	return (Dados.historia.get("garagem", []) as Array).duplicate()
+
+
+func _conversa_loja() -> void:
+	m.concessionaria.atender(m.pessoa)
+	var meus := _meus_carros()
+	_falar("Fala, parceiro! Aqui tem um de cada, pode olhar à vontade: chega perto do carro e aperta VER.\n" +
+		"Se quiser, eu pego o teu usado: pago 70% da tabela + 40% do que você gastou de peça nele.\n\nTeu saldo: " + Dados.reais(Dados.dinheiro),
+		[["VENDER UM CARRO MEU", _menu_vender, true], ["SÓ OLHANDO", func(): pass, false]])
+	if meus.size() <= 1:
+		dialogo_l.text += "\n(Você só tem um carro: pra vender ele, compra outro antes ou faz a troca direto no carro novo.)"
+
+
+func _menu_vender() -> void:
+	var meus := _meus_carros()
+	var bts := []
+	for id in meus:
+		var i := Dados.indice_de(str(id))
+		if i < 0:
+			continue
+		bts.append([str(Dados.carros[i]["nome"]) + " · " + Dados.reais(Dados.valor_revenda(str(id))), _vender.bind(str(id)), true])
+	bts.append(["VOLTAR", func(): pass, false])
+	if meus.size() <= 1:
+		_falar("Você só tem esse carro. Compra outro primeiro (ou faz a troca direto no carro que quiser).", [["OK", func(): pass, false]])
+		return
+	_falar("Qual você quer vender? (o valor já é o que eu te pago)", bts)
+
+
+func _vender(id: String) -> void:
+	var nome := str(Dados.carros[Dados.indice_de(id)]["nome"])
+	var valor := Dados.valor_revenda(id)
+	var era_o_atual: bool = str(Dados.carro()["id"]) == id
+	if not Dados.vender(id):
+		_falar("Não deu pra vender esse.", [["OK", func(): pass, false]])
+		return
+	if era_o_atual and m.carro:   # vendeu o carro que estava usando: o outro aparece no pátio
+		_carro_no_patio()
+	_falar("Fechado! " + nome + " é meu agora. Tá aqui: " + Dados.reais(valor) + ".\nSaldo: " + Dados.reais(Dados.dinheiro),
+		[["VALEU!", func(): pass]])
+
+
+## carro de exposição: preço e as opções de compra (à vista ou dando o seu na troca)
+func _ver_carro(v: Dictionary) -> void:
+	if v.is_empty():
+		return
+	var i: int = v["i"]
+	var d: Dictionary = Dados.carros[i]
+	var id := str(d["id"])
+	var preco := int(d.get("preco", 0))
+	var texto := str(d["nome"]) + " · " + str(d.get("sub", "")) + "\nPreço: " + Dados.reais(preco) + "\nSeu saldo: " + Dados.reais(Dados.dinheiro)
+	if Dados.tem_carro(id):
+		_falar(texto + "\n\nEsse você já tem!", [["OK", func(): pass, false]], "DRAFAEL MOTORS")
+		return
+	var bts := []
+	if Dados.dinheiro >= preco:
+		bts.append(["COMPRAR À VISTA", _comprar.bind(i, ""), true])
+	var atual := str(Dados.carro()["id"])
+	if (Dados.historia.get("garagem", []) as Array).has(atual):
+		var troca := Dados.valor_revenda(atual)
+		var nome_atual := str(Dados.carro()["nome"])
+		texto += "\n\nNa troca, teu " + nome_atual + " vale " + Dados.reais(troca) + "."
+		if Dados.dinheiro + troca >= preco:
+			var falta := maxi(0, preco - troca)
+			bts.append(["TROCAR PELO MEU " + nome_atual.to_upper() + (" (+ " + Dados.reais(falta) + ")" if falta > 0 else ""), _comprar.bind(i, atual), true])
+		else:
+			texto += " Ainda falta " + Dados.reais(preco - troca - Dados.dinheiro) + "."
+	if bts.is_empty():
+		texto += "\n\nAinda não dá: junta mais dinheiro fazendo serviço e ganhando racha."
+	bts.append(["SÓ OLHANDO", func(): pass, false])
+	_falar(texto, bts, "DRAFAEL MOTORS")
+
+
+func _comprar(i: int, troca_id: String) -> void:
+	var nome := str(Dados.carros[i]["nome"])
+	var preco := int(Dados.carros[i].get("preco", 0))
+	var credito := Dados.valor_revenda(troca_id) if troca_id != "" else 0
+	if Dados.dinheiro + credito < preco or Dados.tem_carro(str(Dados.carros[i]["id"])):
+		_falar("Não deu: falta " + Dados.reais(preco - credito - Dados.dinheiro) + ".", [["OK", func(): pass, false]])
+		return
+	if troca_id != "":
+		var g: Array = Dados.historia.get("garagem", [])
+		# vende o seu (deixa vender mesmo sendo o único: a troca já põe o novo no lugar)
+		Dados.dinheiro += Dados.valor_revenda(troca_id)
+		g.erase(troca_id)
+		Dados.configs.erase(troca_id)
+		(Dados.historia.get("investido", {}) as Dictionary).erase(troca_id)
+	if not Dados.comprar(i):
+		_falar("Não deu: falta dinheiro.", [["OK", func(): pass, false]])
+		return
+	Dados.historia["xp"] = int(Dados.historia.get("xp", 0)) + 20
+	Dados.salvar()
+	_carro_no_patio()
+	_falar(nome + " é teu! Deixei ele ali no pátio, é só pegar.\nSaldo: " + Dados.reais(Dados.dinheiro), [["BORA!", func(): pass]])
+
+
+## põe o carro escolhido (Dados.carro()) no meio do pátio da loja, de frente pra rua
+func _carro_no_patio() -> void:
+	if not m.mapa.tem("concessionaria"):
+		return
+	var cx: Transform3D = m.mapa.xf("concessionaria")
+	var pos: Vector3 = cx * Vector3(0, 0.7, 4.2)
+	var frente: Vector3 = cx.basis * Vector3(0, 0, 1)
+	m._criar_carro(pos, atan2(frente.x, frente.z))
 
 
 # ---------------------------------------------------------------- todo frame
@@ -448,6 +569,14 @@ func _atualizar_botao() -> void:
 	if drafael and m.pe and m.pessoa and m.pessoa.global_position.distance_to(drafael.global_position) < 2.6:
 		_acao = "falar"
 		botao.text = "FALAR COM O DRAFAEL"
+	elif _drafael_loja_perto():
+		_acao = "falar_loja"
+		botao.text = "FALAR COM O DRAFAEL"
+	elif m.pe and m.pessoa and m.concessionaria and not m.concessionaria.carro_perto(m.pessoa.global_position).is_empty():
+		var v: Dictionary = m.concessionaria.carro_perto(m.pessoa.global_position)
+		_acao = "ver_carro"
+		_carro_visto = v
+		botao.text = "VER " + str(Dados.carros[int(v["i"])]["nome"]).to_upper() + " · " + Dados.reais(int(Dados.carros[int(v["i"])].get("preco", 0)))
 	elif perto_do_pc():
 		_acao = "pc"
 		botao.text = "USAR O PC"

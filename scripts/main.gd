@@ -95,6 +95,7 @@ var policia: Policia
 var pessoa: Pessoa
 var oficina: Oficina
 var historia: Historia
+var concessionaria: Concessionaria   # Drafael Motors (loja com um de cada carro)
 var barracao: Barracao         # (v34) evento dos carros novos no barracão do lado da Drops
 var sol_luz: DirectionalLight3D
 var elev_y := 0.0
@@ -378,6 +379,7 @@ func _predios() -> void:
 		cc.name = "Concessionaria"
 		cc.m = self
 		add_child(cc)
+		concessionaria = cc
 	# delegacia "É o Frank": no lugar da PMPR do mapa, com a lombada e o policial na frente
 	del_xf = _xf_delegacia()
 	var esc := float(mapa.dados["delegacia"].get("escala", 1.0)) if mapa.tem("delegacia") else 1.0
@@ -1066,7 +1068,18 @@ func _physics_process(dt: float) -> void:
 		carro.engine_force = forca * acel if vel < vmax else 0.0
 	elif freio > 0.0:
 		if vel > 1.0:
-			carro.brake = 28.0 * freio
+			# (22/11) freio mais forte: freio nas rodas + ajuda que segura o carro (~0,9 g no talo),
+			# aliviando bem no fim pra não dar tranco; só com as rodas no chão
+			carro.brake = 45.0 * freio
+			var no_chao := false
+			for w in rodas:
+				if w.is_in_contact():
+					no_chao = true
+					break
+			if no_chao:
+				var vh := Vector3(carro.linear_velocity.x, 0.0, carro.linear_velocity.z)
+				var desac := 8.5 * freio * clampf(vh.length() / 3.0, 0.0, 1.0)
+				carro.apply_central_force(-vh.normalized() * carro.mass * desac)
 		else:
 			carro.engine_force = -forca * 0.55 * freio
 	else:
@@ -2681,6 +2694,85 @@ func _teste18() -> void:
 				_t18["fase"] = "largar"
 
 
+func _teste21() -> void:
+	# (modo história) loja do Drafael: um de cada carro, comprar à vista, trocar o seu, vender
+	var ft := OS.get_environment("DROPS_FOTO")
+	var log := func(o: String) -> void:
+		print("t21 [", _f, "] ", o, " | carro=", Dados.carro()["id"], " dinheiro=", Dados.dinheiro, " garagem=", Dados.historia.get("garagem"), " acao=", historia._acao if historia else "")
+	var F := 60
+	if _f % F != 0:
+		return
+	var cx := mapa.xf("concessionaria")
+	match int(_f / F):
+		1:
+			intro = 0.0
+			Dados.entrar_historia()
+			Dados.zerar_historia()
+			Dados.comprar(Dados.indice_de("corsa"))
+			Dados.historia["etapa"] = "loja"
+			Dados.dinheiro = 60000
+			mapa.carregar_perto(cx.origin)
+			teletransportar(cx * Vector3(0, 0.8, 9.0), carro.rotation.y)
+			historia = Historia.new()
+			historia.m = self
+			add_child(historia)
+		2:
+			descer()
+		4, 5, 6:
+			var n := 0
+			for v in concessionaria.vagas:
+				if v["cv"] != null:
+					n += 1
+			log.call("vagas=%d carregados=%d drafael=%s" % [concessionaria.vagas.size(), n, concessionaria.drafael != null])
+		12:
+			var n := 0
+			for v in concessionaria.vagas:
+				if v["cv"] != null:
+					n += 1
+			log.call("carregados=%d" % n)
+			pessoa.global_position = concessionaria.drafael.global_position + cx.basis * Vector3(0.8, 0.1, 0.8)
+		13:
+			log.call("perto do Drafael (loja)")
+			historia._apertou()
+			print("t21 dialogo: ", historia.dialogo_l.text.replace("\n", " / "))
+		14:
+			var alvo := {}
+			for v in concessionaria.vagas:
+				if v["id"] == "golg2":
+					alvo = v
+			pessoa.global_position = cx * ((alvo["pos"] as Vector3) + Vector3(1.6, 0.1, 0))
+		15:
+			historia.dialogo.visible = false
+			historia._atualizar_botao()
+			log.call("perto do G2")
+			historia._apertou()
+			print("t21 dialogo: ", historia.dialogo_l.text.replace("\n", " / "))
+			historia._comprar(Dados.indice_de("golg2"), "")
+			log.call("comprou G2 à vista")
+		16:
+			var alvo := {}
+			for v in concessionaria.vagas:
+				if v["id"] == "saveirog5":
+					alvo = v
+			pessoa.global_position = cx * ((alvo["pos"] as Vector3) + Vector3(1.6, 0.1, 0))
+		17:
+			historia.dialogo.visible = false
+			Dados.dinheiro = 52000
+			historia._atualizar_botao()
+			log.call("perto da G5")
+			historia._apertou()
+			print("t21 dialogo: ", historia.dialogo_l.text.replace("\n", " / "))
+			historia._comprar(Dados.indice_de("saveirog5"), str(Dados.carro()["id"]))
+			log.call("trocou o G2 pela G5")
+			historia._vender("corsa")
+			log.call("vendeu o Corsa")
+			historia._comprar(Dados.indice_de("hilux"), str(Dados.carro()["id"]))
+			log.call("tentou trocar a G5 na Hilux (sem dinheiro)")
+			print("t21 dialogo: ", historia.dialogo_l.text.replace("\n", " / "))
+			print("t21 carro no mundo: ", carro.global_position, " pe=", pe)
+			get_tree().quit()
+
+
 func _teste17() -> void:
 	# (modo história) Drafael chega, você aceita a G3, faz os 4 serviços, entrega na Drafael Motors
 	var ft := OS.get_environment("DROPS_FOTO")
@@ -3333,6 +3425,9 @@ func _roteiro_teste() -> void:
 		return
 	if OS.get_environment("DROPS_TESTE") == "20":
 		_teste20()
+		return
+	if OS.get_environment("DROPS_TESTE") == "21":
+		_teste21()
 		return
 	if OS.get_environment("DROPS_TESTE") == "19":
 		_teste19()

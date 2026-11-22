@@ -21,6 +21,18 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
   carros e o seu dinheiro (mexer no carro vai ser na oficina, pagando as peças: próximas etapas).
   O MODO LIVRE continua igual, tudo liberado (botão MODO LIVRE volta pra ele). Progresso salvo separado.
   Preços de todos os carros no carros.json ("preco"); "Áudio 6 Perua" agora é só "Perua".
+- (22/11) DRAFAEL MOTORS COM UM DE CADA CARRO (31): 2 fileiras no salão + pátio (picapes/SUVs), nome e preço
+  em cima de cada um. Os carros só carregam quando você chega perto (um por vez) e somem quando vai longe.
+  O Drafael fica andando pela loja (some de lá quando está na Drops com serviço). No modo história:
+  chega perto de um carro e aperta VER: compra à vista ou TROCA pelo seu (ele paga 70% da tabela + 40% do
+  que você gastou de peças). FALAR COM O DRAFAEL: vender um carro seu (não dá pra ficar sem nenhum).
+  O carro comprado aparece no meio do pátio. Teste sem a cidade: res://testes/teste_loja.tscn.
+- (22/11) MODO HISTÓRIA NA GARAGEM: dá pra mexer em tudo igual ao modo livre (pneu, tala, aro, cor...).
+  O que muda vira ORÇAMENTO (embaixo, do lado do saldo): PAGAR ou DESFAZER. Trocar de carro ou sair pro
+  rolê com orçamento aberto mostra a CONTA DA OFICINA. Rebaixar precisa da suspensão a ar (R$ 5 mil).
+  Preços: pintura 8-25 mil, rodas 1/6/10 mil (pelo aro), pintura das rodas 600, pneus 1.200, cambagem 300,
+  recuo 400, neon 1.500, som 8 mil, aerofólio 2.500 (cor 600).
+- (22/11) FREIO mais forte (segura ~0,9 g, só com as rodas no chão). SETA da clandestina em pé, maior.
 - (21/11) LINK DA GARAGEM (todos os carros): python3 ferramentas/exportar_web_demo.py PASTA --godot GODOT
   monta a página: garagem + G5 Cross no pacote principal; cada carro num pacote separado, baixado só quando
   você escolhe (aparece "Baixando ...%"). Tudo em pedaços de texto base64 (.000.txt...) porque a página do

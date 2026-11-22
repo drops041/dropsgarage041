@@ -565,6 +565,49 @@ func a_venda() -> Array:
 	return out
 
 
+## (modo história) quanto o Drafael paga no seu carro usado: 70% do preço de tabela + 40% do que você
+## gastou nele (peças pagas na garagem/oficina ficam anotadas em historia["investido"])
+const REVENDA := 0.7
+const REVENDA_PECAS := 0.4
+func valor_revenda(id: String) -> int:
+	var i := indice_de(id)
+	if i < 0:
+		return 0
+	var base := int(carros[i].get("preco", 0)) * REVENDA
+	var pecas := float((historia.get("investido", {}) as Dictionary).get(id, 0)) * REVENDA_PECAS
+	return int(round((base + pecas) / 100.0) * 100)
+
+
+## anota quanto foi gasto em peças num carro (entra no valor de revenda)
+func investir(id: String, valor: int) -> void:
+	if modo != "historia":
+		return
+	var inv: Dictionary = historia.get("investido", {})
+	inv[id] = int(inv.get(id, 0)) + valor
+	historia["investido"] = inv
+
+
+## vende um carro seu pro Drafael (não dá pra ficar sem carro nenhum)
+func vender(id: String) -> bool:
+	var g: Array = historia.get("garagem", [])
+	if modo != "historia" or not g.has(id) or g.size() <= 1:
+		return false
+	dinheiro += valor_revenda(id)
+	g.erase(id)
+	configs.erase(id)
+	(historia.get("investido", {}) as Dictionary).erase(id)
+	if str(carros[idx]["id"]) == id:
+		_ir_para(str(g[0]))
+	salvar()
+	return true
+
+
+## põe de volta uma configuração guardada (desfazer as mudanças não pagas da garagem)
+func restaurar_cfg(id: String, antes: Dictionary) -> void:
+	configs[id] = antes.duplicate(true)
+	salvar()
+
+
 func comprar(i: int) -> bool:
 	var preco := int(carros[i].get("preco", 0))
 	if modo != "historia" or dinheiro < preco or tem_carro(carros[i]["id"]):

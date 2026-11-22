@@ -46,14 +46,28 @@ func _ready() -> void:
 	_feixe.material_override = mat
 	_feixe.visible = false
 	m.add_child(_feixe)
+	# (22/11) seta EM PÉ (de lado, não deitada), grossa e maior: dá pra ver pra onde aponta de trás do carro
 	_seta = MeshInstance3D.new()
 	var pm := PrismMesh.new()
-	pm.size = Vector3(0.6, 1.0, 0.15)
+	pm.size = Vector3(1.1, 1.3, 0.3)
 	_seta.mesh = pm
 	var sm := StandardMaterial3D.new()
-	sm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	sm.albedo_color = Color(1, 0.25, 0.2)
+	sm.albedo_color = Color(1, 0.22, 0.16)
+	sm.emission_enabled = true
+	sm.emission = Color(1, 0.2, 0.12)
+	sm.emission_energy_multiplier = 1.4
+	sm.no_depth_test = true
+	sm.render_priority = 10
 	_seta.material_override = sm
+	_seta.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var cabo := MeshInstance3D.new()   # cabinho da seta
+	var bm := BoxMesh.new()
+	bm.size = Vector3(0.42, 0.8, 0.3)
+	cabo.mesh = bm
+	cabo.material_override = sm
+	cabo.position = Vector3(0, -0.95, 0)
+	cabo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_seta.add_child(cabo)
 	_seta.visible = false
 	m.add_child(_seta)
 	var camada := CanvasLayer.new()
@@ -209,12 +223,13 @@ func _process(dt: float) -> void:
 	if ativa and not correndo and m.carro:
 		var p: Vector3 = m.carro.global_position
 		var alvo := ponto_largada()
-		_seta.global_position = p + Vector3.UP * 2.4
+		_seta.global_position = p + Vector3.UP * (2.9 + sin(Time.get_ticks_msec() / 260.0) * 0.12)
 		var dir := Vector3(alvo.x - p.x, 0, alvo.z - p.z)
 		_seta.visible = dir.length() > 15.0 and not m.pe
 		if dir.length() > 0.1:
 			_seta.look_at(_seta.global_position + dir, Vector3.UP)
-			_seta.rotate_object_local(Vector3.RIGHT, -PI / 2.0)
+			_seta.rotate_object_local(Vector3.RIGHT, -PI / 2.0)   # ponta pra frente (pro alvo)
+			_seta.rotate_object_local(Vector3.UP, PI / 2.0)       # e em pé: o triângulo fica de lado
 		placar.text = "CLANDESTINA · Av. Juscelino · %d m" % int(dir.length()) if dir.length() > 15.0 else ""
 	if not correndo:
 		return
