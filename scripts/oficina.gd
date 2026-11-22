@@ -17,6 +17,7 @@ const RACK_Z0 := 14.2
 const RACK_Z1 := 26.4                           # v31: oficina mais funda -> prateleira mais comprida
 const CAIXA_SOM := Vector3(4.28, 1.42, 27.3)     # (v33) em cima do gaveteiro vermelho, do lado da sala gamer
 const RACK_Y := [0.42, 1.04]
+const SALA_RECUO := 0.32                         # (22/11) sala gamer 32 cm pro fundo (o sofá passava da parede da cabine)
 const RAIO_RACK := 0.25
 const BOTOEIRA := Vector3(-0.13, 0.0, 14.35)      # (fase 2) botoeira do elevador na parede da cabine, do lado do vão (não fica mais no meio)
 const SUBIDA := 0.85                             # quanto o carro sobe
@@ -266,6 +267,7 @@ func _sala_gamer() -> void:
 		return
 	var s: Node3D = load(arq).instantiate()
 	raiz.add_child(s)
+	s.position.z += SALA_RECUO   # (22/11) o sofá entrava na cabine de pintura: a sala toda vai um pouco pro fundo
 	for gi in s.find_children("*", "GeometryInstance3D", true, false):
 		(gi as GeometryInstance3D).visibility_range_end = 45.0
 		(gi as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -279,14 +281,14 @@ func _sala_gamer() -> void:
 		var bx := BoxShape3D.new()
 		bx.size = Vector3(b[1] - b[0], b[4], b[3] - b[2])
 		cs.shape = bx
-		cs.position = Vector3((b[0] + b[1]) / 2.0, b[4] / 2.0, (b[2] + b[3]) / 2.0)
+		cs.position = Vector3((b[0] + b[1]) / 2.0, b[4] / 2.0, (b[2] + b[3]) / 2.0 + SALA_RECUO)
 		corpo.add_child(cs)
 	# luz da TV (azul/roxa) iluminando a sala
 	var luz := OmniLight3D.new()
 	luz.light_color = Color(0.55, 0.45, 1.0)
 	luz.light_energy = 0.8
 	luz.omni_range = 4.5
-	luz.position = Vector3(-1.5, 1.3, 26.8)
+	luz.position = Vector3(-1.5, 1.3, 26.8 + SALA_RECUO)
 	luz.shadow_enabled = false
 	raiz.add_child(luz)
 

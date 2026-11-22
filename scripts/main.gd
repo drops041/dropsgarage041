@@ -1181,7 +1181,7 @@ func _sons_carro(dt: float, vel: float, acel: float, freio: float, mao: bool) ->
 		alvo = 0.3 + 0.65 * dentro * (0.75 if marcha == 0.0 else 1.0)
 		alvo += 0.1 * acel
 	_rpm = move_toward(_rpm, alvo, dt * (3.5 if alvo > _rpm else 2.2))
-	som_motor.pitch_scale = 0.62 + _rpm * 1.15
+	som_motor.pitch_scale = 0.6 + _rpm * 1.4   # motor.ogg: 4 cilindros a ~1800 rpm (feito no computador, ver LEIA-ME)
 	som_motor.volume_db = move_toward(som_motor.volume_db, -15.0 + 7.0 * acel + 4.0 * _rpm, dt * 40.0)
 	# pneu: de lado (drift/curva escorregando), freio de mão ou freada forte
 	var lado := absf(carro.linear_velocity.dot(carro.global_basis.x))
@@ -1192,7 +1192,7 @@ func _sons_carro(dt: float, vel: float, acel: float, freio: float, mao: bool) ->
 			canta = maxf(canta, 0.8)
 		if freio > 0.7 and v > 9.0:
 			canta = maxf(canta, 0.6)
-	var vol := lerpf(-50.0, -6.0, canta)
+	var vol := lerpf(-50.0, -10.0, canta)
 	som_pneu.volume_db = move_toward(som_pneu.volume_db, vol, dt * 90.0)
 	som_pneu.pitch_scale = 0.9 + canta * 0.2
 	if som_pneu.volume_db > -45.0 and not som_pneu.playing:

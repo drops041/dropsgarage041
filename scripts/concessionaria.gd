@@ -180,8 +180,8 @@ func _predio() -> void:
 ## 31 carros: 2 fileiras dentro do salão (os menores) e 1 no pátio (os compridos: picapes e SUVs), com o
 ## meio do pátio livre (porta e lugar de entregar carro). Os carros só carregam quando você chega perto
 ## (um por vez, pra não travar) e somem quando você vai longe.
-const PERTO := 140.0
-const LONGE := 280.0
+const PERTO := 110.0
+const LONGE := 240.0
 var vagas: Array = []          # [{id, i, pos (local), cv}]
 var _tick := 0.0
 var drafael: Node3D
@@ -234,6 +234,7 @@ func _carregar_perto() -> void:
 			if v["cv"]:
 				(v["cv"] as Node).queue_free()
 				v["cv"] = null
+			v.erase("pedido")
 		if drafael:
 			drafael.queue_free()
 			drafael = null
@@ -242,8 +243,19 @@ func _carregar_perto() -> void:
 		return
 	if drafael == null:
 		_criar_drafael()
-	for v in vagas:   # um carro por vez
+	# um carro por vez, e o arquivo dele é lido em segundo plano (antes travava o jogo e atrasava a cidade)
+	for v in vagas:
 		if v["cv"] == null:
+			var arq := Dados.modelo("res://modelos/carros/%s.glb" % v["id"])
+			if not v.has("pedido"):
+				ResourceLoader.load_threaded_request(arq)
+				v["pedido"] = true
+				return
+			var st := ResourceLoader.load_threaded_get_status(arq)
+			if st == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+				return
+			if st == ResourceLoader.THREAD_LOAD_LOADED:
+				ResourceLoader.load_threaded_get(arq)   # fica no cache: o montar() pega pronto
 			_expor(v)
 			return
 

@@ -473,7 +473,9 @@ static func _aerofolio(cv: CarroVisual, f: Dictionary, op: String) -> Node3D:
 	var meio := caixa.get_center()
 	var base := Transform3D(Basis(), -Vector3(meio.x, caixa.position.y, meio.z)) * xf
 	var W := float(cv.d["W"])
-	var sedan := bool(f["sedan"])
+	# (22/11) em cima do teto a asa ficava "voando" nos hatches (Astral): agora vai sempre na tampa de trás,
+	# no sedã (porta-malas) e no hatch (tampa), e abre junto com ela
+	var sedan := true
 	var z: float
 	var y: float
 	if sedan:
