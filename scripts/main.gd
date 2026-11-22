@@ -70,6 +70,11 @@ var faisca: CPUParticles3D
 var fumaca: Array[CPUParticles3D] = []
 var som_ar: AudioStreamPlayer
 var som_raspa: AudioStreamPlayer3D
+var som_motor: AudioStreamPlayer3D    # (22/11) ronco do motor (sobe com a "rotação" simulada pelas marchas)
+var som_pneu: AudioStreamPlayer3D     # pneu cantando (drift, freada forte, curva escorregando)
+var som_partida: AudioStreamPlayer3D
+var _rpm := 0.0
+var _motor_ligado := true
 var raspa_som_t := 0.0
 var ar_som_t := 0.0
 var tremor := 0.0
@@ -872,6 +877,22 @@ func _efeitos() -> void:
 	som_raspa.volume_db = 2.0
 	som_raspa.unit_size = 8.0
 	add_child(som_raspa)
+	som_motor = AudioStreamPlayer3D.new()
+	som_motor.stream = _som("res://audio/motor.ogg", true)
+	som_motor.unit_size = 10.0
+	som_motor.volume_db = -12.0
+	som_motor.bus = "Master"
+	add_child(som_motor)
+	som_pneu = AudioStreamPlayer3D.new()
+	som_pneu.stream = _som("res://audio/pneu.ogg", true)
+	som_pneu.unit_size = 10.0
+	som_pneu.volume_db = -60.0
+	add_child(som_pneu)
+	som_partida = AudioStreamPlayer3D.new()
+	som_partida.stream = _som("res://audio/partida.ogg", false)
+	som_partida.unit_size = 10.0
+	som_partida.volume_db = -4.0
+	add_child(som_partida)
 
 
 ## textura redonda e macia pra faísca (sem quadradinho)
@@ -925,6 +946,8 @@ func _som(arq: String, laco: bool) -> AudioStream:
 	var st: AudioStream = load(arq)
 	if st is AudioStreamMP3:
 		(st as AudioStreamMP3).loop = laco
+	elif st is AudioStreamOggVorbis:
+		(st as AudioStreamOggVorbis).loop = laco
 	return st
 
 
@@ -955,6 +978,9 @@ func _ruido(dur: float, decai: float, corte: float, laco := false) -> AudioStrea
 # ---------------------------------------------------------------- carro
 func _criar_carro(pos: Vector3, giro: float) -> void:
 	if carro:
+		for sp in [som_raspa, som_motor, som_pneu, som_partida]:
+			if sp and sp.get_parent() == carro:
+				sp.reparent(self, false)
 		carro.queue_free()
 	rodas.clear()
 	fumaca.clear()
@@ -1016,6 +1042,10 @@ func _criar_carro(pos: Vector3, giro: float) -> void:
 		# (sem fumaça nas rodas: tirada a pedido)
 	som_raspa.reparent(carro, false)
 	som_raspa.position = Vector3.ZERO
+	for sp in [som_motor, som_pneu, som_partida]:
+		if sp:
+			sp.reparent(carro, false)
+			sp.position = Vector3(0, 0.6, float(dados["axF"]) * 0.8) if sp != som_pneu else Vector3(0, 0.3, 0)
 	cam_pos = carro.global_position - carro.global_basis.z * 7.0 + Vector3.UP * 2.5
 	_ar_texto()
 
@@ -1111,7 +1141,64 @@ func _physics_process(dt: float) -> void:
 		virado_t = 0.0
 	_suspensao(dt)
 	_raspar(dt, vel)
+	_sons_carro(dt, vel, acel, freio, mao)
 	_policial(dt, vel)
+
+
+## partida e depois o motor em marcha lenta
+func _ligar_motor() -> void:
+	_motor_ligado = true
+	if som_partida and som_partida.stream:
+		som_partida.play()
+	if som_motor and som_motor.stream:
+		som_motor.volume_db = -40.0
+		get_tree().create_timer(0.7).timeout.connect(func():
+			if som_motor and not pe:
+				som_motor.play())
+
+
+## ronco do motor: 5 marchas simuladas (a rotação sobe e cai a cada troca) + pneu cantando quando escorrega
+func _sons_carro(dt: float, vel: float, acel: float, freio: float, mao: bool) -> void:
+	if som_motor == null or som_motor.stream == null:
+		return
+	if pe:
+		som_motor.volume_db = move_toward(som_motor.volume_db, -60.0, dt * 60.0)
+		if som_motor.playing and som_motor.volume_db <= -59.0:
+			som_motor.stop()
+		som_pneu.volume_db = -60.0
+		return
+	if not som_motor.playing and _motor_ligado and not som_partida.playing:
+		som_motor.play()
+	var vmax := maxf(10.0, float(dados.get("vmax", 50)) * 0.9)
+	var v := absf(vel)
+	var alvo: float
+	if v < 1.5:
+		alvo = 0.12 + 0.55 * acel                       # parado: acelerou, sobe o giro
+	else:
+		var f := clampf(v / vmax, 0.0, 1.0) * 5.0
+		var marcha := minf(floorf(f), 4.0)
+		var dentro := f - marcha
+		alvo = 0.3 + 0.65 * dentro * (0.75 if marcha == 0.0 else 1.0)
+		alvo += 0.1 * acel
+	_rpm = move_toward(_rpm, alvo, dt * (3.5 if alvo > _rpm else 2.2))
+	som_motor.pitch_scale = 0.62 + _rpm * 1.15
+	som_motor.volume_db = move_toward(som_motor.volume_db, -15.0 + 7.0 * acel + 4.0 * _rpm, dt * 40.0)
+	# pneu: de lado (drift/curva escorregando), freio de mão ou freada forte
+	var lado := absf(carro.linear_velocity.dot(carro.global_basis.x))
+	var canta := 0.0
+	if v > 5.0:
+		canta = clampf((lado - 2.0) / 4.0, 0.0, 1.0)
+		if mao:
+			canta = maxf(canta, 0.8)
+		if freio > 0.7 and v > 9.0:
+			canta = maxf(canta, 0.6)
+	var vol := lerpf(-50.0, -6.0, canta)
+	som_pneu.volume_db = move_toward(som_pneu.volume_db, vol, dt * 90.0)
+	som_pneu.pitch_scale = 0.9 + canta * 0.2
+	if som_pneu.volume_db > -45.0 and not som_pneu.playing:
+		som_pneu.play()
+	elif som_pneu.volume_db <= -49.0 and som_pneu.playing:
+		som_pneu.stop()
 
 
 func _suspensao(dt: float) -> void:
@@ -1633,6 +1720,7 @@ func entrar_carro() -> void:
 	if oficina and oficina.desm:
 		oficina.desm.guardar_ja()   # peça na mão vai pro cavalete
 	pe = false
+	_ligar_motor()
 	pessoa.dancar(false)
 	pessoa.visible = false
 	pessoa.process_mode = Node.PROCESS_MODE_DISABLED

@@ -21,6 +21,10 @@ Novidades (fase 1 e começo da fase 2, no ramo fase-1 do GitHub)
   carros e o seu dinheiro (mexer no carro vai ser na oficina, pagando as peças: próximas etapas).
   O MODO LIVRE continua igual, tudo liberado (botão MODO LIVRE volta pra ele). Progresso salvo separado.
   Preços de todos os carros no carros.json ("preco"); "Áudio 6 Perua" agora é só "Perua".
+- (22/11) SONS DO CARRO: partida ao entrar (audio/partida.ogg, "Car engine start" do looneybits, CC0),
+  ronco do motor com 5 marchas simuladas (audio/motor.ogg) e pneu cantando no drift/freada (audio/pneu.ogg),
+  os dois cortados do pacote de efeitos do SuperTuxKart (opengameart, CC0) e emendados em laço.
+  Pra trocar: é só substituir os .ogg (mesmo nome). Regras em main.gd: _sons_carro().
 - (22/11) DRAFAEL MOTORS COM UM DE CADA CARRO (31): 2 fileiras no salão + pátio (picapes/SUVs), nome e preço
   em cima de cada um. Os carros só carregam quando você chega perto (um por vez) e somem quando vai longe.
   O Drafael fica andando pela loja (some de lá quando está na Drops com serviço). No modo história:

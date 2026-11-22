@@ -114,3 +114,7 @@ Imagens do Google (Street View/Maps): usadas só como referência, NÃO estão n
 ------------------------------------------------------------------ CRÉDITOS QUE TÊM QUE APARECER NO JOGO
 geyges; Vehsource | VHS Mods; Nikita Teploukhov (skril4ek); © colaboradores do OpenStreetMap (ODbL);
 IPPUC / Prefeitura de Curitiba; e os autores dos itens PENDENTES, quando descobrir.
+
+SONS (22/11)
+- audio/partida.ogg, audio/partida2.ogg: "Car engine start 01" — looneybits (opengameart.org/content/car-engine-start-01) — CC0
+- audio/motor.ogg, audio/motor2.ogg, audio/pneu.ogg: trechos do "SuperTuxKart sound effects" — Scribe (opengameart.org/content/supertuxkart-sound-effects) — CC0
